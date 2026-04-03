@@ -37,6 +37,8 @@ Audit inputs used for this matrix:
 
 ## Public API And Package Surface
 
+- Snapshot evidence for this section now lives in `fixtures/parity/reference-api-surface.json` and `fixtures/parity/local-api-surface.json`.
+
 | ID       | Reference feature                                                                                                                                                    | Status    | Current state                                                                                                                                                                                        | Planned follow-up                  |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `api-01` | Root package export exposes the main `Streamdown` component plus the reference root API family from `packages/streamdown/index.tsx`                                  | `partial` | Local root export exists in `src/lib/index.ts`, but it is much smaller and Svelte-specific                                                                                                           | `P3-01`, `P3-02`, `P3-03`, `P4-03` |

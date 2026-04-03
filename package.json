@@ -20,6 +20,8 @@
 		"verify:exports": "node scripts/verify-exports.mjs",
 		"snapshot:reference-api-surface": "node scripts/reference-api-surface.mjs --write",
 		"verify:reference-api-surface": "node scripts/reference-api-surface.mjs --check",
+		"snapshot:local-api-surface": "node scripts/local-api-surface.mjs --write",
+		"verify:local-api-surface": "node scripts/local-api-surface.mjs --check",
 		"verify:toolchain": "node scripts/verify-toolchain.mjs",
 		"verify:clean-build": "node scripts/verify-clean-build.mjs",
 		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs",
