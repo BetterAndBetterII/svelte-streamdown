@@ -80,14 +80,19 @@ function resolveTestFiles(testGlobs, excludedTestGlobs) {
 }
 
 function runCommand(command, args) {
-	const result = spawnSync(command, args, {
+	const resolvedCommand = process.platform === 'win32' && command === 'pnpm' ? 'pnpm.cmd' : command;
+	const result = spawnSync(resolvedCommand, args, {
 		cwd: repoRoot,
 		stdio: 'inherit',
 		env: process.env
 	});
 
+	if (result.error) {
+		throw result.error;
+	}
+
 	if (result.status !== 0) {
-		throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+		throw new Error(`Command failed: ${resolvedCommand} ${args.join(' ')}`);
 	}
 }
 
@@ -103,6 +108,16 @@ function formatPercent(value) {
 	return `${value.toFixed(2)}%`;
 }
 
+function parseCoveragePercent(value) {
+	if (typeof value === 'number') {
+		return Number.isFinite(value) ? value : 0;
+	}
+
+	const parsed = Number.parseFloat(value ?? '');
+
+	return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function readSuiteMetrics(summaryPath) {
 	const summary = readSummary(summaryPath);
 	const total = summary.total;
@@ -112,10 +127,10 @@ function readSuiteMetrics(summaryPath) {
 	}
 
 	return {
-		statements: total.statements?.pct ?? 0,
-		branches: total.branches?.pct ?? 0,
-		functions: total.functions?.pct ?? 0,
-		lines: total.lines?.pct ?? 0
+		statements: parseCoveragePercent(total.statements?.pct),
+		branches: parseCoveragePercent(total.branches?.pct),
+		functions: parseCoveragePercent(total.functions?.pct),
+		lines: parseCoveragePercent(total.lines?.pct)
 	};
 }
 
@@ -205,7 +220,9 @@ function main() {
 	writeFileSync(defaultSummaryPath, markdown);
 
 	if (options.summaryFile) {
-		writeFileSync(resolve(process.cwd(), options.summaryFile), markdown);
+		const outputPath = resolve(process.cwd(), options.summaryFile);
+		mkdirSync(dirname(outputPath), { recursive: true });
+		writeFileSync(outputPath, markdown);
 	}
 
 	process.stdout.write(markdown);
