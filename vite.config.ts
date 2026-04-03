@@ -57,9 +57,14 @@ export default defineConfig({
 				extends: './vite.config.ts',
 				test: {
 					name: 'client',
-					environment: 'browser',
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**'],
+					include: ['src/**/*.svelte.{test,spec}.{js,ts}', 'tests/**/*.svelte.{test,spec}.{js,ts}'],
+					exclude: ['src/lib/server/**', 'tests/pack-smoke/**'],
+					browser: {
+						enabled: true,
+						provider: 'playwright',
+						headless: true,
+						instances: [{ browser: 'chromium' }]
+					},
 					setupFiles: ['./vitest-setup-client.ts']
 				}
 			},
@@ -68,8 +73,8 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
+					include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
+					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}', 'tests/**/*.svelte.{test,spec}.{js,ts}', 'tests/pack-smoke/**']
 				}
 			}
 		]
