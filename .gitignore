@@ -25,3 +25,4 @@ vite.config.ts.timestamp-*
 
 references/
 .symphony-runtime-source/
+.codex/skills
