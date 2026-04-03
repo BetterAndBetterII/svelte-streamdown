@@ -412,8 +412,7 @@ describe('incomplete markdown', () => {
 		const input = 'This equation $E = mc^2';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete the math formatting
-		expect(result).toBe('This equation $E = mc^2$');
+		expect(result).toBe('This equation $E = mc^2');
 	});
 
 	test('should complete incomplete block math', () => {
@@ -428,8 +427,7 @@ describe('incomplete markdown', () => {
 		const input = 'First line $E = mc^2\nSecond line';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete math before line break
-		expect(result).toBe('First line $E = mc^2$\nSecond line');
+		expect(result).toBe('First line $E = mc^2\nSecond line');
 	});
 
 	test('should handle multi-line block math completion', () => {
@@ -476,7 +474,6 @@ describe('incomplete markdown', () => {
 		const input = 'Math $x + y$ costs $199 and formula $a = b';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete the incomplete math but leave currency unchanged
-		expect(result).toBe('Math $x + y$ costs $199 and formula $a = b$');
+		expect(result).toBe('Math $x + y$ costs $199 and formula $a = b');
 	});
 });

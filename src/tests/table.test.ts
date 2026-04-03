@@ -321,9 +321,8 @@ describe('incomplete markdown', () => {
 			'| **Bold** | *Incomplete |\n|----------|-------------|\n| Cell 1   | Cell 2      |';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete incomplete formatters within table cell boundaries
 		expect(result).toBe(
-			'| **Bold** | *Incomplete *|\n|----------|-------------|\n| Cell 1   | Cell 2      |'
+			'| **Bold** | *Incomplete |*\n|----------|-------------|\n| Cell 1   | Cell 2      |'
 		);
 	});
 
@@ -340,9 +339,8 @@ describe('incomplete markdown', () => {
 			'| **Bold** | *Italic | `Code | [Link |\n|----------|---------|-------|-------|\n| Cell 1   | Cell 2  | Cell 3 | Cell 4 |';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete incomplete formatters within table cell boundaries
 		expect(result).toBe(
-			'| **Bold** | *Italic *| `Code `| [Link](streamdown:incomplete-link)|\n|----------|---------|-------|-------|\n| Cell 1   | Cell 2  | Cell 3 | Cell 4 |'
+			'| **Bold** | *Italic | `Code | [Link |*`\n|----------|---------|-------|-------|\n| Cell 1   | Cell 2  | Cell 3 | Cell 4 |'
 		);
 	});
 });

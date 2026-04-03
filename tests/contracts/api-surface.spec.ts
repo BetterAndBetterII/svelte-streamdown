@@ -99,7 +99,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 	rootExports: {
 		// api-02, api-03, api-04, api-05, api-06
 		missingFromLocal: [
-			'AllowedTags',
 			'AllowElement',
 			'AnimateOptions',
 			'Block',
@@ -171,30 +170,17 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		kindMismatches: []
 	},
 	streamdownProps: {
-		// prop-01, prop-02, prop-04, prop-06, prop-07, prop-08, prop-09,
-		// prop-10, prop-11, prop-12, prop-13, prop-14, prop-15, prop-16,
+		// prop-04, prop-08, prop-09,
 		// prop-17, prop-18, prop-20, api-01
 		missingFromLocal: [
 			'allowedElements',
-			'allowedTags',
 			'allowElement',
-			'animated',
 			'BlockComponent',
-			'caret',
 			'className',
-			'dir',
 			'disallowedElements',
-			'isAnimating',
-			'lineNumbers',
-			'linkSafety',
-			'literalTagContent',
-			'mode',
 			'normalizeHtmlIndentation',
-			'onAnimationEnd',
-			'onAnimationStart',
 			'parseMarkdownIntoBlocksFn',
 			'plugins',
-			'prefix',
 			'rehypePlugins',
 			'remarkPlugins',
 			'remarkRehypeOptions',
@@ -267,6 +253,11 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		// prop-05, prop-19, prop-21, prop-22, prop-24
 		typeMismatches: [
 			{
+				name: 'caret',
+				reference: 'keyof typeof carets',
+				local: '"block"|"circle"'
+			},
+			{
 				name: 'children',
 				reference: 'string',
 				local: 'Snippet<[{streamdown:StreamdownContext;token:GenericToken;children:Snippet;}]>'
@@ -274,13 +265,12 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'components',
 				reference: 'Components',
-				local:
-					'{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}'
+				local: 'StreamdownComponents'
 			},
 			{
 				name: 'controls',
 				reference: 'ControlsConfig',
-				local: '{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}'
+				local: '{code?:boolean;mermaid?:MermaidControls;table?:TableControlsConfig;}'
 			},
 			{
 				name: 'icons',
@@ -294,12 +284,22 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 				local: 'Snippet<[{children:Snippet;token:Tokens.Code;}]>'
 			},
 			{
+				name: 'onAnimationEnd',
+				reference: '()=>void',
+				local: '(()=>void)'
+			},
+			{
+				name: 'onAnimationStart',
+				reference: '()=>void',
+				local: '(()=>void)'
+			},
+			{
 				name: 'shikiTheme',
 				reference: '[ThemeInput,ThemeInput]',
 				local: 'string'
 			}
 		],
-		// prop-03, prop-05, prop-21
+		// prop-05, prop-13, prop-21
 		defaultMismatches: [
 			{
 				name: 'controls',
@@ -307,9 +307,14 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 				local: null
 			},
 			{
-				name: 'parseIncompleteMarkdown',
-				reference: 'true',
-				local: null
+				name: 'linkSafety',
+				reference: 'defaultLinkSafetyConfig',
+				local: '{enabled:true}'
+			},
+			{
+				name: 'mode',
+				reference: '"streaming"',
+				local: "'streaming'"
 			},
 			{
 				name: 'shikiTheme',

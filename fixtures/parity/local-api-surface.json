@@ -42,6 +42,12 @@
 	"exports": {
 		"streamdown": [
 			{
+				"name": "AllowedTags",
+				"kind": "type",
+				"source": "./security/types.js",
+				"importedName": "AllowedTags"
+			},
+			{
 				"name": "Extension",
 				"kind": "type",
 				"source": "./marked/index.js",
@@ -217,6 +223,20 @@
 			"default": "['*']"
 		},
 		{
+			"name": "allowedTags",
+			"optional": true,
+			"type": "AllowedTags",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "animated",
+			"optional": true,
+			"type": "boolean|AnimateOptions",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "animation",
 			"optional": true,
 			"type": "{animateOnMount?:boolean;enabled?:boolean;type?:\"fade\"|\"blur\"|\"slideUp\"|\"slideDown\";duration?:number;timingFunction?:\"ease\"|\"ease-in\"|\"ease-out\"|\"ease-in-out\"|\"linear\";tokenize?:\"word\"|\"char\";}",
@@ -241,6 +261,13 @@
 			"name": "br",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Br;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "caret",
+			"optional": true,
+			"type": "\"block\"|\"circle\"",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -275,7 +302,7 @@
 		{
 			"name": "components",
 			"optional": true,
-			"type": "{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}",
+			"type": "StreamdownComponents",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -289,7 +316,7 @@
 		{
 			"name": "controls",
 			"optional": true,
-			"type": "{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}",
+			"type": "{code?:boolean;mermaid?:MermaidControls;table?:TableControlsConfig;}",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -332,6 +359,13 @@
 			"name": "descriptionTerm",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:DescriptionTermToken;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "dir",
+			"optional": true,
+			"type": "\"auto\"|\"ltr\"|\"rtl\"",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -434,6 +468,13 @@
 			"default": "'carousel'"
 		},
 		{
+			"name": "isAnimating",
+			"optional": true,
+			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": "false"
+		},
+		{
 			"name": "katexConfig",
 			"optional": true,
 			"type": "KatexOptions|((inline:boolean)=>KatexOptions)",
@@ -448,9 +489,30 @@
 			"default": null
 		},
 		{
+			"name": "lineNumbers",
+			"optional": true,
+			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": "true"
+		},
+		{
 			"name": "link",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Link;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "linkSafety",
+			"optional": true,
+			"type": "LinkSafetyConfig",
+			"source": "src/lib/context.svelte.ts",
+			"default": "{enabled:true}"
+		},
+		{
+			"name": "literalTagContent",
+			"optional": true,
+			"type": "string[]",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -497,9 +559,30 @@
 			"default": "{}"
 		},
 		{
+			"name": "mode",
+			"optional": true,
+			"type": "\"static\"|\"streaming\"",
+			"source": "src/lib/context.svelte.ts",
+			"default": "'streaming'"
+		},
+		{
 			"name": "ol",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:ListToken;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "onAnimationEnd",
+			"optional": true,
+			"type": "(()=>void)",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "onAnimationStart",
+			"optional": true,
+			"type": "(()=>void)",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -514,6 +597,13 @@
 			"name": "parseIncompleteMarkdown",
 			"optional": true,
 			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": "true"
+		},
+		{
+			"name": "prefix",
+			"optional": true,
+			"type": "string",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},

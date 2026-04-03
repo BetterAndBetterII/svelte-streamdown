@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { Tokens } from 'marked';
 	import type { MermaidConfig } from 'mermaid';
-	import { on } from 'svelte/events';
 	import { usePanzoom } from '$lib/utils/panzoom.svelte';
 	import { fitViewIcon, fullscreenIcon, zoomInIcon, zoomOutIcon } from './icons.js';
 	import MermaidDownload from './MermaidDownload.svelte';
@@ -21,210 +20,133 @@
 	} = $props();
 
 	let mermaid = $state<any>(null);
-	onMount(async () => {
-		mermaid = (await import('mermaid')).default;
-	});
-
-	const useIsInsideForMoreThanAQuarterSecond = () => {
-		let isInside = $state(false);
-		let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
-
-		return {
-			get isInside() {
-				return isInside;
-			},
-			attach: (node: HTMLElement) => {
-				const off1 = on(node, 'mouseenter', () => {
-					timeout = setTimeout(() => {
-						isInside = true;
-					}, 800);
-				});
-
-				const off2 = on(node, 'mouseleave', () => {
-					isInside = false;
-					clearTimeout(timeout);
-				});
-
-				return () => {
-					off1();
-					off2();
-				};
-			}
-		};
-	};
-
-	const insider = useIsInsideForMoreThanAQuarterSecond();
+	let svgContent = $state('');
+	let lastValidSvg = $state('');
+	let error = $state<string | null>(null);
+	let retryCount = $state(0);
 
 	const panzoom = usePanzoom({
 		minZoom: 0.5,
 		maxZoom: 4,
-		zoomSpeed: 1,
-		get activateMouseWheel() {
-			return insider.isInside;
+		zoomSpeed: 1
+	});
+
+	const MermaidErrorComponent = $derived(streamdown.components?.mermaidError);
+	const renderedSvg = $derived(svgContent || lastValidSvg);
+	const controls = $derived(streamdown.controls.mermaid);
+	const showActionBar = $derived(
+		!!mermaid && controls.enabled && (controls.download || controls.fullscreen || controls.panZoom)
+	);
+
+	const createRenderId = (chart: string) => {
+		const chartHash = chart.split('').reduce((acc, char) => {
+			return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
+		}, 0);
+
+		return `mermaid-${Math.abs(chartHash)}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+	};
+
+	const renderSvgMarkup = async (
+		chart: string,
+		mermaidConfig: MermaidConfig | undefined = streamdown.mermaidConfig,
+		mermaidInstance: any = mermaid
+	): Promise<string> => {
+		if (!mermaidInstance) {
+			throw new Error('Mermaid library not available');
+		}
+
+		const defaultConfig: MermaidConfig = {
+			theme: 'base',
+			startOnLoad: false,
+			securityLevel: 'strict',
+			fontFamily: 'monospace',
+			suppressErrorRendering: true,
+			flowchart: {
+				useMaxWidth: true,
+				htmlLabels: true,
+				curve: 'basis'
+			},
+			...(mermaidConfig || {})
+		};
+
+		mermaidInstance.initialize(defaultConfig);
+
+		const { svg } = await mermaidInstance.render(createRenderId(chart), chart);
+		return svg;
+	};
+
+	const retryRender = () => {
+		retryCount += 1;
+	};
+
+	onMount(async () => {
+		try {
+			mermaid = (await import('mermaid')).default;
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Mermaid library not available';
 		}
 	});
 
-	const sanitizeMermaidCode = (code: string): string => {
-		try {
-			let sanitized = code;
+	$effect(() => {
+		const chart = token.text;
+		const currentRetry = retryCount;
+		const currentMermaid = mermaid;
+		const currentConfig = streamdown.mermaidConfig;
 
-			// 1. Remove Byte Order Mark (BOM)
-			sanitized = sanitized.replace(/^\uFEFF/, '');
-
-			// 2. Normalize Unicode (NFC form for consistent rendering)
-			sanitized = sanitized.normalize('NFC');
-
-			// 3. Remove invisible/zero-width characters
-			sanitized = sanitized.replace(/[\u200B-\u200F\u2028-\u202F\u205F-\u206F]/g, '');
-
-			// 4. Remove control characters (except tab, line feed, carriage return)
-			sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-
-			// 5. Normalize line endings to LF
-			sanitized = sanitized.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-			// 6. Decode common HTML entities that might appear in Mermaid code
-			const htmlEntities: Record<string, string> = {
-				'&lt;': '<',
-				'&gt;': '>',
-				'&amp;': '&',
-				'&quot;': '"',
-				'&#39;': "'",
-				'&apos;': "'",
-				'&nbsp;': ' ',
-				'&hellip;': '...',
-				'&mdash;': '--',
-				'&ndash;': '-',
-				'&lsquo;': "'",
-				'&rsquo;': "'",
-				'&ldquo;': '"',
-				'&rdquo;': '"'
-			};
-
-			for (const [entity, replacement] of Object.entries(htmlEntities)) {
-				sanitized = sanitized.replace(new RegExp(entity, 'g'), replacement);
-			}
-
-			// 7. Convert smart quotes and other quote variants to standard quotes
-			sanitized = sanitized
-				.replace(/[\u2018\u2019]/g, "'") // Smart single quotes
-				.replace(/[\u201C\u201D]/g, '"') // Smart double quotes
-				.replace(/[\u2013\u2014]/g, '-') // Em/en dashes
-				.replace(/\u2026/g, '...'); // Horizontal ellipsis
-
-			// 8. Trim leading/trailing whitespace from each line and remove empty lines
-			sanitized = sanitized
-				.split('\n')
-				.map((line) => line.trim())
-				.filter((line) => line.length > 0)
-				.join('\n');
-
-			// 9. Normalize multiple spaces/tabs to single space (but preserve indentation in code blocks)
-			sanitized = sanitized.replace(/[ \t]+/g, ' ');
-
-			// 10. Handle over-escaped characters (common in copied code)
-			// Convert double backslashes to single (except in JSON strings)
-			sanitized = sanitized.replace(/\\\\(?![\\"])/g, '\\');
-
-			// 11. Remove non-breaking spaces and other special spaces
-			sanitized = sanitized.replace(/[\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
-
-			// 12. Ensure proper spacing around operators and keywords
-			// Add space after commas if missing (common in CSV-like data)
-			sanitized = sanitized.replace(/,([^\s])/g, ', $1');
-
-			// 13. Clean up Mermaid-specific issues
-			// Remove trailing semicolons that might break parsing
-			sanitized = sanitized.replace(/;+\s*$/gm, '');
-
-			// Ensure proper spacing in flowchart syntax
-			sanitized = sanitized.replace(
-				/([A-Za-z0-9_]+)(\-\-|\-\-\>|\-\.\-|\-\.\-\>|\=\=|\=\=\>|\=\.\=\>|\=\.\-\>)/g,
-				'$1 $2'
-			);
-
-			// 14. Final cleanup: trim and ensure single trailing newline
-			sanitized = sanitized.trim();
-			if (sanitized && !sanitized.endsWith('\n')) {
-				sanitized += '\n';
-			}
-
-			return sanitized;
-		} catch (error) {
-			console.warn('Error during Mermaid code sanitization:', error);
-			// Return original code if sanitization fails
-			return code;
+		if (!currentMermaid) {
+			return;
 		}
-	};
 
-	const renderMermaid = async (code: string, element: HTMLElement) => {
-		try {
-			// Sanitize the code first
-			const sanitizedCode = sanitizeMermaidCode(code);
+		let cancelled = false;
 
-			// Default configuration
-			const defaultConfig: MermaidConfig = {
-				theme: 'base',
-				startOnLoad: false,
-				securityLevel: 'strict',
-				fontFamily: 'monospace',
-				suppressErrorRendering: true,
+		void (async () => {
+			try {
+				const svg = await renderSvgMarkup(chart, currentConfig, currentMermaid);
+				if (cancelled) {
+					return;
+				}
 
-				flowchart: {
-					useMaxWidth: true,
-					htmlLabels: true,
-					curve: 'basis'
-				},
-				...(streamdown.mermaidConfig || {})
-			};
+				error = null;
+				svgContent = svg;
+				lastValidSvg = svg;
+			} catch (err) {
+				if (cancelled) {
+					return;
+				}
 
-			// Initialize mermaid with merged config
-			mermaid.initialize(defaultConfig);
-
-			const chartHash = code.split('').reduce((acc, char) => {
-				return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
-			}, 0);
-
-			const uniqueId = `mermaid-${Math.abs(chartHash)}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-
-			// Render the diagram
-			const { svg: svgString } = await mermaid.render(uniqueId, sanitizedCode);
-
-			// Insert the SVG into the target element
-			const svgTarget = element.querySelector('[data-mermaid-svg]') as SVGElement;
-			if (svgTarget) {
-				svgTarget.innerHTML = svgString;
-				svgTarget.id = uniqueId;
-
-				// Apply any additional attributes from the rendered SVG
-				const tempSvg = new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
-				Array.from(tempSvg.attributes).forEach((attribute) => {
-					if (attribute.name !== 'id') {
-						svgTarget.setAttribute(attribute.name, attribute.value);
-					}
-				});
-
-				panzoom.zoomToFit();
-				panzoom.zoomToFit();
+				if (!(lastValidSvg || svgContent)) {
+					error = err instanceof Error ? err.message : 'Failed to render Mermaid chart';
+				}
 			}
-		} catch (err) {
-			console.warn('Mermaid rendering error:', err);
-			// Could show error state in UI here
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	$effect(() => {
+		const currentSvg = renderedSvg;
+
+		if (!currentSvg) {
+			return;
 		}
-	};
+
+		void tick().then(() => {
+			panzoom.zoomToFit();
+		});
+	});
 </script>
 
 <div data-streamdown-mermaid={id} data-incomplete={isIncomplete || undefined}>
-	{#if mermaid}
-		<div
-			style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
-			class={streamdown.theme.mermaid.base}
-			{@attach (node) => renderMermaid(token.text, node)}
-			{@attach insider.attach}
-			data-expanded={'false'}
-		>
-			{#if streamdown.controls.mermaid}
-				<div class={streamdown.theme.mermaid.buttons}>
+	<div
+		style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
+		class={streamdown.theme.mermaid.base}
+		data-expanded={panzoom.expanded ? 'true' : 'false'}
+	>
+		{#if showActionBar}
+			<div class={streamdown.theme.mermaid.buttons}>
+				{#if controls.panZoom}
 					<button
 						class={streamdown.theme.components.button}
 						aria-label="Zoom to fit"
@@ -252,6 +174,8 @@
 					>
 						{@render (streamdown.icons?.zoomOut || zoomOutIcon)()}
 					</button>
+				{/if}
+				{#if controls.fullscreen}
 					<button
 						class={streamdown.theme.components.button}
 						aria-label={panzoom.expanded
@@ -265,14 +189,47 @@
 					>
 						{@render (streamdown.icons?.fullscreen || fullscreenIcon)()}
 					</button>
-					<MermaidDownload {id} chart={token.text} />
+				{/if}
+				{#if controls.download}
+					<MermaidDownload {id} chart={token.text} renderSvg={() => renderSvgMarkup(token.text)} />
+				{/if}
+			</div>
+		{/if}
+
+		{#if renderedSvg}
+			<div
+				{@attach panzoom.attach}
+				data-mermaid-svg
+				aria-label="Mermaid chart"
+				role="img"
+			>
+				{@html renderedSvg}
+			</div>
+		{:else if error}
+			{#if MermaidErrorComponent}
+				<MermaidErrorComponent chart={token.text} {error} {id} retry={retryRender} />
+			{:else}
+				<div class="rounded-md bg-red-50 p-4" data-streamdown-mermaid-error>
+					<p class="font-mono text-sm text-red-700">Mermaid Error: {error}</p>
+					<details class="mt-2">
+						<summary class="cursor-pointer text-xs text-red-600">Show Code</summary>
+						<pre class="mt-2 overflow-x-auto rounded bg-red-100 p-2 text-xs text-red-800">
+{token.text}</pre
+						>
+					</details>
+					<button
+						type="button"
+						class={streamdown.theme.components.button}
+						onclick={retryRender}
+					>
+						Retry
+					</button>
 				</div>
 			{/if}
-			<svg {@attach panzoom.attach} data-mermaid-svg></svg>
-		</div>
-	{:else}
-		<div class={streamdown.theme.mermaid.base}></div>
-	{/if}
+		{:else}
+			<div data-mermaid-placeholder></div>
+		{/if}
+	</div>
 </div>
 
 <style>
@@ -286,7 +243,6 @@
 		margin: 0px;
 	}
 
-	/* Hide Mermaid's temporary rendering containers */
 	:global(div[id^='dmermaid-']) {
 		position: absolute !important;
 		left: -9999px !important;

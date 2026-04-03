@@ -6,6 +6,31 @@ import { getContext, onMount, setContext } from 'svelte';
 import type { LanguageInfo } from './utils/bundledLanguages.js';
 import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
+import type { AllowedTags } from './security/types.js';
+import { carets } from './streaming.js';
+
+export type { AllowedTags } from './security/types.js';
+
+export interface AnimateOptions {
+	animation?: 'fadeIn' | 'blurIn' | 'slideUp' | (string & {});
+	duration?: number;
+	easing?: string;
+	sep?: 'word' | 'char';
+	stagger?: number;
+}
+
+export interface LinkSafetyModalProps {
+	href: string;
+	open: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+}
+
+export interface LinkSafetyConfig {
+	enabled?: boolean;
+	onLinkCheck?: (href: string) => boolean | Promise<boolean>;
+	renderModal?: (props: LinkSafetyModalProps) => unknown;
+}
 
 export interface StreamdownContext
 	extends Omit<
@@ -18,7 +43,7 @@ export interface StreamdownContext
 	translations: StreamdownTranslations;
 	controls: {
 		code: boolean;
-		mermaid: boolean;
+		mermaid: NormalizedMermaidControls;
 		table: TableControlsConfig;
 	};
 	inlineCitationsMode: 'list' | 'carousel';
@@ -186,23 +211,59 @@ export type Snippets<Source extends Record<string, any> = Record<string, any>> =
 	>;
 };
 
+type ComponentOverrideProps<Token> = {
+	children?: Snippet;
+	token: Token;
+	class?: string;
+	style?: string;
+};
+
+type HeadingComponentProps = ComponentOverrideProps<Tokens.Heading>;
+type ParagraphComponentProps = ComponentOverrideProps<Tokens.Paragraph>;
+type LinkComponentProps = ComponentOverrideProps<Tokens.Link> & {
+	href?: string;
+	target?: string;
+	rel?: string;
+	title?: string | null;
+};
+type ImageComponentProps = ComponentOverrideProps<Tokens.Image> & {
+	src?: string | null;
+	alt?: string;
+	onload?: () => void;
+	onerror?: () => void;
+};
+type TableComponentProps = ComponentOverrideProps<TableToken>;
+type InlineCodeComponentProps = ComponentOverrideProps<Tokens.Codespan>;
+
+export type StreamdownComponents = {
+	h1?: Component<HeadingComponentProps, any, any>;
+	h2?: Component<HeadingComponentProps, any, any>;
+	h3?: Component<HeadingComponentProps, any, any>;
+	h4?: Component<HeadingComponentProps, any, any>;
+	h5?: Component<HeadingComponentProps, any, any>;
+	h6?: Component<HeadingComponentProps, any, any>;
+	p?: Component<ParagraphComponentProps, any, any>;
+	a?: Component<LinkComponentProps, any, any>;
+	img?: Component<ImageComponentProps, any, any>;
+	table?: Component<TableComponentProps, any, any>;
+	inlineCode?: Component<InlineCodeComponentProps, any, any>;
+	code?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaidError?: Component<MermaidErrorComponentProps, any, any>;
+	math?: Component<{ token: MathToken; id: string }, any, any>;
+};
+
 export type StreamdownProps<Source extends Record<string, any> = Record<string, any>> = {
 	streamdown?: StreamdownContext;
 	static?: boolean;
-	mode?: 'streaming' | 'static';
+	mode?: 'static' | 'streaming';
 	isAnimating?: boolean;
-	animated?:
-		| boolean
-		| {
-				animation?: 'fadeIn' | 'blurIn' | 'slideUp';
-				duration?: number;
-				easing?: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
-				sep?: 'word' | 'char';
-		  };
-	caret?: 'block' | 'circle';
+	animated?: boolean | AnimateOptions;
+	caret?: keyof typeof carets;
 	onAnimationStart?: () => void;
 	onAnimationEnd?: () => void;
 	parseMarkdownIntoBlocksFn?: (markdown: string) => string[];
+	dir?: 'auto' | 'ltr' | 'rtl';
 	sources?: {
 		[key: string]: Source;
 	};
@@ -217,6 +278,11 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	defaultOrigin?: string;
 	allowedLinkPrefixes?: string[];
 	allowedImagePrefixes?: string[];
+	linkSafety?: LinkSafetyConfig;
+	allowedTags?: AllowedTags;
+	literalTagContent?: string[];
+	prefix?: string;
+	lineNumbers?: boolean;
 
 	// Theme
 	theme?: DeepPartialTheme;
@@ -230,11 +296,10 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	translations?: Partial<StreamdownTranslations>;
 	controls?: {
 		code?: boolean;
-		mermaid?: boolean;
+		mermaid?: MermaidControls;
 		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
-
 	animation?: {
 		animateOnMount?: boolean;
 		enabled?: boolean;
@@ -271,11 +336,58 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			},
 			any,
 			any
-		>
+	>
 	>;
-	components?: {
-		code?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		math?: Component<{ token: MathToken; id: string }, any, any>;
-	};
+	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;
+
+export type MermaidControls =
+	| boolean
+	| {
+			download?: boolean;
+			fullscreen?: boolean;
+			panZoom?: boolean;
+	  };
+
+export type NormalizedMermaidControls = {
+	enabled: boolean;
+	download: boolean;
+	fullscreen: boolean;
+	panZoom: boolean;
+};
+
+export type MermaidErrorComponentProps = {
+	chart: string;
+	error: string;
+	id: string;
+	retry: () => void;
+};
+
+export const normalizeMermaidControls = (
+	controls: MermaidControls | undefined
+): NormalizedMermaidControls => {
+	if (controls === false) {
+		return {
+			enabled: false,
+			download: false,
+			fullscreen: false,
+			panZoom: false
+		};
+	}
+
+	if (controls === true || controls === undefined) {
+		return {
+			enabled: true,
+			download: true,
+			fullscreen: true,
+			panZoom: true
+		};
+	}
+
+	return {
+		enabled: true,
+		download: controls.download !== false,
+		fullscreen: controls.fullscreen !== false,
+		panZoom: controls.panZoom !== false
+	};
+};

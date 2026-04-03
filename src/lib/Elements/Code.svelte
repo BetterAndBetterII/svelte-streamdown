@@ -55,6 +55,8 @@
 			void highlighter.load(theme, lang);
 		});
 	});
+
+	const showLineNumbers = $derived(streamdown.lineNumbers !== false);
 </script>
 
 <div
@@ -96,12 +98,17 @@
 	<div style="height: fit-content; width: 100%;" class={streamdown.theme.code.container}>
 		{#if highlighter.isReady(streamdown.shikiTheme, token.lang)}
 			<pre class={streamdown.theme.code.pre}><code
+					class:sd-line-numbers={showLineNumbers}
+					data-streamdown-line-numbers={showLineNumbers}
 					>{@render Tokens(
 						highlighter.highlightCode(token.text, token.lang, streamdown.shikiTheme)
 					)}</code
 				></pre>
 		{:else}
-			<pre class={streamdown.theme.code.pre}><code>{@render Skeleton(token.text.split('\n'))}</code
+			<pre class={streamdown.theme.code.pre}><code
+					class:sd-line-numbers={showLineNumbers}
+					data-streamdown-line-numbers={showLineNumbers}
+					>{@render Skeleton(token.text.split('\n'))}</code
 				></pre>
 		{/if}
 	</div>
@@ -109,7 +116,7 @@
 
 {#snippet Tokens(lines: ThemedToken[][])}
 	{#each lines as tokens}
-		<span class={streamdown.theme.code.line}>
+		<span class={`sd-code-line ${streamdown.theme.code.line}`}>
 			{#each tokens as token}
 				<span
 					style={streamdown.isMounted ? streamdown.animationTextStyle : ''}
@@ -125,7 +132,7 @@
 
 {#snippet Skeleton(lines: string[])}
 	{#each lines as line}
-		<span class={streamdown.theme.code.skeleton}>
+		<span class={`sd-code-line ${streamdown.theme.code.skeleton}`}>
 			{line.trim().length > 0 ? line : '\u200B'}
 		</span>
 	{/each}

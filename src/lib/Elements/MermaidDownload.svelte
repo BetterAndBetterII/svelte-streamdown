@@ -9,10 +9,12 @@
 
 	let {
 		id,
-		chart
+		chart,
+		renderSvg
 	}: {
 		id: string;
 		chart: string;
+		renderSvg?: () => Promise<string>;
 	} = $props();
 
 	const streamdown = useStreamdown();
@@ -41,117 +43,90 @@
 		const container = document.querySelector(`[data-streamdown-mermaid="${id}"]`);
 		if (!container) return null;
 
-		const svgContainer = container.querySelector('[data-mermaid-svg]');
-		if (!svgContainer) return null;
-
-		// The actual SVG is rendered inside the data-mermaid-svg container
-		const svg = svgContainer.querySelector('svg');
-		return svg;
+		return container.querySelector('[data-mermaid-svg] svg');
 	};
 
-	const downloadSvg = () => {
-		const svg = getSvgElement();
-		if (!svg) return;
-
-		// Clone the SVG to avoid modifying the original
+	const serializeSvg = (svg: SVGSVGElement): string => {
 		const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
-
-		// Ensure the SVG has proper xmlns
 		clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 		clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+		return new XMLSerializer().serializeToString(clonedSvg);
+	};
 
-		// Get computed styles and inline them for standalone SVG
-		const styles = getComputedStyle(svg);
-		if (!clonedSvg.getAttribute('width')) {
-			clonedSvg.setAttribute('width', styles.width);
-		}
-		if (!clonedSvg.getAttribute('height')) {
-			clonedSvg.setAttribute('height', styles.height);
+	const getSvgMarkup = async (): Promise<string | null> => {
+		if (renderSvg) {
+			return renderSvg();
 		}
 
-		const svgString = new XMLSerializer().serializeToString(clonedSvg);
-		save('diagram.svg', svgString, 'image/svg+xml');
-		popover.isOpen = false;
+		const svg = getSvgElement();
+		return svg ? serializeSvg(svg) : null;
+	};
+
+	const svgToPngBlob = async (svgString: string): Promise<Blob> => {
+		const encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+
+		const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+			const img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.onload = () => resolve(img);
+			img.onerror = () => reject(new Error('Failed to load SVG image'));
+			img.src = encoded;
+		});
+
+		const canvas = document.createElement('canvas');
+		const scale = 5;
+		canvas.width = image.width * scale;
+		canvas.height = image.height * scale;
+
+		const ctx = canvas.getContext('2d');
+		if (!ctx) {
+			throw new Error('Failed to create 2D canvas context for PNG export');
+		}
+
+		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+		return new Promise<Blob>((resolve, reject) => {
+			canvas.toBlob((blob) => {
+				if (!blob) {
+					reject(new Error('Failed to create PNG blob'));
+					return;
+				}
+
+				resolve(blob);
+			}, 'image/png');
+		});
+	};
+
+	const downloadSvg = async () => {
+		try {
+			const svgString = await getSvgMarkup();
+			if (!svgString) return;
+
+			save('diagram.svg', svgString, 'image/svg+xml');
+			popover.isOpen = false;
+		} catch (err) {
+			console.error('Failed to download SVG:', err);
+		}
 	};
 
 	const downloadPng = async () => {
-		const svg = getSvgElement();
-		if (!svg) return;
+		try {
+			const svgString = await getSvgMarkup();
+			if (!svgString) return;
 
-		// Clone the SVG to avoid modifying the original
-		const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
-
-		// Ensure the SVG has proper xmlns
-		clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-		clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-
-		// Get dimensions
-		const bbox = svg.getBBox();
-		const styles = getComputedStyle(svg);
-		const width = parseFloat(styles.width) || bbox.width || 800;
-		const height = parseFloat(styles.height) || bbox.height || 600;
-
-		// Set explicit dimensions on the cloned SVG
-		clonedSvg.setAttribute('width', String(width));
-		clonedSvg.setAttribute('height', String(height));
-
-		// Serialize SVG to string
-		const svgString = new XMLSerializer().serializeToString(clonedSvg);
-
-		// Use data URL instead of blob URL to avoid tainted canvas issues
-		const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
-
-		// Create an image to load the SVG
-		const img = new Image();
-
-		img.onload = () => {
-			// Create a canvas with 2x scale for better quality
-			const scale = 2;
-			const canvas = document.createElement('canvas');
-			canvas.width = width * scale;
-			canvas.height = height * scale;
-
-			const ctx = canvas.getContext('2d');
-			if (!ctx) {
-				return;
-			}
-
-			// Fill with white background (optional, remove for transparent)
-			ctx.fillStyle = '#ffffff';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-			// Scale and draw the image
-			ctx.scale(scale, scale);
-			ctx.drawImage(img, 0, 0);
-
-			// Convert to PNG and download
-			canvas.toBlob((blob) => {
-				if (blob) {
-					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
-					link.href = url;
-					link.download = 'diagram.png';
-					document.body.appendChild(link);
-					link.click();
-					document.body.removeChild(link);
-					URL.revokeObjectURL(url);
-				}
-			}, 'image/png');
-		};
-
-		img.onerror = () => {
-			console.error('Failed to load SVG for PNG conversion');
-		};
-
-		img.src = svgDataUrl;
-		popover.isOpen = false;
+			const blob = await svgToPngBlob(svgString);
+			save('diagram.png', blob, 'image/png');
+			popover.isOpen = false;
+		} catch (err) {
+			console.error('Failed to download PNG:', err);
+		}
 	};
 
-	const download = (type: 'SVG' | 'PNG') => {
+	const download = async (type: 'SVG' | 'PNG') => {
 		if (type === 'SVG') {
-			downloadSvg();
+			await downloadSvg();
 		} else {
-			downloadPng();
+			await downloadPng();
 		}
 	};
 </script>
@@ -177,13 +152,13 @@
 						: streamdown.translations.downloadDiagramAsMmd}
 			<button
 				style="width: 100%; text-align: left; justify-content: flex-start; padding: 1rem 1rem; margin: 0.2rem 0;"
-				onclick={() => {
+				onclick={async () => {
 					if (type === 'MMD') {
 						save('diagram.mmd', chart, 'text/plain');
 						popover.isOpen = false;
 						return;
 					}
-					download(type as 'SVG' | 'PNG');
+					await download(type as 'SVG' | 'PNG');
 				}}
 				class={streamdown.theme.components.button}
 				title={label}
