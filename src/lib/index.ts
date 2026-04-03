@@ -18,3 +18,10 @@ export {
 	mergeTranslations,
 	type StreamdownTranslations
 } from './translations.js';
+export {
+	extractTableDataFromElement,
+	tableDataToCSV,
+	tableDataToMarkdown,
+	tableDataToTSV,
+	type TableData
+} from './utils/table.js';

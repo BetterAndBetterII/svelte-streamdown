@@ -19,7 +19,7 @@ export interface StreamdownContext
 	controls: {
 		code: boolean;
 		mermaid: boolean;
-		table: boolean;
+		table: TableControlsConfig;
 	};
 	inlineCitationsMode: 'list' | 'carousel';
 	animation: {
@@ -84,6 +84,14 @@ export const useStreamdown = () => {
 	}
 	return context;
 };
+
+export type TableControlsConfig =
+	| boolean
+	| {
+			copy?: boolean;
+			download?: boolean;
+			fullscreen?: boolean;
+	  };
 
 import type {
 	AlertToken,
@@ -206,7 +214,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	controls?: {
 		code?: boolean;
 		mermaid?: boolean;
-		table?: boolean;
+		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
 
