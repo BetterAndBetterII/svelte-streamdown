@@ -270,7 +270,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'controls',
 				reference: 'ControlsConfig',
-				local: '{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}'
+				local: '{code?:boolean;mermaid?:MermaidControls;table?:TableControlsConfig;}'
 			},
 			{
 				name: 'icons',

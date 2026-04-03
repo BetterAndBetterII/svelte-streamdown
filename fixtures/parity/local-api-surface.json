@@ -316,7 +316,7 @@
 		{
 			"name": "controls",
 			"optional": true,
-			"type": "{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}",
+			"type": "{code?:boolean;mermaid?:MermaidControls;table?:TableControlsConfig;}",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
