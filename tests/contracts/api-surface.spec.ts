@@ -105,36 +105,28 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'BlockProps',
 			'BundledLanguage',
 			'BundledTheme',
-			'CjkPlugin',
 			'CodeBlock',
 			'CodeBlockContainer',
 			'CodeBlockCopyButton',
 			'CodeBlockDownloadButton',
 			'CodeBlockHeader',
 			'CodeBlockSkeleton',
-			'CodeHighlighterPlugin',
 			'Components',
 			'ControlsConfig',
-			'CustomRenderer',
-			'CustomRendererProps',
 			'createAnimatePlugin',
 			'defaultRehypePlugins',
 			'defaultRemarkPlugins',
 			'defaultUrlTransform',
 			'detectTextDirection',
-			'DiagramPlugin',
 			'escapeMarkdownTableCell',
 			'ExtraProps',
-			'HighlightOptions',
 			'IconMap',
 			'LinkSafetyConfig',
 			'LinkSafetyModalProps',
-			'MathPlugin',
 			'MermaidErrorComponentProps',
 			'MermaidOptions',
 			'normalizeHtmlIndentation',
 			'parseMarkdownIntoBlocks',
-			'PluginConfig',
 			'StreamdownContext',
 			'StreamdownContextType',
 			'TableCopyDropdown',
@@ -143,7 +135,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'TableDownloadButtonProps',
 			'TableDownloadDropdown',
 			'TableDownloadDropdownProps',
-			'ThemeInput',
 			'ThemeRegistrationAny',
 			'UrlTransform',
 			'useIsCodeFenceIncomplete'
@@ -151,11 +142,14 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		// drift-01
 		extraInLocal: [
 			'Extension',
+			'HighlightResult',
+			'HighlightToken',
 			'IncompleteMarkdownParser',
 			'LanguageInfo',
 			'lex',
 			'mergeTheme',
 			'mergeTranslations',
+			'MermaidInstance',
 			'parseBlocks',
 			'parseIncompleteMarkdown',
 			'Plugin',
@@ -165,7 +159,17 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'Theme',
 			'useStreamdown',
 			'bundledLanguagesInfo',
-			'createLanguageSet'
+			'cjk',
+			'code',
+			'createCjkPlugin',
+			'createCodePlugin',
+			'createLanguageSet',
+			'createMathPlugin',
+			'createMermaidPlugin',
+			'findCustomRenderer',
+			'getThemeName',
+			'math',
+			'mermaid'
 		],
 		kindMismatches: []
 	},
@@ -180,7 +184,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'disallowedElements',
 			'normalizeHtmlIndentation',
 			'parseMarkdownIntoBlocksFn',
-			'plugins',
 			'rehypePlugins',
 			'remarkPlugins',
 			'remarkRehypeOptions',
@@ -351,7 +354,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 	},
 	pluginConfig: {
 		// plugin-01
-		missingFromLocal: ['cjk', 'code', 'math', 'mermaid', 'renderers']
+		missingFromLocal: []
 	}
 });
 

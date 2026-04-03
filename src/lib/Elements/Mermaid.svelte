@@ -19,11 +19,22 @@
 		isIncomplete?: boolean;
 	} = $props();
 
+	const mermaidPlugin = $derived(streamdown.plugins?.mermaid ?? null);
 	let mermaid = $state<any>(null);
 	let svgContent = $state('');
 	let lastValidSvg = $state('');
 	let error = $state<string | null>(null);
 	let retryCount = $state(0);
+
+	onMount(async () => {
+		if (!mermaidPlugin) {
+			try {
+				mermaid = (await import('mermaid')).default;
+			} catch (err) {
+				error = err instanceof Error ? err.message : 'Mermaid library not available';
+			}
+		}
+	});
 
 	const panzoom = usePanzoom({
 		minZoom: 0.5,
@@ -35,7 +46,9 @@
 	const renderedSvg = $derived(svgContent || lastValidSvg);
 	const controls = $derived(streamdown.controls.mermaid);
 	const showActionBar = $derived(
-		!!mermaid && controls.enabled && (controls.download || controls.fullscreen || controls.panZoom)
+		!!(mermaidPlugin || mermaid) &&
+			controls.enabled &&
+			(controls.download || controls.fullscreen || controls.panZoom)
 	);
 
 	const createRenderId = (chart: string) => {
@@ -51,10 +64,6 @@
 		mermaidConfig: MermaidConfig | undefined = streamdown.mermaidConfig,
 		mermaidInstance: any = mermaid
 	): Promise<string> => {
-		if (!mermaidInstance) {
-			throw new Error('Mermaid library not available');
-		}
-
 		const defaultConfig: MermaidConfig = {
 			theme: 'base',
 			startOnLoad: false,
@@ -69,9 +78,17 @@
 			...(mermaidConfig || {})
 		};
 
-		mermaidInstance.initialize(defaultConfig);
+		const resolvedMermaidInstance = mermaidPlugin
+			? mermaidPlugin.getMermaid(defaultConfig)
+			: mermaidInstance;
 
-		const { svg } = await mermaidInstance.render(createRenderId(chart), chart);
+		if (!resolvedMermaidInstance) {
+			throw new Error('Mermaid library not available');
+		}
+
+		resolvedMermaidInstance.initialize(defaultConfig);
+
+		const { svg } = await resolvedMermaidInstance.render(createRenderId(chart), chart);
 		return svg;
 	};
 
@@ -79,21 +96,13 @@
 		retryCount += 1;
 	};
 
-	onMount(async () => {
-		try {
-			mermaid = (await import('mermaid')).default;
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Mermaid library not available';
-		}
-	});
-
 	$effect(() => {
 		const chart = token.text;
 		const currentRetry = retryCount;
 		const currentMermaid = mermaid;
 		const currentConfig = streamdown.mermaidConfig;
 
-		if (!currentMermaid) {
+		if (!mermaidPlugin && !currentMermaid) {
 			return;
 		}
 
@@ -113,7 +122,6 @@
 				if (cancelled) {
 					return;
 				}
-
 				if (!(lastValidSvg || svgContent)) {
 					error = err instanceof Error ? err.message : 'Failed to render Mermaid chart';
 				}

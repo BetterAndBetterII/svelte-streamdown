@@ -8,6 +8,7 @@ import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
 import type { AllowedTags } from './security/types.js';
 import { carets } from './streaming.js';
+import type { PluginConfig } from './plugins.js';
 
 export type { AllowedTags } from './security/types.js';
 
@@ -46,6 +47,7 @@ export interface StreamdownContext
 		mermaid: NormalizedMermaidControls;
 		table: TableControlsConfig;
 	};
+	plugins?: PluginConfig;
 	inlineCitationsMode: 'list' | 'carousel';
 	isAnimating: boolean;
 	mode: 'static' | 'streaming';
@@ -293,6 +295,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	shikiThemes?: Record<string, ThemeRegistration>;
 	mermaidConfig?: MermaidConfig;
 	katexConfig?: KatexOptions | ((inline: boolean) => KatexOptions);
+	plugins?: PluginConfig;
 	translations?: Partial<StreamdownTranslations>;
 	controls?: {
 		code?: boolean;

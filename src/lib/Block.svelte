@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { detectTextDirection } from './utils/detectDirection.js';
 	import Element from './Elements/Element.svelte';
+	import { applyPluginMarkdownTransforms } from './plugins.js';
 	import AnimatedText from './AnimatedText.svelte';
 	import { useStreamdown } from './context.svelte.js';
 	import { renderMarkdownFragment } from './security/html.js';
@@ -22,9 +23,12 @@
 
 	const streamdown = useStreamdown();
 	const markdown = $derived(
-		isStatic || !shouldParseIncompleteMarkdown || streamdown.parseIncompleteMarkdown === false
-			? block
-			: completeIncompleteMarkdown(block.trim())
+		applyPluginMarkdownTransforms(
+			isStatic || !shouldParseIncompleteMarkdown || streamdown.parseIncompleteMarkdown === false
+				? block
+				: completeIncompleteMarkdown(block.trim()),
+			streamdown.plugins
+		)
 	);
 	const tokens = $derived(lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
