@@ -43,13 +43,7 @@
 		render={streamdown.snippets.link}
 		component={streamdown.components?.a}
 	>
-		<a
-			data-streamdown-link={id}
-			class={streamdown.theme.link.base}
-			{...isRelativeUrl
-				? { href: token.href }
-				: { href: transformedUrl ?? token.href, target: '_blank', rel: 'noopener noreferrer' }}
-		>
+		<a data-streamdown-link={id} class={streamdown.theme.link.base} {href} {target} {rel}>
 			{@render children()}
 		</a>
 	</Slot>
