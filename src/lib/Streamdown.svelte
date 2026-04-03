@@ -23,7 +23,7 @@
 		fadeIn: 'fade',
 		slideUp: 'slideUp'
 	} as const;
-	type LocalAnimationConfig = NonNullable<StreamdownProps['animation']>;
+	type LocalAnimationConfig = { enabled: boolean } & NonNullable<StreamdownProps['animation']>;
 	type AnimationTimingFunction = NonNullable<LocalAnimationConfig['timingFunction']>;
 	const supportedTimingFunctions = new Set<AnimationTimingFunction>([
 		'ease',
@@ -266,9 +266,6 @@
 		},
 		get translations() {
 			return mergeTranslations(translations);
-		},
-		get lineNumbers() {
-			return lineNumbers;
 		},
 		get shikiLanguages() {
 			return shikiLanguages;
