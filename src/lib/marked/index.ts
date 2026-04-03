@@ -37,6 +37,7 @@ import {
 import { markedAlign, type AlignToken } from './marked-align.js';
 import { markedCitations, type CitationToken } from './marked-citations.js';
 import { markedMdx, type MdxToken } from './marked-mdx.js';
+import { markedCjk } from './marked-cjk.js';
 
 export type GenericToken = {
 	type: string;
@@ -136,6 +137,7 @@ export const lex = (markdown: string, extensions: Extension[] = []): StreamdownT
 			...markedFootnote(),
 			markedAlert,
 			...markedMath,
+			...markedCjk,
 			markedSub,
 			markedSup,
 			markedList,
