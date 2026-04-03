@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Streamdown } from 'svelte-streamdown';
+	import Code from '../../../src/lib/Elements/Code.svelte';
+	import Mermaid from '../../../src/lib/Elements/Mermaid.svelte';
 	import { onMount } from 'svelte';
 	import type { ParityFixtureId } from '../../../fixtures/parity/fixture-registry.js';
 	import { resolveParityFixture, listParityFixtures } from '../../parity-shared/fixtures.js';
@@ -68,7 +70,11 @@
 				<h2>Rendered Output</h2>
 				<p>{currentFixture.label}</p>
 				<div class="parity-rendered" data-parity-rendered>
-					<Streamdown content={currentFixture.markdown} static />
+					<Streamdown
+						content={currentFixture.markdown}
+						static
+						components={{ code: Code, mermaid: Mermaid }}
+					/>
 				</div>
 			</section>
 		</div>

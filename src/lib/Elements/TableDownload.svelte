@@ -46,13 +46,47 @@
 		}
 	});
 
+	type TableData = {
+		headers: string[];
+		rows: string[][];
+	};
+
+	const extractTableData = (table: ParentNode): TableData => {
+		const headers = Array.from(table.querySelectorAll('thead th')).map(
+			(cell) => cell.textContent?.trim() || ''
+		);
+		const rows = Array.from(table.querySelectorAll('tbody tr')).map((row) =>
+			Array.from(row.querySelectorAll('td')).map((cell) => cell.textContent?.trim() || '')
+		);
+
+		return { headers, rows };
+	};
+
+	const tableDataToMarkdown = ({ headers, rows }: TableData): string => {
+		if (headers.length === 0) {
+			return '';
+		}
+
+		const headerRow = `| ${headers.join(' | ')} |`;
+		const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
+		const dataRows = rows.map((row) => {
+			const paddedRow = headers.map((_, index) => row[index] ?? '');
+			return `| ${paddedRow.join(' | ')} |`;
+		});
+
+		return [headerRow, separatorRow, ...dataRows].join('\n');
+	};
+
 	const copyOrDownload = (type: 'Markdown' | 'HTML' | 'CSV') => {
 		if (type === 'Markdown') {
-			copyValue = token.raw;
-			if (modeState === 'copy') {
-				copy.copy();
-			} else {
-				save('table.md', copyValue, 'text/markdown');
+			const table = document.querySelector(`[data-streamdown-table=${id}]`);
+			if (table) {
+				copyValue = tableDataToMarkdown(extractTableData(table));
+				if (modeState === 'copy') {
+					copy.copy();
+				} else {
+					save('table.md', copyValue, 'text/markdown');
+				}
 			}
 		} else if (type === 'HTML') {
 			const table = document.querySelector(`[data-streamdown-table=${id}]`);
@@ -214,16 +248,12 @@
 				modeState = mode as 'download' | 'copy';
 			}}
 			{@attach clickOutside.attachment}
-			title={
-				mode === 'download'
-					? streamdown.translations.downloadTable
-					: streamdown.translations.copyTable
-			}
-			aria-label={
-				mode === 'download'
-					? streamdown.translations.downloadTable
-					: streamdown.translations.copyTable
-			}
+			title={mode === 'download'
+				? streamdown.translations.downloadTable
+				: streamdown.translations.copyTable}
+			aria-label={mode === 'download'
+				? streamdown.translations.downloadTable
+				: streamdown.translations.copyTable}
 		>
 			{#if mode === 'download'}
 				{@render (streamdown.icons?.download || downloadIcon)()}

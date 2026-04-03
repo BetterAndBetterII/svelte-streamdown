@@ -2,17 +2,18 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parityFixtureIds } from '../../../fixtures/parity/fixture-registry.js';
+import { parityFixtureIds, parityFixturePaths } from '../../../fixtures/parity/fixture-registry.js';
 
 const referenceBaseUrl = process.env.PARITY_REFERENCE_URL ?? 'http://127.0.0.1:4173';
 const localBaseUrl = process.env.PARITY_LOCAL_URL ?? 'http://127.0.0.1:4174';
 
-const fixtureDirectory = fileURLToPath(
-	new URL('../../../fixtures/parity/markdown/', import.meta.url)
-);
+const fixtureDirectory = fileURLToPath(new URL('../../../fixtures/parity/', import.meta.url));
 
 const readFixtureMarkdown = (fixtureId: string) =>
-	readFileSync(resolve(fixtureDirectory, fixtureId), 'utf8');
+	readFileSync(
+		resolve(fixtureDirectory, parityFixturePaths[fixtureId as keyof typeof parityFixturePaths]),
+		'utf8'
+	);
 
 for (const fixtureId of parityFixtureIds) {
 	test(`loads shared fixture ${fixtureId} in both parity apps`, async ({ browser }) => {
