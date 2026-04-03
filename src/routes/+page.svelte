@@ -167,6 +167,13 @@
 		</button>
 		<a
 			class="inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50 sm:px-3"
+			href="/playground"
+		>
+			<span class="hidden sm:inline">🎛️ Playground</span>
+			<span class="sm:hidden">🎛️ Play</span>
+		</a>
+		<a
+			class="inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50 sm:px-3"
 			href="/prompting"
 		>
 			<span class="hidden sm:inline">📋 Prompting Guide</span>
