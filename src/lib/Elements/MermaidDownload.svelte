@@ -70,7 +70,7 @@
 		}
 
 		const svgString = new XMLSerializer().serializeToString(clonedSvg);
-		save('mermaid-diagram.svg', svgString, 'image/svg+xml');
+		save('diagram.svg', svgString, 'image/svg+xml');
 		popover.isOpen = false;
 	};
 
@@ -130,7 +130,7 @@
 					const url = URL.createObjectURL(blob);
 					const link = document.createElement('a');
 					link.href = url;
-					link.download = 'mermaid-diagram.png';
+					link.download = 'diagram.png';
 					document.body.appendChild(link);
 					link.click();
 					document.body.removeChild(link);
@@ -179,7 +179,7 @@
 				style="width: 100%; text-align: left; justify-content: flex-start; padding: 1rem 1rem; margin: 0.2rem 0;"
 				onclick={() => {
 					if (type === 'MMD') {
-						save('mermaid-diagram.mmd', chart, 'text/plain');
+						save('diagram.mmd', chart, 'text/plain');
 						popover.isOpen = false;
 						return;
 					}

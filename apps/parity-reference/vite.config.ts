@@ -13,6 +13,10 @@ export default defineConfig({
 	assetsInclude: ['**/*.md'],
 	resolve: {
 		alias: {
+			'@streamdown/mermaid': resolve(
+				repoRoot,
+				'references/streamdown/packages/streamdown-mermaid/index.ts'
+			),
 			remend: resolve(repoRoot, 'references/streamdown/packages/remend/src/index.ts'),
 			streamdown: resolve(repoRoot, 'references/streamdown/packages/streamdown/index.tsx')
 		}

@@ -10,15 +10,13 @@ export const useCopy = (opts: { content: string; timeout?: number }) => {
 		}
 
 		try {
-			if (!isCopied) {
-				await navigator.clipboard.writeText(opts.content);
-				isCopied = true;
+			await navigator.clipboard.writeText(opts.content);
+			isCopied = true;
 
-				if (timeoutId) clearTimeout(timeoutId);
-				timeoutId = window.setTimeout(() => {
-					isCopied = false;
-				}, opts.timeout ?? 2000);
-			}
+			if (timeoutId) clearTimeout(timeoutId);
+			timeoutId = window.setTimeout(() => {
+				isCopied = false;
+			}, opts.timeout ?? 2000);
 		} catch (error) {
 			console.error('Failed to copy to clipboard:', error);
 		}

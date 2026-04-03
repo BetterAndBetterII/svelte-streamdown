@@ -40,19 +40,21 @@ describeInBrowser('ported streamdown mermaid controls', () => {
 			expect(renderMock).toHaveBeenCalled();
 		});
 
-		(screen.container.querySelector(
-			'button[title="Download diagram"]'
-		) as HTMLButtonElement).click();
+		(
+			screen.container.querySelector('button[title="Download diagram"]') as HTMLButtonElement
+		).click();
 
 		await vi.waitFor(() => {
-			expect(screen.container.querySelector('button[title="Download diagram as MMD"]')).toBeTruthy();
+			expect(
+				screen.container.querySelector('button[title="Download diagram as MMD"]')
+			).toBeTruthy();
 		});
 
-		(screen.container.querySelector(
-			'button[title="Download diagram as MMD"]'
-		) as HTMLButtonElement).click();
+		(
+			screen.container.querySelector('button[title="Download diagram as MMD"]') as HTMLButtonElement
+		).click();
 
-		expect(saveMock).toHaveBeenCalledWith('mermaid-diagram.mmd', 'graph TD; A-->B', 'text/plain');
+		expect(saveMock).toHaveBeenCalledWith('diagram.mmd', 'graph TD; A-->B', 'text/plain');
 
 		const fullscreenButton = screen.container.querySelector(
 			'button[title="View fullscreen"]'
@@ -60,15 +62,21 @@ describeInBrowser('ported streamdown mermaid controls', () => {
 		fullscreenButton.click();
 
 		await vi.waitFor(() => {
-			const container = screen.container.querySelector('[data-streamdown-mermaid] > div[data-expanded="true"]');
+			const container = screen.container.querySelector(
+				'[data-streamdown-mermaid] > div[data-expanded="true"]'
+			);
 			expect(container).toBeTruthy();
 			expect(screen.container.querySelector('button[title="Exit fullscreen"]')).toBeTruthy();
 		});
 
-		(screen.container.querySelector('button[title="Exit fullscreen"]') as HTMLButtonElement).click();
+		(
+			screen.container.querySelector('button[title="Exit fullscreen"]') as HTMLButtonElement
+		).click();
 
 		await vi.waitFor(() => {
-			const container = screen.container.querySelector('[data-streamdown-mermaid] > div[data-expanded="false"]');
+			const container = screen.container.querySelector(
+				'[data-streamdown-mermaid] > div[data-expanded="false"]'
+			);
 			expect(container).toBeTruthy();
 		});
 	});

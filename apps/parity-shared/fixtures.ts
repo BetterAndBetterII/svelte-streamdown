@@ -1,14 +1,22 @@
 import {
 	defaultParityFixtureId,
 	parityFixtureIds,
+	parityFixturePaths,
 	type ParityFixtureId
 } from '../../fixtures/parity/fixture-registry.js';
 
-const parityFixtureModules = import.meta.glob('../../fixtures/parity/markdown/*.md', {
-	query: '?raw',
-	import: 'default',
-	eager: true
-}) as Record<string, string>;
+const parityFixtureModules = {
+	...import.meta.glob('../../fixtures/parity/markdown/*.md', {
+		query: '?raw',
+		import: 'default',
+		eager: true
+	}),
+	...import.meta.glob('../../fixtures/parity/interactions/*.md', {
+		query: '?raw',
+		import: 'default',
+		eager: true
+	})
+} as Record<string, string>;
 
 export type ParityFixture = {
 	id: ParityFixtureId;
@@ -17,7 +25,7 @@ export type ParityFixture = {
 };
 
 const parityFixtures = parityFixtureIds.map((id) => {
-	const modulePath = `../../fixtures/parity/markdown/${id}`;
+	const modulePath = `../../fixtures/parity/${parityFixturePaths[id]}`;
 	const markdown = parityFixtureModules[modulePath];
 
 	if (typeof markdown !== 'string') {
