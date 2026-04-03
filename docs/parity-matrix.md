@@ -5,6 +5,7 @@ This matrix tracks parity against the frozen upstream target from [docs/referenc
 - Reference repo: `vercel/streamdown`
 - Frozen commit: `5f6475139a87dee8af08fcf7b01475292bc064d2` (`5f64751`)
 - In-scope packages: `streamdown`, `remend`, `@streamdown/code`, `@streamdown/math`, `@streamdown/mermaid`, `@streamdown/cjk`
+- Reviewer decision rules for acceptable differences live in [docs/parity-contract.md](./parity-contract.md).
 
 Audit inputs used for this matrix:
 

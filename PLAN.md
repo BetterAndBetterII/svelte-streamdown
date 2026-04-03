@@ -130,7 +130,7 @@ Success criteria:
 
 ### Issue P0-03: Define Compatibility Contract
 
-- Status: `todo`
+- Status: `done`
 - Goal: Specify what "parity" means at API, parser, rendering, and interaction levels.
 - Tasks:
 - Define API-level compatibility rules
