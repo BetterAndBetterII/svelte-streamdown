@@ -1,0 +1,855 @@
+{
+	"schemaVersion": 1,
+	"reference": {
+		"repository": "https://github.com/vercel/streamdown.git",
+		"commit": "5f6475139a87dee8af08fcf7b01475292bc064d2",
+		"package": {
+			"name": "streamdown",
+			"version": "2.5.0",
+			"entryFile": "references/streamdown/packages/streamdown/index.tsx",
+			"exports": [
+				{
+					"subpath": ".",
+					"target": {
+						"types": "./dist/index.d.ts",
+						"import": "./dist/index.js"
+					}
+				},
+				{
+					"subpath": "./styles.css",
+					"target": "./styles.css"
+				}
+			]
+		}
+	},
+	"exports": {
+		"streamdown": [
+			{
+				"name": "AllowedTags",
+				"kind": "type",
+				"source": null,
+				"importedName": "AllowedTags"
+			},
+			{
+				"name": "AllowElement",
+				"kind": "type",
+				"source": "./lib/markdown",
+				"importedName": "AllowElement"
+			},
+			{
+				"name": "AnimateOptions",
+				"kind": "type",
+				"source": "./lib/animate",
+				"importedName": "AnimateOptions"
+			},
+			{
+				"name": "BlockProps",
+				"kind": "type",
+				"source": null,
+				"importedName": "BlockProps"
+			},
+			{
+				"name": "BundledLanguage",
+				"kind": "type",
+				"source": "shiki",
+				"importedName": "BundledLanguage"
+			},
+			{
+				"name": "BundledTheme",
+				"kind": "type",
+				"source": "shiki",
+				"importedName": "BundledTheme"
+			},
+			{
+				"name": "CjkPlugin",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "CjkPlugin"
+			},
+			{
+				"name": "CodeHighlighterPlugin",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "CodeHighlighterPlugin"
+			},
+			{
+				"name": "Components",
+				"kind": "type",
+				"source": "./lib/markdown",
+				"importedName": "Components"
+			},
+			{
+				"name": "ControlsConfig",
+				"kind": "type",
+				"source": null,
+				"importedName": "ControlsConfig"
+			},
+			{
+				"name": "CustomRenderer",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "CustomRenderer"
+			},
+			{
+				"name": "CustomRendererProps",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "CustomRendererProps"
+			},
+			{
+				"name": "DiagramPlugin",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "DiagramPlugin"
+			},
+			{
+				"name": "ExtraProps",
+				"kind": "type",
+				"source": "./lib/markdown",
+				"importedName": "ExtraProps"
+			},
+			{
+				"name": "HighlightOptions",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "HighlightOptions"
+			},
+			{
+				"name": "IconMap",
+				"kind": "type",
+				"source": "./lib/icon-context",
+				"importedName": "IconMap"
+			},
+			{
+				"name": "LinkSafetyConfig",
+				"kind": "type",
+				"source": null,
+				"importedName": "LinkSafetyConfig"
+			},
+			{
+				"name": "LinkSafetyModalProps",
+				"kind": "type",
+				"source": null,
+				"importedName": "LinkSafetyModalProps"
+			},
+			{
+				"name": "MathPlugin",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "MathPlugin"
+			},
+			{
+				"name": "MermaidErrorComponentProps",
+				"kind": "type",
+				"source": null,
+				"importedName": "MermaidErrorComponentProps"
+			},
+			{
+				"name": "MermaidOptions",
+				"kind": "type",
+				"source": null,
+				"importedName": "MermaidOptions"
+			},
+			{
+				"name": "PluginConfig",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "PluginConfig"
+			},
+			{
+				"name": "StreamdownContextType",
+				"kind": "type",
+				"source": null,
+				"importedName": "StreamdownContextType"
+			},
+			{
+				"name": "StreamdownProps",
+				"kind": "type",
+				"source": null,
+				"importedName": "StreamdownProps"
+			},
+			{
+				"name": "StreamdownTranslations",
+				"kind": "type",
+				"source": "./lib/translations-context",
+				"importedName": "StreamdownTranslations"
+			},
+			{
+				"name": "TableCopyDropdownProps",
+				"kind": "type",
+				"source": "./lib/table/copy-dropdown",
+				"importedName": "TableCopyDropdownProps"
+			},
+			{
+				"name": "TableData",
+				"kind": "type",
+				"source": "./lib/table/utils",
+				"importedName": "TableData"
+			},
+			{
+				"name": "TableDownloadButtonProps",
+				"kind": "type",
+				"source": "./lib/table/download-dropdown",
+				"importedName": "TableDownloadButtonProps"
+			},
+			{
+				"name": "TableDownloadDropdownProps",
+				"kind": "type",
+				"source": "./lib/table/download-dropdown",
+				"importedName": "TableDownloadDropdownProps"
+			},
+			{
+				"name": "ThemeInput",
+				"kind": "type",
+				"source": "./lib/plugin-types",
+				"importedName": "ThemeInput"
+			},
+			{
+				"name": "ThemeRegistrationAny",
+				"kind": "type",
+				"source": "shiki",
+				"importedName": "ThemeRegistrationAny"
+			},
+			{
+				"name": "UrlTransform",
+				"kind": "type",
+				"source": "./lib/markdown",
+				"importedName": "UrlTransform"
+			},
+			{
+				"name": "Block",
+				"kind": "value",
+				"source": null,
+				"importedName": "Block"
+			},
+			{
+				"name": "CodeBlock",
+				"kind": "value",
+				"source": "./lib/code-block",
+				"importedName": "CodeBlock"
+			},
+			{
+				"name": "CodeBlockContainer",
+				"kind": "value",
+				"source": "./lib/code-block/container",
+				"importedName": "CodeBlockContainer"
+			},
+			{
+				"name": "CodeBlockCopyButton",
+				"kind": "value",
+				"source": "./lib/code-block/copy-button",
+				"importedName": "CodeBlockCopyButton"
+			},
+			{
+				"name": "CodeBlockDownloadButton",
+				"kind": "value",
+				"source": "./lib/code-block/download-button",
+				"importedName": "CodeBlockDownloadButton"
+			},
+			{
+				"name": "CodeBlockHeader",
+				"kind": "value",
+				"source": "./lib/code-block/header",
+				"importedName": "CodeBlockHeader"
+			},
+			{
+				"name": "CodeBlockSkeleton",
+				"kind": "value",
+				"source": "./lib/code-block/skeleton",
+				"importedName": "CodeBlockSkeleton"
+			},
+			{
+				"name": "createAnimatePlugin",
+				"kind": "value",
+				"source": "./lib/animate",
+				"importedName": "createAnimatePlugin"
+			},
+			{
+				"name": "defaultRehypePlugins",
+				"kind": "value",
+				"source": null,
+				"importedName": "defaultRehypePlugins"
+			},
+			{
+				"name": "defaultRemarkPlugins",
+				"kind": "value",
+				"source": null,
+				"importedName": "defaultRemarkPlugins"
+			},
+			{
+				"name": "defaultTranslations",
+				"kind": "value",
+				"source": "./lib/translations-context",
+				"importedName": "defaultTranslations"
+			},
+			{
+				"name": "defaultUrlTransform",
+				"kind": "value",
+				"source": "./lib/markdown",
+				"importedName": "defaultUrlTransform"
+			},
+			{
+				"name": "detectTextDirection",
+				"kind": "value",
+				"source": "./lib/detect-direction",
+				"importedName": "detectTextDirection"
+			},
+			{
+				"name": "escapeMarkdownTableCell",
+				"kind": "value",
+				"source": "./lib/table/utils",
+				"importedName": "escapeMarkdownTableCell"
+			},
+			{
+				"name": "extractTableDataFromElement",
+				"kind": "value",
+				"source": "./lib/table/utils",
+				"importedName": "extractTableDataFromElement"
+			},
+			{
+				"name": "normalizeHtmlIndentation",
+				"kind": "value",
+				"source": null,
+				"importedName": "normalizeHtmlIndentation"
+			},
+			{
+				"name": "parseMarkdownIntoBlocks",
+				"kind": "value",
+				"source": "./lib/parse-blocks",
+				"importedName": "parseMarkdownIntoBlocks"
+			},
+			{
+				"name": "Streamdown",
+				"kind": "value",
+				"source": null,
+				"importedName": "Streamdown"
+			},
+			{
+				"name": "StreamdownContext",
+				"kind": "value",
+				"source": null,
+				"importedName": "StreamdownContext"
+			},
+			{
+				"name": "TableCopyDropdown",
+				"kind": "value",
+				"source": "./lib/table/copy-dropdown",
+				"importedName": "TableCopyDropdown"
+			},
+			{
+				"name": "tableDataToCSV",
+				"kind": "value",
+				"source": "./lib/table/utils",
+				"importedName": "tableDataToCSV"
+			},
+			{
+				"name": "tableDataToMarkdown",
+				"kind": "value",
+				"source": "./lib/table/utils",
+				"importedName": "tableDataToMarkdown"
+			},
+			{
+				"name": "tableDataToTSV",
+				"kind": "value",
+				"source": "./lib/table/utils",
+				"importedName": "tableDataToTSV"
+			},
+			{
+				"name": "TableDownloadButton",
+				"kind": "value",
+				"source": "./lib/table/download-dropdown",
+				"importedName": "TableDownloadButton"
+			},
+			{
+				"name": "TableDownloadDropdown",
+				"kind": "value",
+				"source": "./lib/table/download-dropdown",
+				"importedName": "TableDownloadDropdown"
+			},
+			{
+				"name": "useIsCodeFenceIncomplete",
+				"kind": "value",
+				"source": "./lib/block-incomplete-context",
+				"importedName": "useIsCodeFenceIncomplete"
+			}
+		],
+		"plugins": [
+			{
+				"packageName": "@streamdown/code",
+				"packageVersion": "1.1.1",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "references/streamdown/packages/streamdown-code/index.ts",
+				"defaultEntry": "code",
+				"createEntry": "createCodePlugin",
+				"exportedSymbols": [
+					{
+						"name": "CodeHighlighterPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "CodeHighlighterPlugin"
+					},
+					{
+						"name": "CodePluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "CodePluginOptions"
+					},
+					{
+						"name": "HighlightOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "HighlightOptions"
+					},
+					{
+						"name": "HighlightResult",
+						"kind": "type",
+						"source": null,
+						"importedName": "HighlightResult"
+					},
+					{
+						"name": "ThemeInput",
+						"kind": "type",
+						"source": null,
+						"importedName": "ThemeInput"
+					},
+					{
+						"name": "code",
+						"kind": "value",
+						"source": null,
+						"importedName": "code"
+					},
+					{
+						"name": "createCodePlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createCodePlugin"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/mermaid",
+				"packageVersion": "1.0.2",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "references/streamdown/packages/streamdown-mermaid/index.ts",
+				"defaultEntry": "mermaid",
+				"createEntry": "createMermaidPlugin",
+				"exportedSymbols": [
+					{
+						"name": "DiagramPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "DiagramPlugin"
+					},
+					{
+						"name": "MermaidConfig",
+						"kind": "type",
+						"source": "mermaid",
+						"importedName": "MermaidConfig"
+					},
+					{
+						"name": "MermaidInstance",
+						"kind": "type",
+						"source": null,
+						"importedName": "MermaidInstance"
+					},
+					{
+						"name": "MermaidPluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "MermaidPluginOptions"
+					},
+					{
+						"name": "createMermaidPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createMermaidPlugin"
+					},
+					{
+						"name": "mermaid",
+						"kind": "value",
+						"source": null,
+						"importedName": "mermaid"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/math",
+				"packageVersion": "1.0.2",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "references/streamdown/packages/streamdown-math/index.ts",
+				"defaultEntry": "math",
+				"createEntry": "createMathPlugin",
+				"exportedSymbols": [
+					{
+						"name": "MathPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "MathPlugin"
+					},
+					{
+						"name": "MathPluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "MathPluginOptions"
+					},
+					{
+						"name": "createMathPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createMathPlugin"
+					},
+					{
+						"name": "math",
+						"kind": "value",
+						"source": null,
+						"importedName": "math"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/cjk",
+				"packageVersion": "1.0.3",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "references/streamdown/packages/streamdown-cjk/index.ts",
+				"defaultEntry": "cjk",
+				"createEntry": "createCjkPlugin",
+				"exportedSymbols": [
+					{
+						"name": "CjkPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "CjkPlugin"
+					},
+					{
+						"name": "cjk",
+						"kind": "value",
+						"source": null,
+						"importedName": "cjk"
+					},
+					{
+						"name": "createCjkPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createCjkPlugin"
+					}
+				]
+			}
+		]
+	},
+	"streamdownProps": [
+		{
+			"name": "allowedElements",
+			"optional": true,
+			"type": "readonly string[]",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "allowedTags",
+			"optional": true,
+			"type": "AllowedTags",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "allowElement",
+			"optional": true,
+			"type": "AllowElement",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "animated",
+			"optional": true,
+			"type": "boolean|AnimateOptions",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "BlockComponent",
+			"optional": true,
+			"type": "ComponentType<BlockProps>",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "Block"
+		},
+		{
+			"name": "caret",
+			"optional": true,
+			"type": "keyof typeof carets",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "children",
+			"optional": true,
+			"type": "string",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "className",
+			"optional": true,
+			"type": "string",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "components",
+			"optional": true,
+			"type": "Components",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "controls",
+			"optional": true,
+			"type": "ControlsConfig",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "true"
+		},
+		{
+			"name": "dir",
+			"optional": true,
+			"type": "\"auto\"|\"ltr\"|\"rtl\"",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "disallowedElements",
+			"optional": true,
+			"type": "readonly string[]",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "icons",
+			"optional": true,
+			"type": "Partial<IconMap>",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "isAnimating",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "false"
+		},
+		{
+			"name": "lineNumbers",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "true"
+		},
+		{
+			"name": "linkSafety",
+			"optional": true,
+			"type": "LinkSafetyConfig",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "defaultLinkSafetyConfig"
+		},
+		{
+			"name": "literalTagContent",
+			"optional": true,
+			"type": "string[]",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "mermaid",
+			"optional": true,
+			"type": "MermaidOptions",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "mode",
+			"optional": true,
+			"type": "\"static\"|\"streaming\"",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "\"streaming\""
+		},
+		{
+			"name": "normalizeHtmlIndentation",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "false"
+		},
+		{
+			"name": "onAnimationEnd",
+			"optional": true,
+			"type": "()=>void",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "onAnimationStart",
+			"optional": true,
+			"type": "()=>void",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "parseIncompleteMarkdown",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "true"
+		},
+		{
+			"name": "parseMarkdownIntoBlocksFn",
+			"optional": true,
+			"type": "(markdown:string)=>string[]",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "parseMarkdownIntoBlocks"
+		},
+		{
+			"name": "plugins",
+			"optional": true,
+			"type": "PluginConfig",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "prefix",
+			"optional": true,
+			"type": "string",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "rehypePlugins",
+			"optional": true,
+			"type": "PluggableList",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": "defaultRehypePluginsArray"
+		},
+		{
+			"name": "remarkPlugins",
+			"optional": true,
+			"type": "PluggableList",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": "defaultRemarkPluginsArray"
+		},
+		{
+			"name": "remarkRehypeOptions",
+			"optional": true,
+			"type": "Readonly<RemarkRehypeOptions>",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "remend",
+			"optional": true,
+			"type": "RemendOptions",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "shikiTheme",
+			"optional": true,
+			"type": "[ThemeInput,ThemeInput]",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": "defaultShikiTheme"
+		},
+		{
+			"name": "skipHtml",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "translations",
+			"optional": true,
+			"type": "Partial<StreamdownTranslations>",
+			"source": "references/streamdown/packages/streamdown/index.tsx",
+			"default": null
+		},
+		{
+			"name": "unwrapDisallowed",
+			"optional": true,
+			"type": "boolean",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		},
+		{
+			"name": "urlTransform",
+			"optional": true,
+			"type": "UrlTransform",
+			"source": "references/streamdown/packages/streamdown/lib/markdown.ts",
+			"default": null
+		}
+	],
+	"pluginConfig": [
+		{
+			"name": "cjk",
+			"optional": true,
+			"type": "CjkPlugin",
+			"source": "references/streamdown/packages/streamdown/lib/plugin-types.ts",
+			"packageName": "@streamdown/cjk"
+		},
+		{
+			"name": "code",
+			"optional": true,
+			"type": "CodeHighlighterPlugin",
+			"source": "references/streamdown/packages/streamdown/lib/plugin-types.ts",
+			"packageName": "@streamdown/code"
+		},
+		{
+			"name": "math",
+			"optional": true,
+			"type": "MathPlugin",
+			"source": "references/streamdown/packages/streamdown/lib/plugin-types.ts",
+			"packageName": "@streamdown/math"
+		},
+		{
+			"name": "mermaid",
+			"optional": true,
+			"type": "DiagramPlugin",
+			"source": "references/streamdown/packages/streamdown/lib/plugin-types.ts",
+			"packageName": "@streamdown/mermaid"
+		},
+		{
+			"name": "renderers",
+			"optional": true,
+			"type": "CustomRenderer[]",
+			"source": "references/streamdown/packages/streamdown/lib/plugin-types.ts",
+			"packageName": null
+		}
+	]
+}

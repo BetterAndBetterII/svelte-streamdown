@@ -18,6 +18,8 @@
 		"verify:test-migration-status": "node scripts/test-migration-status.mjs --write && prettier --write docs/test-migration-status.md && git diff --exit-code -- docs/test-migration-status.md",
 		"verify:pack": "node scripts/verify-pack.mjs",
 		"verify:exports": "node scripts/verify-exports.mjs",
+		"snapshot:reference-api-surface": "node scripts/reference-api-surface.mjs --write",
+		"verify:reference-api-surface": "node scripts/reference-api-surface.mjs --check",
 		"verify:toolchain": "node scripts/verify-toolchain.mjs",
 		"verify:clean-build": "node scripts/verify-clean-build.mjs",
 		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs",
