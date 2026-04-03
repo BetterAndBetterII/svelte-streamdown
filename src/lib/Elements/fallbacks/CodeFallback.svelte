@@ -11,6 +11,7 @@
 	} = $props();
 
 	const streamdown = useStreamdown();
+	const showLineNumbers = $derived(streamdown.lineNumbers !== false);
 </script>
 
 <div
@@ -23,7 +24,10 @@
 	</div>
 	<div style="height: fit-content; width: 100%;" class={streamdown.theme.code.container}>
 		<pre class={streamdown.theme.code.pre}><code
-				>{#each token.text.split('\n') as line}<span class={streamdown.theme.code.line}
+				class:sd-line-numbers={showLineNumbers}
+				data-streamdown-line-numbers={showLineNumbers}
+				>{#each token.text.split('\n') as line}<span
+						class={`sd-code-line ${streamdown.theme.code.line}`}
 						><span style={streamdown.isMounted ? streamdown.animationTextStyle : ''}
 							>{line.trim().length > 0 ? line : '\u200B'}</span
 						></span

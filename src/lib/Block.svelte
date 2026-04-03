@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { parseIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
+	import { detectTextDirection } from './utils/detectDirection.js';
 	import Element from './Elements/Element.svelte';
-	import { lex, type StreamdownToken } from './marked/index.js';
 	import AnimatedText from './AnimatedText.svelte';
 	import { useStreamdown } from './context.svelte.js';
-	import { getContext } from 'svelte';
 	import { renderMarkdownFragment } from './security/html.js';
+	import { lex, type StreamdownToken } from './marked/index.js';
+	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
+	import { getContext } from 'svelte';
 
 	let {
 		block,
@@ -18,13 +19,19 @@
 	} = $props();
 
 	const streamdown = useStreamdown();
-	const tokens = $derived(
-		providedTokens ??
-			lex(isStatic ? block : parseIncompleteMarkdown(block.trim()), streamdown.extensions)
+	const markdown = $derived(
+		providedTokens
+			? block
+			: isStatic || streamdown.parseIncompleteMarkdown === false
+			? block
+			: completeIncompleteMarkdown(block.trim())
 	);
+	const tokens = $derived(providedTokens ?? lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
 
-	const allowedTagNames = $derived(streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []);
+	const allowedTagNames = $derived(
+		streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []
+	);
 
 	const shouldRenderSecurityHtmlBlock = $derived.by(() => {
 		const trimmed = block.trimStart();
@@ -58,31 +65,48 @@
 			defaultOrigin: streamdown.defaultOrigin
 		});
 	});
+
+	const dir = $derived.by(() => {
+		if (!streamdown.dir) {
+			return undefined;
+		}
+
+		if (streamdown.dir === 'auto') {
+			return detectTextDirection(block);
+		}
+
+		return streamdown.dir;
+	});
 </script>
 
 {#if shouldRenderSecurityHtmlBlock}
 	{@html securityHtmlBlock}
 {:else}
-
-{#snippet renderChildren(tokens: StreamdownToken[])}
-	{#each tokens as token}
-		{#if token}
-			{@const children = (token as any)?.tokens || []}
-			{@const isTextOnlyNode = children.length === 0}
-			<Element {token}>
-				{#if isTextOnlyNode}
-					{#if streamdown.animation.enabled && !insidePopover && !isStatic}
-						<AnimatedText text={'text' in token ? token.text || '' : ''} />
+	{#snippet renderChildren(tokens: StreamdownToken[])}
+		{#each tokens as token}
+			{#if token}
+				{@const children = (token as any)?.tokens || []}
+				{@const isTextOnlyNode = children.length === 0}
+				<Element {token}>
+					{#if isTextOnlyNode}
+						{#if streamdown.animation.enabled && !insidePopover && !isStatic}
+							<AnimatedText text={'text' in token ? token.text || '' : ''} />
+						{:else}
+							{'text' in token ? token.text : ''}
+						{/if}
 					{:else}
-						{'text' in token ? token.text : ''}
+						{@render renderChildren(children)}
 					{/if}
-				{:else}
-					{@render renderChildren(children)}
-				{/if}
-			</Element>
-		{/if}
-	{/each}
-{/snippet}
+				</Element>
+			{/if}
+		{/each}
+	{/snippet}
 
-{@render renderChildren(tokens)}
+	{#if dir}
+		<div data-streamdown-dir={dir} {dir} style="display: contents;">
+			{@render renderChildren(tokens)}
+		</div>
+	{:else}
+		{@render renderChildren(tokens)}
+	{/if}
 {/if}

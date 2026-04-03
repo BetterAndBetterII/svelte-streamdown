@@ -2,7 +2,51 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
+export type CnFunction = (...inputs: ClassValue[]) => string;
 import type { Snippets } from './context.svelte.js';
+
+export const prefixClasses = (prefix: string, classString: string): string => {
+	if (!prefix || !classString) return classString;
+
+	const prefixWithColon = `${prefix}:`;
+	return classString
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((className) =>
+			className.startsWith(prefixWithColon) ? className : `${prefix}:${className}`
+		)
+		.join(' ');
+};
+
+export const createCn = (prefix?: string): CnFunction => {
+	if (!prefix) {
+		return cn;
+	}
+
+	return (...inputs: ClassValue[]) => prefixClasses(prefix, twMerge(clsx(inputs)));
+};
+
+export const prefixThemeClasses = <T>(prefix: string | undefined, value: T): T => {
+	if (!prefix) {
+		return value;
+	}
+
+	if (typeof value === 'string') {
+		return prefixClasses(prefix, value) as T;
+	}
+
+	if (Array.isArray(value)) {
+		return value.map((entry) => prefixThemeClasses(prefix, entry)) as T;
+	}
+
+	if (value && typeof value === 'object') {
+		return Object.fromEntries(
+			Object.entries(value).map(([key, entry]) => [key, prefixThemeClasses(prefix, entry)])
+		) as T;
+	}
+
+	return value;
+};
 
 export const theme = {
 	link: {

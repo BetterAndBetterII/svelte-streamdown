@@ -4,6 +4,7 @@ export interface Plugin {
 	pattern?: RegExp;
 	handler?: (payload: HandlerPayload) => string;
 	skipInBlockTypes?: string[]; // block types where this plugin should be skipped
+	stopProcessingOnChange?: boolean;
 	preprocess?: (payload: HookPayload) => string | { text: string; state: Partial<ParseState> };
 	postprocess?: (payload: HookPayload) => string;
 }
@@ -108,6 +109,7 @@ export class IncompleteMarkdownParser {
 				}
 
 				try {
+					const previousLine = line;
 					const match = plugin.pattern ? line.match(plugin.pattern) : line.match(/.*/);
 					if (match && plugin.handler) {
 						line = plugin.handler({
@@ -117,6 +119,10 @@ export class IncompleteMarkdownParser {
 							state: this.state,
 							setState: this.setState
 						});
+
+						if (plugin.stopProcessingOnChange && line !== previousLine) {
+							break;
+						}
 					}
 				} catch (error) {
 					console.error(`Plugin ${plugin.name} failed on line ${i}:`, error);
@@ -172,7 +178,7 @@ export class IncompleteMarkdownParser {
 						if (line.trim().startsWith('```') || line.trim().startsWith('~~~')) {
 							inCodeBlock = !inCodeBlock;
 						}
-						if (line.trim().startsWith('$$') && !line.trim().includes('$$', 2)) {
+						if (line.trim() === '$$') {
 							inMathBlock = !inMathBlock;
 						}
 						if (line.trim() === '[center]') {
@@ -271,144 +277,31 @@ export class IncompleteMarkdownParser {
 				name: 'boldItalic',
 				pattern: /\*\*\*/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					if (line.trim() === '***') {
-						return line;
-					}
-					const isEndingWithTripleAsterisk = line.endsWith('***');
-					const tripleAsterisks = (line.match(/\*\*\*/g) || []).length;
-					if (tripleAsterisks % 2 === 1) {
-						const lastTripleAsteriskIndex = line.lastIndexOf('***');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastTripleAsteriskIndex);
-						if (isEndingWithTripleAsterisk) {
-							return line.substring(0, lastTripleAsteriskIndex);
-						}
-						return line.substring(0, endOfCellOrLine) + '***' + line.substring(endOfCellOrLine);
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteBoldItalic(line)
 			},
 			{
 				name: 'bold',
 				pattern: /\*\*/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					if (line.trim() === '***') {
-						return line;
-					}
-					const doubleAsteriskMatches = (line.match(/\*\*/g) || []).length;
-					if (doubleAsteriskMatches % 2 === 1) {
-						const isEndingWithDoubleAsterisk = line.endsWith('**');
-						const lastDoubleAsteriskIndex = line.lastIndexOf('**');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastDoubleAsteriskIndex);
-						if (isEndingWithDoubleAsterisk) {
-							return line.substring(0, lastDoubleAsteriskIndex);
-						}
-						return line.substring(0, endOfCellOrLine) + '**' + line.substring(endOfCellOrLine);
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteBold(line)
 			},
 			{
 				name: 'doubleUnderscoreItalic',
 				pattern: /__/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					if (line.trim() === '___') {
-						return line;
-					}
-					const underscorePairs = (line.match(/__/g) || []).length;
-					if (underscorePairs % 2 === 1) {
-						const isEndingWithDoubleUnderscore = line.endsWith('__');
-						const lastDoubleUnderscoreIndex = line.lastIndexOf('__');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastDoubleUnderscoreIndex);
-						if (isEndingWithDoubleUnderscore) {
-							return line.substring(0, lastDoubleUnderscoreIndex);
-						}
-						return line.substring(0, endOfCellOrLine) + '__' + line.substring(endOfCellOrLine);
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteDoubleUnderscoreItalic(line)
 			},
 			{
 				name: 'strikethrough',
 				pattern: /~~/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					const tildePairs = (line.match(/~~/g) || []).length;
-					if (tildePairs % 2 === 1) {
-						const isEndingWithDoubleTilde = line.endsWith('~~');
-						const lastDoubleTildeIndex = line.lastIndexOf('~~');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastDoubleTildeIndex);
-						// Only complete if there's content after the tildes
-						const contentAfterTildes = line.substring(lastDoubleTildeIndex + 2, endOfCellOrLine);
-						if (contentAfterTildes.trim().length > 0) {
-							if (isEndingWithDoubleTilde) {
-								return line.substring(0, lastDoubleTildeIndex);
-							}
-							return line.substring(0, endOfCellOrLine) + '~~' + line.substring(endOfCellOrLine);
-						}
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteStrikethrough(line)
 			},
-
 			{
 				name: 'singleAsteriskItalic',
 				pattern: /[\s\S]*/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					if (line.trim() === '***') {
-						return line;
-					}
-					// Inline countSingleAsterisks logic
-					let singleAsterisks = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '*') {
-							const prevChar = i > 0 ? line[i - 1] : '';
-							const nextChar = i < line.length - 1 ? line[i + 1] : '';
-							let lineStartIndex = i;
-							for (let j = i - 1; j >= 0; j--) {
-								if (line[j] === '\n') {
-									lineStartIndex = j + 1;
-									break;
-								}
-								if (j === 0) {
-									lineStartIndex = 0;
-									break;
-								}
-							}
-							const beforeAsterisk = line.substring(lineStartIndex, i);
-							if (beforeAsterisk.trim() === '' && (nextChar === ' ' || nextChar === '\t')) {
-								continue;
-							}
-							if (prevChar !== '*' && nextChar !== '*') {
-								singleAsterisks++;
-							}
-						}
-					}
-
-					if (singleAsterisks % 2 === 1) {
-						// Inline findFirstSingleAsterisk logic
-						let firstSingleAsteriskIndex = -1;
-						for (let i = 0; i < line.length; i++) {
-							if (line[i] === '*' && line[i - 1] !== '*' && line[i + 1] !== '*') {
-								const prevChar = i > 0 ? line[i - 1] : '';
-								const nextChar = i < line.length - 1 ? line[i + 1] : '';
-								if (/\w/.test(prevChar) && /\w/.test(nextChar)) continue;
-								if (/\w/.test(prevChar) && !/\s/.test(prevChar)) continue;
-								firstSingleAsteriskIndex = i;
-								break;
-							}
-						}
-
-						if (firstSingleAsteriskIndex !== -1) {
-							const endOfCellOrLine = findEndOfCellOrLineContaining(line, firstSingleAsteriskIndex);
-							return line.substring(0, endOfCellOrLine) + '*' + line.substring(endOfCellOrLine);
-						}
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteSingleAsteriskItalic(line)
 			},
 			{
 				name: 'inlineCode',
@@ -435,12 +328,10 @@ export class IncompleteMarkdownParser {
 						tripleBackticks > 0 && tripleBackticks % 2 === 0 && line.includes('\n');
 
 					if (singleBacktickCount % 2 === 1 && !hasCompleteBlock) {
-						const lastBacktickIndex = line.lastIndexOf('`');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastBacktickIndex);
-						// Only complete if there's content after the backtick and it doesn't contain table delimiters
-						const contentAfterBacktick = line.substring(lastBacktickIndex + 1, endOfCellOrLine);
-						if (contentAfterBacktick.trim().length > 0 && !contentAfterBacktick.includes('|')) {
-							return line.substring(0, endOfCellOrLine) + '`' + line.substring(endOfCellOrLine);
+						const inlineCodeMatch = line.match(/(`)([^`]*?)$/);
+						const contentAfterMarker = inlineCodeMatch?.[2];
+						if (contentAfterMarker && !whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+							return `${line}\``;
 						}
 					}
 					return line;
@@ -450,68 +341,7 @@ export class IncompleteMarkdownParser {
 				name: 'singleUnderscoreItalic',
 				pattern: /[\s\S]*/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					// Inline countSingleUnderscores logic
-					let singleUnderscores = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '_') {
-							const prevChar = i > 0 ? line[i - 1] : '';
-							const nextChar = i < line.length - 1 ? line[i + 1] : '';
-							if (prevChar === '\\') continue;
-							if (isWithinMathBlock(line, i)) continue;
-							if (
-								prevChar &&
-								nextChar &&
-								/[\p{L}\p{N}_]/u.test(prevChar) &&
-								/[\p{L}\p{N}_]/u.test(nextChar)
-							) {
-								continue;
-							}
-							if (prevChar !== '_' && nextChar !== '_') {
-								singleUnderscores++;
-							}
-						}
-					}
-
-					if (singleUnderscores % 2 === 1) {
-						// Inline findFirstSingleUnderscore logic
-						let firstSingleUnderscoreIndex = -1;
-						for (let i = 0; i < line.length; i++) {
-							if (
-								line[i] === '_' &&
-								line[i - 1] !== '_' &&
-								line[i + 1] !== '_' &&
-								line[i - 1] !== '\\' &&
-								!isWithinMathBlock(line, i)
-							) {
-								const prevChar = i > 0 ? line[i - 1] : '';
-								const nextChar = i < line.length - 1 ? line[i + 1] : '';
-								if (
-									prevChar &&
-									nextChar &&
-									/[\p{L}\p{N}_]/u.test(prevChar) &&
-									/[\p{L}\p{N}_]/u.test(nextChar)
-								) {
-									continue;
-								}
-								firstSingleUnderscoreIndex = i;
-								break;
-							}
-						}
-
-						if (firstSingleUnderscoreIndex !== -1) {
-							const endOfCellOrLine = findTrailingClosureInsertionPoint(
-								line,
-								findEndOfCellOrLineContaining(
-									line,
-									firstSingleUnderscoreIndex
-								)
-							);
-							return line.substring(0, endOfCellOrLine) + '_' + line.substring(endOfCellOrLine);
-						}
-					}
-					return line;
-				}
+				handler: ({ line }) => handleIncompleteSingleUnderscoreItalic(line)
 			},
 			{
 				name: 'subscript',
@@ -537,6 +367,20 @@ export class IncompleteMarkdownParser {
 						const matchedBrackets: number[] = [];
 						for (let i = 0; i < result.length; i++) {
 							if (result[i] !== '[' || (i > 0 && result[i - 1] === '\\')) {
+								continue;
+							}
+
+							if (isInsideCodeBlock(result, i) || isWithinCompleteInlineCode(result, i)) {
+								continue;
+							}
+
+							const candidate = result.substring(i + 1);
+							if (
+								candidate.includes('|') ||
+								candidate.includes('`') ||
+								candidate.includes('*') ||
+								candidate.includes('(')
+							) {
 								continue;
 							}
 
@@ -617,50 +461,6 @@ export class IncompleteMarkdownParser {
 				}
 			},
 			{
-				name: 'inlineMath',
-				pattern: /\$/,
-				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					// Inline countSingleDollarSigns logic
-					let singleDollars = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '$') {
-							const prevChar = i > 0 ? line[i - 1] : '';
-							const nextChar = i < line.length - 1 ? line[i + 1] : '';
-							if (prevChar === '\\') continue;
-							if (prevChar === '$' || nextChar === '$') continue;
-							if (nextChar && /\d/.test(nextChar)) continue;
-							singleDollars++;
-						}
-					}
-
-					if (singleDollars % 2 === 1) {
-						let lastDollarIndex = -1;
-						for (let i = line.length - 1; i >= 0; i--) {
-							if (line[i] === '$') {
-								const prevChar = i > 0 ? line[i - 1] : '';
-								const nextChar = i < line.length - 1 ? line[i + 1] : '';
-								if (
-									prevChar !== '\\' &&
-									prevChar !== '$' &&
-									nextChar !== '$' &&
-									nextChar !== '' &&
-									!/\d/.test(nextChar)
-								) {
-									lastDollarIndex = i;
-									break;
-								}
-							}
-						}
-						if (lastDollarIndex !== -1) {
-							const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastDollarIndex);
-							return line.substring(0, endOfCellOrLine) + '$' + line.substring(endOfCellOrLine);
-						}
-					}
-					return line;
-				}
-			},
-			{
 				name: 'blockMath',
 				pattern: /\$\$/,
 				skipInBlockTypes: ['code', 'math'],
@@ -674,7 +474,10 @@ export class IncompleteMarkdownParser {
 					// Only complete if there's content after $$ on the same line (no newline immediately after)
 					const hasNewlineAfterStart = line.indexOf('\n', firstDollarIndex) !== -1;
 					if (!hasNewlineAfterStart) {
-						// Single line case: $$content → $$content$$
+						// Single line case: $$content → $$content$$, with half-closed $$content$ → $$content$$
+						if (line.endsWith('$') && !line.endsWith('$$')) {
+							return line + '$';
+						}
 						return line + '$$';
 					}
 					// Multi-line cases are handled by contextManager
@@ -701,77 +504,10 @@ export class IncompleteMarkdownParser {
 			},
 			{
 				name: 'linksAndImages',
-				pattern: /(!?\[.*)$/,
+				pattern: /\[/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					// Check for incomplete links with URLs: [text](url
-					const urlMatch = line.match(/(!?\[[^\]]*\]\()([^)]*?)$/);
-					if (urlMatch) {
-						const url = urlMatch[2];
-						if (url.length > 0) {
-							// Inline isUrlIncomplete logic
-							let isIncomplete = true;
-							if (url && url.length >= 4) {
-								if (
-									(url.startsWith('http://') && url.length >= 12) ||
-									(url.startsWith('https://') && url.length >= 13)
-								) {
-									let domain = url;
-									if (url.startsWith('http://')) domain = url.substring(7);
-									else if (url.startsWith('https://')) domain = url.substring(8);
-
-									domain = domain.split('/')[0].split('?')[0].split('#')[0];
-									const domainParts = domain.split('.');
-									if (domainParts.length >= 2) {
-										const extension = domainParts[domainParts.length - 1];
-										if (extension.length >= 2 && /^[a-zA-Z]+$/.test(extension)) {
-											isIncomplete = false;
-										}
-									}
-								}
-							}
-
-							if (isIncomplete) {
-								const marker = urlMatch[1].startsWith('!')
-									? 'streamdown:incomplete-image'
-									: 'streamdown:incomplete-link';
-								return line.replace(url, marker) + ')';
-							} else {
-								return line + ')';
-							}
-						} else {
-							const marker = urlMatch[1].startsWith('!')
-								? 'streamdown:incomplete-image'
-								: 'streamdown:incomplete-link';
-							return line + marker + ')';
-						}
-					}
-
-					// Check for incomplete links without URLs: [text
-					const linkMatch = line.match(/(!?\[)([^\]]*?)$/);
-					if (linkMatch && !line.includes('](')) {
-						const [, openBracket, linkTextWithPossibleBoundary] = linkMatch;
-						// Find the position of the opening bracket
-						const bracketIndex = line.lastIndexOf(openBracket);
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, bracketIndex);
-
-						// Extract the clean link text (remove any trailing | or whitespace)
-						const linkText = linkTextWithPossibleBoundary.replace(/[\s|]+$/, '');
-						const marker = openBracket.startsWith('!')
-							? 'streamdown:incomplete-image'
-							: 'streamdown:incomplete-link';
-
-						// Replace from bracket to end of cell/line, including boundary if it's |
-						const includeBoundary = endOfCellOrLine < line.length && line[endOfCellOrLine] === '|';
-						const incompleteEnd = includeBoundary ? endOfCellOrLine + 1 : endOfCellOrLine;
-						const incompletePart = line.substring(bracketIndex, incompleteEnd);
-						const completedPart =
-							openBracket + linkText + '](' + marker + ')' + (includeBoundary ? '|' : '');
-
-						return line.replace(incompletePart, completedPart);
-					}
-					return line;
-				}
+				stopProcessingOnChange: true,
+				handler: ({ line }) => handleIncompleteLinksAndImages(line)
 			},
 			{
 				name: 'alignmentBlocks',
@@ -953,8 +689,9 @@ const findTrailingClosureInsertionPoint = (text: string, fallbackPosition: numbe
 	let insertionPoint = fallbackPosition;
 
 	while (insertionPoint > 0) {
-		const marker = INLINE_CLOSURE_MARKERS.find((candidate) =>
-			text.slice(Math.max(0, insertionPoint - candidate.length), insertionPoint) === candidate
+		const marker = INLINE_CLOSURE_MARKERS.find(
+			(candidate) =>
+				text.slice(Math.max(0, insertionPoint - candidate.length), insertionPoint) === candidate
 		);
 
 		if (!marker) {
@@ -1047,6 +784,730 @@ const isWithinFencedCodeBlock = (text: string, position: number): boolean => {
 };
 
 const isWordCharacter = (char: string): boolean => /[\p{L}\p{N}_]/u.test(char);
+const isWordChar = (char: string): boolean => isWordCharacter(char);
+
+const whitespaceOrMarkersPattern = /^[\s_~*`]*$/;
+const fourOrMoreAsterisksPattern = /^\*{4,}$/;
+const boldPattern = /(\*\*)([^*]*\*?)$/;
+const italicPattern = /(__)([^_]*?)$/;
+const boldItalicPattern = /(\*\*\*)([^*]*?)$/;
+const singleAsteriskPattern = /(\*)([^*]*?)$/;
+const singleUnderscorePattern = /(_)([^_]*?)$/;
+const halfCompleteUnderscorePattern = /(__)([^_]+)_$/;
+const halfCompleteTildePattern = /(~~)([^~]+)~$/;
+const listItemPattern = /^[\s]*[-*+][\s]+$/;
+
+const isInsideCodeBlock = (text: string, position: number): boolean => {
+	let inInlineCode = false;
+	let inMultilineCode = false;
+
+	for (let i = 0; i < position; i++) {
+		if (text[i] === '\\' && i + 1 < text.length && text[i + 1] === '`') {
+			i++;
+			continue;
+		}
+
+		if (text.slice(i, i + 3) === '```') {
+			inMultilineCode = !inMultilineCode;
+			i += 2;
+			continue;
+		}
+
+		if (!inMultilineCode && text[i] === '`') {
+			inInlineCode = !inInlineCode;
+		}
+	}
+
+	return inInlineCode || inMultilineCode;
+};
+
+const isWithinLinkOrImageUrl = (text: string, position: number): boolean => {
+	for (let i = position - 1; i >= 0; i--) {
+		if (text[i] === ')') {
+			return false;
+		}
+		if (text[i] === '(') {
+			if (i > 0 && text[i - 1] === ']') {
+				for (let j = position; j < text.length; j++) {
+					if (text[j] === ')') {
+						return true;
+					}
+					if (text[j] === '\n') {
+						return false;
+					}
+				}
+			}
+			return false;
+		}
+		if (text[i] === '\n') {
+			return false;
+		}
+	}
+
+	return false;
+};
+
+const isWithinHtmlTag = (text: string, position: number): boolean => {
+	for (let i = position - 1; i >= 0; i--) {
+		if (text[i] === '>') {
+			return false;
+		}
+		if (text[i] === '<') {
+			const nextChar = i + 1 < text.length ? text[i + 1] : '';
+			return /[A-Za-z/]/.test(nextChar);
+		}
+		if (text[i] === '\n') {
+			return false;
+		}
+	}
+
+	return false;
+};
+
+const isHorizontalRule = (text: string, markerIndex: number, marker: '*' | '_'): boolean => {
+	let lineStart = 0;
+	for (let i = markerIndex - 1; i >= 0; i--) {
+		if (text[i] === '\n') {
+			lineStart = i + 1;
+			break;
+		}
+	}
+
+	let lineEnd = text.length;
+	for (let i = markerIndex; i < text.length; i++) {
+		if (text[i] === '\n') {
+			lineEnd = i;
+			break;
+		}
+	}
+
+	let markerCount = 0;
+	for (const char of text.slice(lineStart, lineEnd)) {
+		if (char === marker) {
+			markerCount++;
+			continue;
+		}
+
+		if (char !== ' ' && char !== '\t') {
+			return false;
+		}
+	}
+
+	return markerCount >= 3;
+};
+
+const shouldSkipAsterisk = (
+	text: string,
+	index: number,
+	prevChar: string,
+	nextChar: string
+): boolean => {
+	if (prevChar === '\\') {
+		return true;
+	}
+
+	if (text.includes('$') && isWithinMathBlock(text, index)) {
+		return true;
+	}
+
+	if (prevChar !== '*' && nextChar === '*' && text[index + 2] !== '*') {
+		return true;
+	}
+
+	if (prevChar === '*') {
+		return true;
+	}
+
+	if (prevChar && nextChar && isWordChar(prevChar) && isWordChar(nextChar)) {
+		return true;
+	}
+
+	const prevIsWhitespace = !prevChar || prevChar === ' ' || prevChar === '\t' || prevChar === '\n';
+	const nextIsWhitespace = !nextChar || nextChar === ' ' || nextChar === '\t' || nextChar === '\n';
+	return prevIsWhitespace && nextIsWhitespace;
+};
+
+const countSingleAsterisks = (text: string): number => {
+	let count = 0;
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock || text[i] !== '*') {
+			continue;
+		}
+
+		const prevChar = i > 0 ? text[i - 1] : '';
+		const nextChar = i < text.length - 1 ? text[i + 1] : '';
+		if (!shouldSkipAsterisk(text, i, prevChar, nextChar)) {
+			count++;
+		}
+	}
+
+	return count;
+};
+
+const shouldSkipUnderscore = (
+	text: string,
+	index: number,
+	prevChar: string,
+	nextChar: string
+): boolean => {
+	if (prevChar === '\\') {
+		return true;
+	}
+
+	if (text.includes('$') && isWithinMathBlock(text, index)) {
+		return true;
+	}
+
+	if (isWithinLinkOrImageUrl(text, index) || isWithinHtmlTag(text, index)) {
+		return true;
+	}
+
+	if (prevChar === '_' || nextChar === '_') {
+		return true;
+	}
+
+	return Boolean(prevChar && nextChar && isWordChar(prevChar) && isWordChar(nextChar));
+};
+
+const countSingleUnderscores = (text: string): number => {
+	let count = 0;
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock || text[i] !== '_') {
+			continue;
+		}
+
+		const prevChar = i > 0 ? text[i - 1] : '';
+		const nextChar = i < text.length - 1 ? text[i + 1] : '';
+		if (!shouldSkipUnderscore(text, i, prevChar, nextChar)) {
+			count++;
+		}
+	}
+
+	return count;
+};
+
+const countTripleAsterisks = (text: string): number => {
+	let count = 0;
+	let consecutiveAsterisks = 0;
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			if (consecutiveAsterisks >= 3) {
+				count += Math.floor(consecutiveAsterisks / 3);
+			}
+			consecutiveAsterisks = 0;
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock) {
+			continue;
+		}
+
+		if (text[i] === '*') {
+			consecutiveAsterisks++;
+			continue;
+		}
+
+		if (consecutiveAsterisks >= 3) {
+			count += Math.floor(consecutiveAsterisks / 3);
+		}
+		consecutiveAsterisks = 0;
+	}
+
+	if (consecutiveAsterisks >= 3) {
+		count += Math.floor(consecutiveAsterisks / 3);
+	}
+
+	return count;
+};
+
+const countDoubleAsterisksOutsideCodeBlocks = (text: string): number => {
+	let count = 0;
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock) {
+			continue;
+		}
+
+		if (text[i] === '*' && i + 1 < text.length && text[i + 1] === '*') {
+			count++;
+			i++;
+		}
+	}
+
+	return count;
+};
+
+const countDoubleUnderscoresOutsideCodeBlocks = (text: string): number => {
+	let count = 0;
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock) {
+			continue;
+		}
+
+		if (text[i] === '_' && i + 1 < text.length && text[i + 1] === '_') {
+			count++;
+			i++;
+		}
+	}
+
+	return count;
+};
+
+const shouldSkipBoldCompletion = (
+	text: string,
+	contentAfterMarker: string,
+	markerIndex: number
+): boolean => {
+	if (!contentAfterMarker || whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+		return true;
+	}
+
+	const beforeMarker = text.slice(0, markerIndex);
+	const lastNewlineBeforeMarker = beforeMarker.lastIndexOf('\n');
+	const lineStart = lastNewlineBeforeMarker === -1 ? 0 : lastNewlineBeforeMarker + 1;
+	if (
+		listItemPattern.test(text.slice(lineStart, markerIndex)) &&
+		contentAfterMarker.includes('\n')
+	) {
+		return true;
+	}
+
+	return isHorizontalRule(text, markerIndex, '*');
+};
+
+const handleIncompleteBold = (text: string): string => {
+	const boldMatch = text.match(boldPattern);
+	if (!boldMatch) {
+		return text;
+	}
+
+	const contentAfterMarker = boldMatch[2];
+	const markerIndex = text.lastIndexOf(boldMatch[1]);
+	if (
+		isInsideCodeBlock(text, markerIndex) ||
+		isWithinCompleteInlineCode(text, markerIndex) ||
+		shouldSkipBoldCompletion(text, contentAfterMarker, markerIndex)
+	) {
+		return text;
+	}
+
+	const asteriskPairs = countDoubleAsterisksOutsideCodeBlocks(text);
+	if (asteriskPairs % 2 === 1) {
+		return contentAfterMarker.endsWith('*') ? `${text}*` : `${text}**`;
+	}
+
+	return text;
+};
+
+const shouldSkipItalicCompletion = (
+	text: string,
+	contentAfterMarker: string,
+	markerIndex: number
+): boolean => {
+	if (!contentAfterMarker || whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+		return true;
+	}
+
+	const beforeMarker = text.slice(0, markerIndex);
+	const lastNewlineBeforeMarker = beforeMarker.lastIndexOf('\n');
+	const lineStart = lastNewlineBeforeMarker === -1 ? 0 : lastNewlineBeforeMarker + 1;
+	if (
+		listItemPattern.test(text.slice(lineStart, markerIndex)) &&
+		contentAfterMarker.includes('\n')
+	) {
+		return true;
+	}
+
+	return isHorizontalRule(text, markerIndex, '_');
+};
+
+const handleIncompleteDoubleUnderscoreItalic = (text: string): string => {
+	const italicMatch = text.match(italicPattern);
+
+	if (!italicMatch) {
+		const halfCompleteMatch = text.match(halfCompleteUnderscorePattern);
+		if (!halfCompleteMatch) {
+			return text;
+		}
+
+		const markerIndex = text.lastIndexOf(halfCompleteMatch[1]);
+		if (isInsideCodeBlock(text, markerIndex) || isWithinCompleteInlineCode(text, markerIndex)) {
+			return text;
+		}
+
+		return countDoubleUnderscoresOutsideCodeBlocks(text) % 2 === 1 ? `${text}_` : text;
+	}
+
+	const contentAfterMarker = italicMatch[2];
+	const markerIndex = text.lastIndexOf(italicMatch[1]);
+	if (
+		isInsideCodeBlock(text, markerIndex) ||
+		isWithinCompleteInlineCode(text, markerIndex) ||
+		shouldSkipItalicCompletion(text, contentAfterMarker, markerIndex)
+	) {
+		return text;
+	}
+
+	return countDoubleUnderscoresOutsideCodeBlocks(text) % 2 === 1 ? `${text}__` : text;
+};
+
+const findFirstSingleAsteriskIndex = (text: string): number => {
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock) {
+			continue;
+		}
+
+		if (
+			text[i] === '*' &&
+			text[i - 1] !== '*' &&
+			text[i + 1] !== '*' &&
+			text[i - 1] !== '\\' &&
+			!isWithinMathBlock(text, i)
+		) {
+			const prevChar = i > 0 ? text[i - 1] : '';
+			const nextChar = i < text.length - 1 ? text[i + 1] : '';
+			const prevIsWhitespace =
+				!prevChar || prevChar === ' ' || prevChar === '\t' || prevChar === '\n';
+			const nextIsWhitespace =
+				!nextChar || nextChar === ' ' || nextChar === '\t' || nextChar === '\n';
+			if (prevIsWhitespace && nextIsWhitespace) {
+				continue;
+			}
+			if (prevChar && nextChar && isWordChar(prevChar) && isWordChar(nextChar)) {
+				continue;
+			}
+
+			return i;
+		}
+	}
+
+	return -1;
+};
+
+const handleIncompleteSingleAsteriskItalic = (text: string): string => {
+	if (!text.match(singleAsteriskPattern)) {
+		return text;
+	}
+
+	const firstSingleAsteriskIndex = findFirstSingleAsteriskIndex(text);
+	if (firstSingleAsteriskIndex === -1) {
+		return text;
+	}
+
+	if (
+		isInsideCodeBlock(text, firstSingleAsteriskIndex) ||
+		isWithinCompleteInlineCode(text, firstSingleAsteriskIndex)
+	) {
+		return text;
+	}
+
+	const contentAfterFirstAsterisk = text.slice(firstSingleAsteriskIndex + 1);
+	if (!contentAfterFirstAsterisk || whitespaceOrMarkersPattern.test(contentAfterFirstAsterisk)) {
+		return text;
+	}
+
+	return countSingleAsterisks(text) % 2 === 1 ? `${text}*` : text;
+};
+
+const findFirstSingleUnderscoreIndex = (text: string): number => {
+	let inCodeBlock = false;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text.slice(i, i + 3) === '```') {
+			inCodeBlock = !inCodeBlock;
+			i += 2;
+			continue;
+		}
+
+		if (inCodeBlock) {
+			continue;
+		}
+
+		if (
+			text[i] === '_' &&
+			text[i - 1] !== '_' &&
+			text[i + 1] !== '_' &&
+			text[i - 1] !== '\\' &&
+			!isWithinMathBlock(text, i) &&
+			!isWithinLinkOrImageUrl(text, i)
+		) {
+			const prevChar = i > 0 ? text[i - 1] : '';
+			const nextChar = i < text.length - 1 ? text[i + 1] : '';
+			if (prevChar && nextChar && isWordChar(prevChar) && isWordChar(nextChar)) {
+				continue;
+			}
+
+			return i;
+		}
+	}
+
+	return -1;
+};
+
+const insertClosingUnderscore = (text: string): string => {
+	let endIndex = text.length;
+	while (endIndex > 0 && text[endIndex - 1] === '\n') {
+		endIndex--;
+	}
+
+	return endIndex < text.length ? `${text.slice(0, endIndex)}_${text.slice(endIndex)}` : `${text}_`;
+};
+
+const handleTrailingAsterisksForUnderscore = (text: string): string | null => {
+	if (!text.endsWith('**')) {
+		return null;
+	}
+
+	const textWithoutTrailingAsterisks = text.slice(0, -2);
+	if (countDoubleAsterisksOutsideCodeBlocks(textWithoutTrailingAsterisks) % 2 !== 1) {
+		return null;
+	}
+
+	const firstDoubleAsteriskIndex = textWithoutTrailingAsterisks.indexOf('**');
+	const underscoreIndex = findFirstSingleUnderscoreIndex(textWithoutTrailingAsterisks);
+	if (
+		firstDoubleAsteriskIndex !== -1 &&
+		underscoreIndex !== -1 &&
+		firstDoubleAsteriskIndex < underscoreIndex
+	) {
+		return `${textWithoutTrailingAsterisks}_**`;
+	}
+
+	return null;
+};
+
+const handleIncompleteSingleUnderscoreItalic = (text: string): string => {
+	if (!text.match(singleUnderscorePattern)) {
+		return text;
+	}
+
+	const firstSingleUnderscoreIndex = findFirstSingleUnderscoreIndex(text);
+	if (firstSingleUnderscoreIndex === -1) {
+		return text;
+	}
+
+	const contentAfterFirstUnderscore = text.slice(firstSingleUnderscoreIndex + 1);
+	if (
+		!contentAfterFirstUnderscore ||
+		whitespaceOrMarkersPattern.test(contentAfterFirstUnderscore) ||
+		isInsideCodeBlock(text, firstSingleUnderscoreIndex) ||
+		isWithinCompleteInlineCode(text, firstSingleUnderscoreIndex)
+	) {
+		return text;
+	}
+
+	if (countSingleUnderscores(text) % 2 !== 1) {
+		return text;
+	}
+
+	return handleTrailingAsterisksForUnderscore(text) ?? insertClosingUnderscore(text);
+};
+
+const areBoldItalicMarkersBalanced = (text: string): boolean =>
+	countDoubleAsterisksOutsideCodeBlocks(text) % 2 === 0 && countSingleAsterisks(text) % 2 === 0;
+
+const shouldSkipBoldItalicCompletion = (
+	text: string,
+	contentAfterMarker: string,
+	markerIndex: number
+): boolean => {
+	if (
+		!contentAfterMarker ||
+		whitespaceOrMarkersPattern.test(contentAfterMarker) ||
+		isInsideCodeBlock(text, markerIndex) ||
+		isWithinCompleteInlineCode(text, markerIndex)
+	) {
+		return true;
+	}
+
+	return isHorizontalRule(text, markerIndex, '*');
+};
+
+const handleIncompleteBoldItalic = (text: string): string => {
+	if (fourOrMoreAsterisksPattern.test(text)) {
+		return text;
+	}
+
+	const boldItalicMatch = text.match(boldItalicPattern);
+	if (!boldItalicMatch) {
+		return text;
+	}
+
+	const contentAfterMarker = boldItalicMatch[2];
+	const markerIndex = text.lastIndexOf(boldItalicMatch[1]);
+	if (shouldSkipBoldItalicCompletion(text, contentAfterMarker, markerIndex)) {
+		return text;
+	}
+
+	if (countTripleAsterisks(text) % 2 !== 1) {
+		return text;
+	}
+
+	return areBoldItalicMarkersBalanced(text) ? text : `${text}***`;
+};
+
+const findMatchingOpeningBracket = (text: string, closeIndex: number): number => {
+	let depth = 1;
+	for (let i = closeIndex - 1; i >= 0; i--) {
+		if (text[i] === ']') {
+			depth++;
+		} else if (text[i] === '[') {
+			depth--;
+			if (depth === 0) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
+};
+
+const findMatchingClosingBracket = (text: string, openIndex: number): number => {
+	let depth = 1;
+	for (let i = openIndex + 1; i < text.length; i++) {
+		if (text[i] === '[') {
+			depth++;
+		} else if (text[i] === ']') {
+			depth--;
+			if (depth === 0) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
+};
+
+const handleIncompleteUrl = (text: string, lastParenIndex: number): string | null => {
+	const afterParen = text.slice(lastParenIndex + 2);
+	if (afterParen.includes(')')) {
+		return null;
+	}
+
+	const openBracketIndex = findMatchingOpeningBracket(text, lastParenIndex);
+	if (openBracketIndex === -1 || isInsideCodeBlock(text, openBracketIndex)) {
+		return null;
+	}
+
+	const isImage = openBracketIndex > 0 && text[openBracketIndex - 1] === '!';
+	const startIndex = isImage ? openBracketIndex - 1 : openBracketIndex;
+	const beforeLink = text.slice(0, startIndex);
+	if (isImage) {
+		return beforeLink;
+	}
+
+	const linkText = text.slice(openBracketIndex + 1, lastParenIndex);
+	return `${beforeLink}[${linkText}](streamdown:incomplete-link)`;
+};
+
+const handleIncompleteTextLink = (text: string, index: number): string | null => {
+	const isImage = index > 0 && text[index - 1] === '!';
+	const openIndex = isImage ? index - 1 : index;
+	const afterOpen = text.slice(index + 1);
+
+	if (!afterOpen.includes(']')) {
+		return isImage ? text.slice(0, openIndex) : `${text}](streamdown:incomplete-link)`;
+	}
+
+	if (findMatchingClosingBracket(text, index) === -1) {
+		return isImage ? text.slice(0, openIndex) : `${text}](streamdown:incomplete-link)`;
+	}
+
+	return null;
+};
+
+const handleIncompleteLinksAndImages = (text: string): string => {
+	const lastParenIndex = text.lastIndexOf('](');
+	if (lastParenIndex !== -1 && !isInsideCodeBlock(text, lastParenIndex)) {
+		const result = handleIncompleteUrl(text, lastParenIndex);
+		if (result !== null) {
+			return result;
+		}
+	}
+
+	for (let i = text.length - 1; i >= 0; i--) {
+		if (text[i] === '[' && !isInsideCodeBlock(text, i)) {
+			const result = handleIncompleteTextLink(text, i);
+			if (result !== null) {
+				return result;
+			}
+		}
+	}
+
+	return text;
+};
+
+const handleIncompleteStrikethrough = (text: string): string => {
+	const strikethroughMatch = text.match(/(~~)([^~]*?)$/);
+	if (strikethroughMatch) {
+		const contentAfterMarker = strikethroughMatch[2];
+		if (!contentAfterMarker || whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+			return text;
+		}
+
+		const markerIndex = text.lastIndexOf(strikethroughMatch[1]);
+		if (isInsideCodeBlock(text, markerIndex) || isWithinCompleteInlineCode(text, markerIndex)) {
+			return text;
+		}
+
+		return (text.match(/~~/g)?.length ?? 0) % 2 === 1 ? `${text}~~` : text;
+	}
+
+	const halfCompleteMatch = text.match(halfCompleteTildePattern);
+	if (!halfCompleteMatch) {
+		return text;
+	}
+
+	const markerIndex = text.lastIndexOf(halfCompleteMatch[1]);
+	if (isInsideCodeBlock(text, markerIndex) || isWithinCompleteInlineCode(text, markerIndex)) {
+		return text;
+	}
+
+	return (text.match(/~~/g)?.length ?? 0) % 2 === 1 ? `${text}~` : text;
+};
 
 const escapeSingleTildes = (text: string): string => {
 	let result = '';

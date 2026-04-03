@@ -1,7 +1,11 @@
 <script lang="ts" generics="Source extends Record<string, any> = Record<string, any>">
 	import Block from './Block.svelte';
-	import { StreamdownContext, type StreamdownProps } from './context.svelte.js';
-	import { mergeTheme, shadcnTheme } from './theme.js';
+	import {
+		normalizeMermaidControls,
+		StreamdownContext,
+		type StreamdownProps
+	} from './context.svelte.js';
+	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import {
 		lexWithFootnotes,
 		parseBlocksWithFootnotes,
@@ -14,19 +18,82 @@
 	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
 	import Footnotes from './Elements/Footnotes.svelte';
 	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
+	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 
+	const carets = {
+		block: ' ▋',
+		circle: ' ●'
+	} as const;
+
+	const animationNameMap = {
+		blurIn: 'blur',
+		fadeIn: 'fade',
+		slideUp: 'slideUp'
+	} as const;
+	type LocalAnimationConfig = NonNullable<StreamdownProps['animation']>;
+	type AnimationTimingFunction = NonNullable<LocalAnimationConfig['timingFunction']>;
+	const supportedTimingFunctions = new Set<AnimationTimingFunction>([
+		'ease',
+		'ease-in',
+		'ease-out',
+		'ease-in-out',
+		'linear'
+	]);
+
+	const resolveCompatAnimation = (
+		animated: StreamdownProps<Source>['animated'],
+		isAnimating: boolean,
+		mode: 'static' | 'streaming'
+	): LocalAnimationConfig => {
+		if (!animated || !isAnimating || mode === 'static') {
+			return {
+				enabled: false
+			};
+		}
+
+		if (animated === true) {
+			return {
+				enabled: true,
+				animateOnMount: true,
+				type: 'fade' as const,
+				duration: 150,
+				timingFunction: 'ease' as const,
+				tokenize: 'word' as const
+			};
+		}
+
+		const animationName =
+			animationNameMap[animated.animation as keyof typeof animationNameMap] ?? 'fade';
+		const timingFunction = supportedTimingFunctions.has(animated.easing as AnimationTimingFunction)
+			? (animated.easing as AnimationTimingFunction)
+			: 'ease';
+
+		return {
+			enabled: true,
+			animateOnMount: true,
+			type: animationName,
+			duration: animated.duration ?? 150,
+			timingFunction,
+			tokenize: animated.sep ?? 'word'
+		} as const;
+	};
 	let {
 		content = '',
 		class: className,
 		shikiTheme,
 		shikiLanguages,
 		shikiThemes,
-		parseIncompleteMarkdown,
+		parseIncompleteMarkdown = true,
+		mode = 'streaming',
+		dir,
 		defaultOrigin,
 		allowedLinkPrefixes = ['*'],
 		allowedImagePrefixes = ['*'],
+		linkSafety = { enabled: true },
 		allowedTags,
 		literalTagContent,
+		prefix,
+		lineNumbers = true,
 		theme,
 		mermaidConfig = {},
 		katexConfig,
@@ -36,6 +103,11 @@
 		streamdown = $bindable(),
 		renderHtml,
 		controls,
+		isAnimating = false,
+		animated,
+		caret,
+		onAnimationStart,
+		onAnimationEnd,
 		animation,
 		element = $bindable(),
 		icons,
@@ -48,9 +120,50 @@
 		static: isStatic,
 		...snippets
 	}: StreamdownProps<Source> = $props();
-	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 
 	const darkMode = useDarkMode();
+	const resolvedMode = $derived(isStatic === undefined ? mode : isStatic ? 'static' : 'streaming');
+	const resolvedStatic = $derived(resolvedMode === 'static');
+	const prefixedCn = $derived.by(() => createCn(prefix));
+	const shouldShowCaret = $derived(resolvedMode !== 'static' && Boolean(caret) && isAnimating);
+	const rootStyle = $derived(
+		shouldShowCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
+	);
+	const rootClassName = $derived(
+		prefixedCn(
+			'whitespace-normal',
+			className,
+			shouldShowCaret &&
+				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
+		)
+	);
+	const resolvedAnimation = $derived.by(() => {
+		if (animation) {
+			if (!animation.enabled) {
+				return {
+					enabled: false
+				};
+			}
+
+			return {
+				enabled: true,
+				animateOnMount: animation.animateOnMount ?? false,
+				type: animation.type || 'blur',
+				duration: animation.duration || 500,
+				timingFunction: animation.timingFunction || 'ease-in',
+				tokenize: animation.tokenize || 'word'
+			};
+		}
+
+		return resolveCompatAnimation(animated, isAnimating, resolvedMode);
+	});
+	const resolvedTheme = $derived.by(() => {
+		const mergedTheme = shouldMergeTheme
+			? mergeTheme(theme, baseTheme)
+			: theme || (baseTheme === 'shadcn' ? shadcnTheme : theme);
+
+		return prefixThemeClasses(prefix, mergedTheme);
+	});
 
 	const shikiThemedTheme = $derived(
 		shikiThemes
@@ -90,6 +203,12 @@
 		get parseIncompleteMarkdown() {
 			return parseIncompleteMarkdown;
 		},
+		get mode() {
+			return resolvedMode;
+		},
+		get dir() {
+			return dir;
+		},
 		get defaultOrigin() {
 			return defaultOrigin;
 		},
@@ -99,11 +218,20 @@
 		get allowedImagePrefixes() {
 			return allowedImagePrefixes;
 		},
+		get linkSafety() {
+			return linkSafety;
+		},
 		get allowedTags() {
 			return allowedTags;
 		},
 		get literalTagContent() {
 			return literalTagContent;
+		},
+		get prefix() {
+			return prefix;
+		},
+		get lineNumbers() {
+			return lineNumbers;
 		},
 		get shikiTheme() {
 			return shikiTheme || shikiThemedTheme;
@@ -112,9 +240,7 @@
 			return snippets;
 		},
 		get theme() {
-			return shouldMergeTheme
-				? mergeTheme(theme, baseTheme)
-				: theme || (baseTheme === 'shadcn' ? shadcnTheme : theme);
+			return resolvedTheme;
 		},
 		get baseTheme() {
 			return baseTheme;
@@ -147,26 +273,29 @@
 			return inlineCitationsMode;
 		},
 		get animation() {
-			if (!animation?.enabled)
-				return {
-					enabled: false
-				};
-			return {
-				enabled: true,
-				animateOnMount: animation.animateOnMount ?? false,
-				type: animation.type || 'blur',
-				duration: animation.duration || 500,
-				timingFunction: animation.timingFunction || 'ease-in',
-				tokenize: animation.tokenize || 'word'
-			};
+			return resolvedAnimation;
+		},
+		get isAnimating() {
+			return isAnimating;
+		},
+		get animated() {
+			return animated;
+		},
+		get caret() {
+			return caret;
+		},
+		get onAnimationStart() {
+			return onAnimationStart;
+		},
+		get onAnimationEnd() {
+			return onAnimationEnd;
 		},
 		get controls() {
 			const codeControls = controls?.code ?? true;
-			const mermaidControls = controls?.mermaid ?? true;
 			const tableControls = controls?.table ?? true;
 			return {
 				code: codeControls,
-				mermaid: mermaidControls,
+				mermaid: normalizeMermaidControls(controls?.mermaid),
 				table: tableControls
 			};
 		},
@@ -188,6 +317,26 @@
 	});
 
 	const id = $props.id();
+	let previousIsAnimating = $state<boolean | undefined>(undefined);
+
+	$effect(() => {
+		if (resolvedMode === 'static') {
+			previousIsAnimating = isAnimating;
+			return;
+		}
+
+		if (previousIsAnimating === undefined) {
+			if (isAnimating) {
+				onAnimationStart?.();
+			}
+		} else if (!previousIsAnimating && isAnimating) {
+			onAnimationStart?.();
+		} else if (previousIsAnimating && !isAnimating) {
+			onAnimationEnd?.();
+		}
+
+		previousIsAnimating = isAnimating;
+	});
 
 	type ParsedBlock = {
 		raw: string;
@@ -196,7 +345,7 @@
 	};
 
 	const parsedDocument = $derived.by(() => {
-		if (isStatic) {
+		if (resolvedStatic) {
 			const parsed = lexWithFootnotes(preprocessedContent, streamdown.extensions);
 			return {
 				blocks: [preprocessedContent],
@@ -212,7 +361,7 @@
 
 		return rawBlocks.map((raw) => {
 			const parsed = lexWithFootnotes(
-				isStatic ? raw : completeIncompleteMarkdown(raw.trim()),
+				resolvedStatic ? raw : completeIncompleteMarkdown(raw.trim()),
 				streamdown.extensions
 			);
 
@@ -261,11 +410,14 @@
 	});
 </script>
 
-<div bind:this={element} class={className}>
+<div bind:this={element} class={rootClassName} style={rootStyle}>
 	{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}
-		<Block static={isStatic} block={parsedBlock.raw} tokens={parsedBlock.tokens} />
+		<Block static={resolvedStatic} block={parsedBlock.raw} tokens={parsedBlock.tokens} />
 	{/each}
 	<Footnotes entries={footnoteEntries} />
+	{#if shouldShowCaret && !content.trim()}
+		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
+	{/if}
 </div>
 
 <style global>
@@ -310,6 +462,27 @@
 				transform: translateY(0);
 				opacity: 1;
 			}
+		}
+
+		.sd-line-numbers {
+			counter-reset: sd-line;
+		}
+
+		.sd-line-numbers > .sd-code-line {
+			position: relative;
+			display: block;
+			padding-left: 3rem;
+		}
+
+		.sd-line-numbers > .sd-code-line::before {
+			content: counter(sd-line);
+			counter-increment: sd-line;
+			position: absolute;
+			left: 0;
+			width: 2rem;
+			text-align: right;
+			color: rgb(107 114 128);
+			user-select: none;
 		}
 	}
 </style>

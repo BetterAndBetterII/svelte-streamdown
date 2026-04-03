@@ -8,6 +8,29 @@ import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
 import type { AllowedTags } from './security/types.js';
 
+export type { AllowedTags } from './security/types.js';
+
+export interface AnimateOptions {
+	animation?: 'fadeIn' | 'blurIn' | 'slideUp' | (string & {});
+	duration?: number;
+	easing?: string;
+	sep?: 'word' | 'char';
+	stagger?: number;
+}
+
+export interface LinkSafetyModalProps {
+	href: string;
+	open: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+}
+
+export interface LinkSafetyConfig {
+	enabled?: boolean;
+	onLinkCheck?: (href: string) => boolean | Promise<boolean>;
+	renderModal?: (props: LinkSafetyModalProps) => unknown;
+}
+
 export interface StreamdownContext
 	extends Omit<
 		StreamdownProps,
@@ -19,7 +42,7 @@ export interface StreamdownContext
 	translations: StreamdownTranslations;
 	controls: {
 		code: boolean;
-		mermaid: boolean;
+		mermaid: NormalizedMermaidControls;
 		table: TableControlsConfig;
 	};
 	inlineCitationsMode: 'list' | 'carousel';
@@ -223,10 +246,13 @@ export type StreamdownComponents = {
 	inlineCode?: Component<InlineCodeComponentProps, any, any>;
 	code?: Component<{ token: Tokens.Code; id: string }, any, any>;
 	mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaidError?: Component<MermaidErrorComponentProps, any, any>;
 	math?: Component<{ token: MathToken; id: string }, any, any>;
 };
 
 export type StreamdownProps<Source extends Record<string, any> = Record<string, any>> = {
+	mode?: 'static' | 'streaming';
+	dir?: 'auto' | 'ltr' | 'rtl';
 	streamdown?: StreamdownContext;
 	static?: boolean;
 	sources?: {
@@ -242,8 +268,11 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	defaultOrigin?: string;
 	allowedLinkPrefixes?: string[];
 	allowedImagePrefixes?: string[];
+	linkSafety?: LinkSafetyConfig;
 	allowedTags?: AllowedTags;
 	literalTagContent?: string[];
+	prefix?: string;
+	lineNumbers?: boolean;
 
 	// Theme
 	theme?: DeepPartialTheme;
@@ -257,10 +286,15 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	translations?: Partial<StreamdownTranslations>;
 	controls?: {
 		code?: boolean;
-		mermaid?: boolean;
+		mermaid?: MermaidControls;
 		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
+	isAnimating?: boolean;
+	animated?: boolean | AnimateOptions;
+	caret?: 'block' | 'circle';
+	onAnimationStart?: () => void;
+	onAnimationEnd?: () => void;
 
 	animation?: {
 		animateOnMount?: boolean;
@@ -298,7 +332,58 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			},
 			any,
 			any
-		>
+	>
 	>;
 	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;
+
+export type MermaidControls =
+	| boolean
+	| {
+			download?: boolean;
+			fullscreen?: boolean;
+			panZoom?: boolean;
+	  };
+
+export type NormalizedMermaidControls = {
+	enabled: boolean;
+	download: boolean;
+	fullscreen: boolean;
+	panZoom: boolean;
+};
+
+export type MermaidErrorComponentProps = {
+	chart: string;
+	error: string;
+	id: string;
+	retry: () => void;
+};
+
+export const normalizeMermaidControls = (
+	controls: MermaidControls | undefined
+): NormalizedMermaidControls => {
+	if (controls === false) {
+		return {
+			enabled: false,
+			download: false,
+			fullscreen: false,
+			panZoom: false
+		};
+	}
+
+	if (controls === true || controls === undefined) {
+		return {
+			enabled: true,
+			download: true,
+			fullscreen: true,
+			panZoom: true
+		};
+	}
+
+	return {
+		enabled: true,
+		download: controls.download !== false,
+		fullscreen: controls.fullscreen !== false,
+		panZoom: controls.panZoom !== false
+	};
+};
