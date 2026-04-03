@@ -13,3 +13,8 @@ export {
 	createLanguageSet,
 	type LanguageInfo
 } from './utils/bundledLanguages.js';
+export {
+	defaultTranslations,
+	mergeTranslations,
+	type StreamdownTranslations
+} from './translations.js';

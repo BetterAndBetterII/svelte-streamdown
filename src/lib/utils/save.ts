@@ -1,5 +1,5 @@
-export const save = (filename: string, content: string, mimeType: string) => {
-	const blob = new Blob([content], { type: mimeType });
+export const save = (filename: string, content: string | Blob, mimeType: string) => {
+	const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 	link.href = url;

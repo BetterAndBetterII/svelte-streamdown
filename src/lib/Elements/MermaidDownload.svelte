@@ -8,9 +8,11 @@
 	import { save } from '$lib/utils/save.js';
 
 	let {
-		id
+		id,
+		chart
 	}: {
 		id: string;
+		chart: string;
 	} = $props();
 
 	const streamdown = useStreamdown();
@@ -166,13 +168,32 @@
 		style:min-width="fit-content !important"
 		class={streamdown.theme.components.popover}
 	>
-		{#each ['PNG', 'SVG'] as type}
+		{#each ['PNG', 'SVG', 'MMD'] as type}
+			{@const label =
+				type === 'PNG'
+					? streamdown.translations.downloadDiagramAsPng
+					: type === 'SVG'
+						? streamdown.translations.downloadDiagramAsSvg
+						: streamdown.translations.downloadDiagramAsMmd}
 			<button
 				style="width: 100%; text-align: left; justify-content: flex-start; padding: 1rem 1rem; margin: 0.2rem 0;"
-				onclick={() => download(type as 'SVG' | 'PNG')}
+				onclick={() => {
+					if (type === 'MMD') {
+						save('mermaid-diagram.mmd', chart, 'text/plain');
+						popover.isOpen = false;
+						return;
+					}
+					download(type as 'SVG' | 'PNG');
+				}}
 				class={streamdown.theme.components.button}
+				title={label}
+				aria-label={label}
 			>
-				{type}
+				{type === 'PNG'
+					? streamdown.translations.mermaidFormatPng
+					: type === 'SVG'
+						? streamdown.translations.mermaidFormatSvg
+						: streamdown.translations.mermaidFormatMmd}
 			</button>
 		{/each}
 	</dialog>
@@ -189,7 +210,8 @@
 		popover.isOpen = true;
 	}}
 	{@attach clickOutside.attachment}
-	title="Download diagram"
+	title={streamdown.translations.downloadDiagram}
+	aria-label={streamdown.translations.downloadDiagram}
 	data-panzoom-ignore
 >
 	{@render (streamdown.icons?.download || downloadIcon)()}

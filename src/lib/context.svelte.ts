@@ -5,15 +5,17 @@ import type { KatexOptions } from 'katex';
 import { getContext, onMount, setContext } from 'svelte';
 import type { LanguageInfo } from './utils/bundledLanguages.js';
 import type { ThemeRegistration } from 'shiki';
+import type { StreamdownTranslations } from './translations.js';
 
 export interface StreamdownContext
 	extends Omit<
 		StreamdownProps,
-		keyof Snippets | 'class' | 'theme' | 'shikiTheme' | 'inlineCitationsMode'
+		keyof Snippets | 'class' | 'theme' | 'shikiTheme' | 'inlineCitationsMode' | 'translations'
 	> {
 	snippets: Snippets;
 	shikiTheme: string;
 	theme: Theme;
+	translations: StreamdownTranslations;
 	controls: {
 		code: boolean;
 		mermaid: boolean;
@@ -200,15 +202,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	shikiThemes?: Record<string, ThemeRegistration>;
 	mermaidConfig?: MermaidConfig;
 	katexConfig?: KatexOptions | ((inline: boolean) => KatexOptions);
-	translations?: {
-		alert?: {
-			note?: string;
-			tip?: string;
-			warning?: string;
-			caution?: string;
-			important?: string;
-		};
-	};
+	translations?: Partial<StreamdownTranslations>;
 	controls?: {
 		code?: boolean;
 		mermaid?: boolean;

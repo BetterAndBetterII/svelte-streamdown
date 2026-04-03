@@ -161,12 +161,30 @@
 		class={streamdown.theme.components.popover}
 	>
 		{#each ['Markdown', 'HTML', 'CSV'] as type}
+			{@const label =
+				modeState === 'download'
+					? type === 'Markdown'
+						? streamdown.translations.downloadTableAsMarkdown
+						: type === 'HTML'
+							? streamdown.translations.downloadTableAsHtml
+							: streamdown.translations.downloadTableAsCsv
+					: type === 'Markdown'
+						? streamdown.translations.copyTableAsMarkdown
+						: type === 'HTML'
+							? streamdown.translations.copyTableAsHtml
+							: streamdown.translations.copyTableAsCsv}
 			<button
 				style="width: 100%; text-align: left; justify-content: flex-start; padding: 1rem 1rem; margin: 0.2rem 0;"
 				onclick={() => copyOrDownload(type as 'Markdown' | 'HTML' | 'CSV')}
 				class={streamdown.theme.components.button}
+				title={label}
+				aria-label={label}
 			>
-				{type}
+				{type === 'Markdown'
+					? streamdown.translations.tableFormatMarkdown
+					: type === 'HTML'
+						? streamdown.translations.tableFormatHtml
+						: streamdown.translations.tableFormatCsv}
 			</button>
 		{/each}
 	</dialog>
@@ -196,7 +214,16 @@
 				modeState = mode as 'download' | 'copy';
 			}}
 			{@attach clickOutside.attachment}
-			title={mode === 'download' ? 'Download table' : 'Copy table'}
+			title={
+				mode === 'download'
+					? streamdown.translations.downloadTable
+					: streamdown.translations.copyTable
+			}
+			aria-label={
+				mode === 'download'
+					? streamdown.translations.downloadTable
+					: streamdown.translations.copyTable
+			}
 		>
 			{#if mode === 'download'}
 				{@render (streamdown.icons?.download || downloadIcon)()}

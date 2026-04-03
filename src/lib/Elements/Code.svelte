@@ -67,13 +67,20 @@
 				<button
 					class={streamdown.theme.components.button}
 					onclick={downloadCode}
-					title="Download code"
+					title={streamdown.translations.downloadFile}
+					aria-label={streamdown.translations.downloadFile}
 					type="button"
 				>
 					{@render (streamdown.icons?.download || downloadIcon)()}
 				</button>
 
-				<button class={streamdown.theme.components.button} onclick={copy.copy} type="button">
+				<button
+					class={streamdown.theme.components.button}
+					onclick={copy.copy}
+					title={streamdown.translations.copyCode}
+					aria-label={streamdown.translations.copyCode}
+					type="button"
+				>
 					{#if copy.isCopied}
 						{@render (streamdown.icons?.check || checkIcon)()}
 					{:else}

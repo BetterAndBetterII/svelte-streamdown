@@ -3,6 +3,7 @@
 	import { StreamdownContext, type StreamdownProps } from './context.svelte.js';
 	import { mergeTheme, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
+	import { mergeTranslations } from './translations.js';
 
 	let {
 		content = '',
@@ -97,7 +98,7 @@
 			return renderHtml;
 		},
 		get translations() {
-			return translations;
+			return mergeTranslations(translations);
 		},
 		get shikiLanguages() {
 			return shikiLanguages;

@@ -226,6 +226,7 @@
 					<button
 						class={streamdown.theme.components.button}
 						aria-label="Zoom to fit"
+						title="Zoom to fit"
 						onclick={() => panzoom.zoomToFit()}
 						data-panzoom-ignore
 					>
@@ -234,6 +235,7 @@
 					<button
 						class={streamdown.theme.components.button}
 						aria-label="Zoom in"
+						title="Zoom in"
 						onclick={() => panzoom.zoomIn()}
 						data-panzoom-ignore
 					>
@@ -242,6 +244,7 @@
 					<button
 						class={streamdown.theme.components.button}
 						aria-label="Zoom out"
+						title="Zoom out"
 						onclick={() => panzoom.zoomOut()}
 						data-panzoom-ignore
 					>
@@ -249,13 +252,22 @@
 					</button>
 					<button
 						class={streamdown.theme.components.button}
-						aria-label="Toggle expand"
+						aria-label={
+							panzoom.expanded
+								? streamdown.translations.exitFullscreen
+								: streamdown.translations.viewFullscreen
+						}
+						title={
+							panzoom.expanded
+								? streamdown.translations.exitFullscreen
+								: streamdown.translations.viewFullscreen
+						}
 						onclick={() => panzoom.toggleExpand()}
 						data-panzoom-ignore
 					>
 						{@render (streamdown.icons?.fullscreen || fullscreenIcon)()}
 					</button>
-					<MermaidDownload {id} />
+					<MermaidDownload {id} chart={token.text} />
 				</div>
 			{/if}
 			<svg {@attach panzoom.attach} data-mermaid-svg></svg>
