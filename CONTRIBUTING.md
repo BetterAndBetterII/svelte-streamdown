@@ -56,6 +56,8 @@ Examples:
 
 Bug-fix PRs must add or update a regression fixture or test. Use the PR template to point reviewers to the exact path that captures the bug.
 
+The PR metadata check in CI reads the `Regression Coverage` section. If `Bug fix` is checked, `Coverage path` and `Coverage type` must both be filled in with the durable fixture or test that captures the fix.
+
 Reviewers should treat a missing regression asset as a blocker when:
 
 - the PR is marked as a bug fix

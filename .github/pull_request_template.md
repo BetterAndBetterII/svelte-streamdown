@@ -17,7 +17,7 @@ Related to #
 
 ## Regression Coverage
 
-<!-- Required for bug fixes. A bug-fix PR is not review-ready unless it adds or updates a durable fixture or test. -->
+<!-- Required for bug fixes. CI checks this section when "Bug fix" is selected. A bug-fix PR is not review-ready unless it adds or updates a durable fixture or test. -->
 
 - Coverage path:
 - Coverage type:
