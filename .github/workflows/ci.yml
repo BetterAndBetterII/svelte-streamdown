@@ -15,13 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: pnpm
 
-      - name: Verify migration coverage tracker and publish summary
-        run: node scripts/test-migration-status.mjs --check --summary-file "$GITHUB_STEP_SUMMARY"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify migration coverage tracker
+        run: pnpm verify:test-migration-status
+
+      - name: Publish migration coverage summary
+        run: node scripts/test-migration-status.mjs --summary-file "$GITHUB_STEP_SUMMARY"
 
   verify-toolchain:
     name: verify-toolchain
