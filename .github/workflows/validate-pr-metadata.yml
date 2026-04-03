@@ -1,0 +1,62 @@
+name: validate-pr-metadata
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  regression-coverage:
+    name: regression-coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate regression coverage metadata for bug-fix PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title || '';
+            const modulePath = `${process.env.GITHUB_WORKSPACE}/scripts/validate-pr-metadata.mjs`;
+            const { validateRegressionCoverage } = await import(`file://${modulePath}`);
+
+            const changedFiles = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+
+            const result = validateRegressionCoverage({
+              body: context.payload.pull_request.body || '',
+              changedFiles: changedFiles.map(({ filename, status }) => ({ filename, status }))
+            });
+
+            if (!result.shouldValidate) {
+              core.info(`PR "${title}" is not marked as a bug fix. Regression coverage metadata gate skipped.`);
+              return;
+            }
+
+            if (result.problems.length > 0) {
+              core.setFailed(
+                [
+                  'Bug-fix PRs must document a durable regression asset in the `Regression Coverage` section and the asset must be part of the PR diff.',
+                  ...result.problems
+                ].join('\n')
+              );
+              return;
+            }
+
+            core.info(
+              `Validated regression coverage metadata for bug-fix PR "${title}": ${result.coverageType} at ${result.coveragePath}`
+            );

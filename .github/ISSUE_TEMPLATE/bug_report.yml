@@ -1,0 +1,94 @@
+name: Bug Report
+description: Report a regression or incorrect markdown/rendering behavior in svelte-streamdown.
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bug reports in this repository must include a minimal markdown reproduction so the issue can be turned into a durable fixture or test. Trim the sample down to the smallest input that still shows the problem.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the bug in one or two sentences.
+      placeholder: A table cell with inline code renders differently from the frozen Streamdown reference.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-markdown
+    attributes:
+      label: Minimal Repro Markdown
+      description: Paste the smallest markdown snippet that reproduces the issue. This field is required for triage.
+      render: markdown
+      placeholder: |
+        | Column |
+        | --- |
+        | `inline code` |
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction Steps
+      description: Explain how you rendered the markdown and which props, plugins, or environment details matter.
+      placeholder: |
+        1. Render `<Streamdown>` with the markdown above.
+        2. Enable the same props/plugins shown below.
+        3. Compare the output to the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+      placeholder: The markdown should match the frozen reference behavior without dropping the inline code styling.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What happened instead? Include console output or screenshots if they help.
+      placeholder: The local renderer flattens the inline code span and the table row height changes.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression-asset
+    attributes:
+      label: Best Regression Asset
+      description: Pick the smallest durable asset that should capture this bug.
+      options:
+        - Shared parity fixture
+        - Unit or browser test
+        - Playwright parity test
+        - Ported upstream regression test
+        - Unsure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package Version or Commit
+      description: Which published version or repository commit showed the bug?
+      placeholder: e.g. 3.0.1 or c78a1e9
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: List the relevant runtime details.
+      placeholder: e.g. Node 22.22.1, pnpm 10.32.1, Chrome 135, Svelte 5
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Link related issues, reference behavior, or anything else that will help triage.
