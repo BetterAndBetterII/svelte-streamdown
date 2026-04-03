@@ -84,6 +84,7 @@ Rules for removing an exception:
 Current baseline approvals are intentionally explicit:
 
 - one production `high` advisory on `lodash-es`, inherited transitively through `mermaid`
+- one production package-level `BSD-2-Clause` exception for `entities`, inherited transitively through `rehype-raw` and kept package-specific pending broader license-policy review
 - repository-baseline development `high` advisories in the current SvelteKit, Vite, Playwright, Wrangler, and Vitest tooling graph
 - one production license metadata exception for `khroma`, whose installed package ships an MIT license file but omits SPDX metadata in `package.json`
 

@@ -42,6 +42,12 @@
 	"exports": {
 		"streamdown": [
 			{
+				"name": "AllowedTags",
+				"kind": "type",
+				"source": "./security/types.js",
+				"importedName": "AllowedTags"
+			},
+			{
 				"name": "Extension",
 				"kind": "type",
 				"source": "./marked/index.js",
@@ -217,6 +223,13 @@
 			"default": "['*']"
 		},
 		{
+			"name": "allowedTags",
+			"optional": true,
+			"type": "AllowedTags",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "animation",
 			"optional": true,
 			"type": "{animateOnMount?:boolean;enabled?:boolean;type?:\"fade\"|\"blur\"|\"slideUp\"|\"slideDown\";duration?:number;timingFunction?:\"ease\"|\"ease-in\"|\"ease-out\"|\"ease-in-out\"|\"linear\";tokenize?:\"word\"|\"char\";}",
@@ -289,7 +302,7 @@
 		{
 			"name": "controls",
 			"optional": true,
-			"type": "{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}",
+			"type": "{code?:boolean;mermaid?:MermaidControls;table?:TableControlsConfig;}",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -451,6 +464,13 @@
 			"name": "link",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Link;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "literalTagContent",
+			"optional": true,
+			"type": "string[]",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},

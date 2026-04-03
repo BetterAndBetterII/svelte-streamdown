@@ -1,6 +1,10 @@
 <script lang="ts" generics="Source extends Record<string, any> = Record<string, any>">
 	import Block from './Block.svelte';
-	import { StreamdownContext, type StreamdownProps } from './context.svelte.js';
+	import {
+		normalizeMermaidControls,
+		StreamdownContext,
+		type StreamdownProps
+	} from './context.svelte.js';
 	import { mergeTheme, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
@@ -154,11 +158,10 @@
 		},
 		get controls() {
 			const codeControls = controls?.code ?? true;
-			const mermaidControls = controls?.mermaid ?? true;
 			const tableControls = controls?.table ?? true;
 			return {
 				code: codeControls,
-				mermaid: mermaidControls,
+				mermaid: normalizeMermaidControls(controls?.mermaid),
 				table: tableControls
 			};
 		},

@@ -19,7 +19,7 @@ export interface StreamdownContext
 	translations: StreamdownTranslations;
 	controls: {
 		code: boolean;
-		mermaid: boolean;
+		mermaid: NormalizedMermaidControls;
 		table: TableControlsConfig;
 	};
 	inlineCitationsMode: 'list' | 'carousel';
@@ -223,6 +223,7 @@ export type StreamdownComponents = {
 	inlineCode?: Component<InlineCodeComponentProps, any, any>;
 	code?: Component<{ token: Tokens.Code; id: string }, any, any>;
 	mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaidError?: Component<MermaidErrorComponentProps, any, any>;
 	math?: Component<{ token: MathToken; id: string }, any, any>;
 };
 
@@ -257,7 +258,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	translations?: Partial<StreamdownTranslations>;
 	controls?: {
 		code?: boolean;
-		mermaid?: boolean;
+		mermaid?: MermaidControls;
 		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
@@ -298,7 +299,58 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			},
 			any,
 			any
-		>
+	>
 	>;
 	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;
+
+export type MermaidControls =
+	| boolean
+	| {
+			download?: boolean;
+			fullscreen?: boolean;
+			panZoom?: boolean;
+	  };
+
+export type NormalizedMermaidControls = {
+	enabled: boolean;
+	download: boolean;
+	fullscreen: boolean;
+	panZoom: boolean;
+};
+
+export type MermaidErrorComponentProps = {
+	chart: string;
+	error: string;
+	id: string;
+	retry: () => void;
+};
+
+export const normalizeMermaidControls = (
+	controls: MermaidControls | undefined
+): NormalizedMermaidControls => {
+	if (controls === false) {
+		return {
+			enabled: false,
+			download: false,
+			fullscreen: false,
+			panZoom: false
+		};
+	}
+
+	if (controls === true || controls === undefined) {
+		return {
+			enabled: true,
+			download: true,
+			fullscreen: true,
+			panZoom: true
+		};
+	}
+
+	return {
+		enabled: true,
+		download: controls.download !== false,
+		fullscreen: controls.fullscreen !== false,
+		panZoom: controls.panZoom !== false
+	};
+};
