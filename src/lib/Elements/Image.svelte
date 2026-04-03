@@ -71,6 +71,16 @@
 		const blob = await response.blob();
 		save(getFilename(source, blob), blob, blob.type || 'application/octet-stream');
 	}
+
+	function handleLoad(): void {
+		isLoaded = true;
+		hasError = false;
+	}
+
+	function handleError(): void {
+		hasError = true;
+		isLoaded = false;
+	}
 </script>
 
 {#if token.href !== 'streamdown:incomplete-image'}
@@ -79,6 +89,9 @@
 			props={{
 				src: isRelativeUrl ? token.href : transformedUrl,
 				alt: token.text,
+				class: streamdown.theme.image.image,
+				onload: handleLoad,
+				onerror: handleError,
 				children,
 				token
 			}}
@@ -94,19 +107,26 @@
 						{streamdown.translations.imageNotAvailable}
 					</span>
 				{:else}
-					<img
-						class={streamdown.theme.image.image}
-						src={isRelativeUrl ? token.href : transformedUrl}
-						alt={token.text}
-						onload={() => {
-							isLoaded = true;
-							hasError = false;
+					<Slot
+						props={{
+							src: isRelativeUrl ? token.href : transformedUrl,
+							alt: token.text,
+							class: streamdown.theme.image.image,
+							onload: handleLoad,
+							onerror: handleError,
+							children,
+							token
 						}}
-						onerror={() => {
-							hasError = true;
-							isLoaded = false;
-						}}
-					/>
+						component={streamdown.components?.img}
+					>
+						<img
+							class={streamdown.theme.image.image}
+							src={isRelativeUrl ? token.href : transformedUrl}
+							alt={token.text}
+							onload={handleLoad}
+							onerror={handleError}
+						/>
+					</Slot>
 				{/if}
 				{#if isLoaded && !hasError}
 					<button
