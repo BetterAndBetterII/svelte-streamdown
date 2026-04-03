@@ -265,8 +265,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'components',
 				reference: 'Components',
-				local:
-					'{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}'
+				local: 'StreamdownComponents'
 			},
 			{
 				name: 'controls',

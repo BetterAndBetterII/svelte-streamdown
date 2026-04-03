@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { useStreamdown, type TableControlsConfig } from '$lib/context.svelte.js';
+	import type { TableToken } from '$lib/marked/index.js';
 	import { fullscreenIcon } from './icons.js';
+	import Slot from './Slot.svelte';
 	import TableDownload from './TableDownload.svelte';
 
 	let {
 		id,
+		token,
 		children
 	}: {
 		id: string;
+		token: TableToken;
 		children?: import('svelte').Snippet;
 	} = $props();
 
 	const streamdown = useStreamdown();
+	const TableComponent = $derived(streamdown.components?.table);
 
 	const resolveControls = (
 		controls: TableControlsConfig
@@ -85,9 +90,14 @@
 		class={`${streamdown.theme.table.base} group`}
 		style:overscroll-behavior-x="none"
 	>
-		<table data-streamdown="table" class={streamdown.theme.table.table}>
-			{@render children?.()}
-		</table>
+		<Slot
+			props={{ children, token, class: streamdown.theme.table.table }}
+			component={TableComponent}
+		>
+			<table data-streamdown="table" class={streamdown.theme.table.table}>
+				{@render children?.()}
+			</table>
+		</Slot>
 	</div>
 </div>
 
@@ -119,9 +129,14 @@
 		</div>
 
 		<div data-streamdown-table-fullscreen={id} class="flex-1 overflow-auto">
-			<table data-streamdown="table" class={streamdown.theme.table.table}>
-				{@render children?.()}
-			</table>
+			<Slot
+				props={{ children, token, class: streamdown.theme.table.table }}
+				component={TableComponent}
+			>
+				<table data-streamdown="table" class={streamdown.theme.table.table}>
+					{@render children?.()}
+				</table>
+			</Slot>
 		</div>
 	</div>
 {/if}

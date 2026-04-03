@@ -302,7 +302,7 @@
 		{
 			"name": "components",
 			"optional": true,
-			"type": "{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}",
+			"type": "StreamdownComponents",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},

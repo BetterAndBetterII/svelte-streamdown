@@ -208,6 +208,47 @@ export type Snippets<Source extends Record<string, any> = Record<string, any>> =
 	>;
 };
 
+type ComponentOverrideProps<Token> = {
+	children?: Snippet;
+	token: Token;
+	class?: string;
+	style?: string;
+};
+
+type HeadingComponentProps = ComponentOverrideProps<Tokens.Heading>;
+type ParagraphComponentProps = ComponentOverrideProps<Tokens.Paragraph>;
+type LinkComponentProps = ComponentOverrideProps<Tokens.Link> & {
+	href?: string;
+	target?: string;
+	rel?: string;
+	title?: string | null;
+};
+type ImageComponentProps = ComponentOverrideProps<Tokens.Image> & {
+	src?: string | null;
+	alt?: string;
+	onload?: () => void;
+	onerror?: () => void;
+};
+type TableComponentProps = ComponentOverrideProps<TableToken>;
+type InlineCodeComponentProps = ComponentOverrideProps<Tokens.Codespan>;
+
+export type StreamdownComponents = {
+	h1?: Component<HeadingComponentProps, any, any>;
+	h2?: Component<HeadingComponentProps, any, any>;
+	h3?: Component<HeadingComponentProps, any, any>;
+	h4?: Component<HeadingComponentProps, any, any>;
+	h5?: Component<HeadingComponentProps, any, any>;
+	h6?: Component<HeadingComponentProps, any, any>;
+	p?: Component<ParagraphComponentProps, any, any>;
+	a?: Component<LinkComponentProps, any, any>;
+	img?: Component<ImageComponentProps, any, any>;
+	table?: Component<TableComponentProps, any, any>;
+	inlineCode?: Component<InlineCodeComponentProps, any, any>;
+	code?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	math?: Component<{ token: MathToken; id: string }, any, any>;
+};
+
 export type StreamdownProps<Source extends Record<string, any> = Record<string, any>> = {
 	mode?: 'static' | 'streaming';
 	dir?: 'auto' | 'ltr' | 'rtl';
@@ -292,9 +333,5 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			any
 		>
 	>;
-	components?: {
-		code?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		math?: Component<{ token: MathToken; id: string }, any, any>;
-	};
+	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;
