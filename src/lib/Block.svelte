@@ -24,7 +24,9 @@
 	);
 	const tokens = $derived(lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
-	const allowedTagNames = $derived(streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []);
+	const allowedTagNames = $derived(
+		streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []
+	);
 
 	const shouldRenderSecurityHtmlBlock = $derived.by(() => {
 		const trimmed = markdown.trimStart();

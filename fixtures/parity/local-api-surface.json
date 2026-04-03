@@ -144,6 +144,12 @@
 				"importedName": "mergeTranslations"
 			},
 			{
+				"name": "normalizeHtmlIndentation",
+				"kind": "value",
+				"source": "./security/html.js",
+				"importedName": "normalizeHtmlIndentation"
+			},
+			{
 				"name": "parseBlocks",
 				"kind": "value",
 				"source": "./marked/index.js",
@@ -564,6 +570,13 @@
 			"type": "\"static\"|\"streaming\"",
 			"source": "src/lib/context.svelte.ts",
 			"default": "'streaming'"
+		},
+		{
+			"name": "normalizeHtmlIndentation",
+			"optional": true,
+			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": "false"
 		},
 		{
 			"name": "ol",

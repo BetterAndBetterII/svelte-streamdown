@@ -333,7 +333,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			},
 			any,
 			any
-	>
+		>
 	>;
 	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;
