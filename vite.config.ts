@@ -2,8 +2,10 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
-import { copyFileSync, watchFile } from 'fs';
-import { resolve } from 'path';
+import type { ViteDevServer } from 'vite';
+import type { Stats } from 'node:fs';
+import { copyFileSync, watchFile, unwatchFile } from 'node:fs';
+import { resolve } from 'node:path';
 
 // Plugin to copy README.md from root to src folder
 function copyReadmePlugin() {
@@ -25,19 +27,21 @@ function copyReadmePlugin() {
 			// Copy on build start
 			copyReadme();
 		},
-		configureServer(server) {
+		configureServer(server: ViteDevServer) {
 			// Watch and copy during development
-			const watcher = watchFile(rootReadme, (curr, prev) => {
+			const onReadmeChange = (curr: Stats, prev: Stats) => {
 				if (curr.mtime !== prev.mtime) {
 					copyReadme();
 					// Trigger HMR update
 					server.ws.send({ type: 'full-reload' });
 				}
-			});
+			};
+
+			watchFile(rootReadme, onReadmeChange);
 
 			// Cleanup on server close
 			server.httpServer?.on('close', () => {
-				watcher?.close?.();
+				unwatchFile(rootReadme, onReadmeChange);
 			});
 		}
 	};

@@ -14,7 +14,8 @@
 		"test:ui": "vitest --ui",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"verify:toolchain": "node scripts/verify-toolchain.mjs"
+		"verify:toolchain": "node scripts/verify-toolchain.mjs",
+		"verify:clean-build": "node scripts/verify-clean-build.mjs"
 	},
 	"files": [
 		"dist",
@@ -49,6 +50,7 @@
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "^24.6.1",
 		"@cloudflare/workers-types": "^4.20250906.0",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.22.0",

@@ -155,6 +155,7 @@ export const theme = {
 			favicon: 'h-3 w-3 rounded'
 		}
 	},
+	mdx: {},
 
 	components: {
 		button:
@@ -335,6 +336,7 @@ export const shadcnTheme = {
 			favicon: 'h-3 w-3 rounded'
 		}
 	},
+	mdx: {},
 	components: {
 		button:
 			'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer p-1 text-muted-foreground transition-all hover:text-foreground rounded hover:bg-border flex items-center justify-center w-6 h-6',
