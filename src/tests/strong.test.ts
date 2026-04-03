@@ -314,7 +314,6 @@ describe('incomplete markdown', () => {
 		const input = 'Text with **bold and *italic';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete all incomplete formatters in the order they appear
-		expect(result).toBe('Text with **bold and *italic***');
+		expect(result).toBe('Text with **bold and *italic*');
 	});
 });

@@ -318,7 +318,8 @@ describe('incomplete markdown', () => {
 		const input = 'Complete [Google](https://google.com) and incomplete [GitHub';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should preserve complete link and complete incomplete one
-		expect(result).toBe('Complete [Google](https://google.com) and incomplete [GitHub');
+		expect(result).toBe(
+			'Complete [Google](https://google.com) and incomplete [GitHub](streamdown:incomplete-link)'
+		);
 	});
 });
