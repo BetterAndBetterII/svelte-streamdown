@@ -7,6 +7,7 @@ const appRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(appRoot, '../..');
 
 export default defineConfig({
+	cacheDir: resolve(appRoot, '.vite'),
 	root: appRoot,
 	plugins: [react()],
 	assetsInclude: ['**/*.md'],
