@@ -5,16 +5,23 @@
 	import { Popover } from './popover.svelte.js';
 	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
-	import type { TableToken } from '$lib/marked/marked-table.js';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
 	import { save } from '$lib/utils/save.js';
+	import {
+		extractTableDataFromElement,
+		tableDataToCSV,
+		tableDataToMarkdown,
+		tableDataToTSV
+	} from '$lib/utils/table.js';
 
 	let {
-		token,
-		id
+		showCopy = true,
+		showDownload = true,
+		targetSelector
 	}: {
-		token: TableToken;
-		id: string;
+		showCopy?: boolean;
+		showDownload?: boolean;
+		targetSelector: string;
 	} = $props();
 	const streamdown = useStreamdown();
 	const popover = new Popover();
@@ -38,7 +45,7 @@
 		}
 	});
 
-	let copyValue = $state(token.raw);
+	let copyValue = $state('');
 
 	const copy = useCopy({
 		get content() {
@@ -46,140 +53,46 @@
 		}
 	});
 
-	type TableData = {
-		headers: string[];
-		rows: string[][];
-	};
-
-	const extractTableData = (table: ParentNode): TableData => {
-		const headers = Array.from(table.querySelectorAll('thead th')).map(
-			(cell) => cell.textContent?.trim() || ''
-		);
-		const rows = Array.from(table.querySelectorAll('tbody tr')).map((row) =>
-			Array.from(row.querySelectorAll('td')).map((cell) => cell.textContent?.trim() || '')
-		);
-
-		return { headers, rows };
-	};
-
-	const tableDataToMarkdown = ({ headers, rows }: TableData): string => {
-		if (headers.length === 0) {
-			return '';
+	const copyOrDownload = (type: 'Markdown' | 'CSV' | 'TSV') => {
+		const tableRoot = document.querySelector(targetSelector);
+		const table = tableRoot?.querySelector('table');
+		if (!table) {
+			popover.isOpen = false;
+			return;
 		}
 
-		const headerRow = `| ${headers.join(' | ')} |`;
-		const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
-		const dataRows = rows.map((row) => {
-			const paddedRow = headers.map((_, index) => row[index] ?? '');
-			return `| ${paddedRow.join(' | ')} |`;
-		});
-
-		return [headerRow, separatorRow, ...dataRows].join('\n');
-	};
-
-	const copyOrDownload = (type: 'Markdown' | 'HTML' | 'CSV') => {
+		const tableData = extractTableDataFromElement(table);
 		if (type === 'Markdown') {
-			const table = document.querySelector(`[data-streamdown-table=${id}]`);
-			if (table) {
-				copyValue = tableDataToMarkdown(extractTableData(table));
-				if (modeState === 'copy') {
-					copy.copy();
-				} else {
-					save('table.md', copyValue, 'text/markdown');
-				}
-			}
-		} else if (type === 'HTML') {
-			const table = document.querySelector(`[data-streamdown-table=${id}]`);
-
-			if (table) {
-				let html = (table.cloneNode(true) as HTMLElement).outerHTML;
-				// remove comments
-				html = html.replace(/<!--[\s\S]*?-->/g, '');
-				copyValue = html;
-				// Remove class and style attributes
-				html = html.replace(/class="[^"]*"/g, '');
-				html = html.replace(/style="[^"]*"/g, '');
-				// remove space between the tag name and the closing chrevron like <table  > -> <table> for every tagnmae
-				html = html.replace(/<([^>]+)>\s+</g, '<$1><');
-				// Remove spaces before closing bracket >
-				html = html.replace(/\s+>/g, '>');
-				// Remove spaces after opening bracket <
-				html = html.replace(/<\s+/g, '<');
-				// Collapse multiple spaces within tags to single space
-				html = html.replace(/<([^>]+)>/g, (match) => match.replace(/\s+/g, ' '));
-
-				copyValue = html;
-
-				if (modeState === 'copy') {
-					copy.copy();
-				} else {
-					save('table.html', copyValue, 'text/html');
-				}
+			copyValue = tableDataToMarkdown(tableData);
+			if (modeState === 'copy') {
+				copy.copy();
+			} else {
+				save('table.md', copyValue, 'text/markdown');
 			}
 		} else if (type === 'CSV') {
-			const table = document.querySelector(`[data-streamdown-table=${id}]`);
-
-			if (table) {
-				const rows = table.querySelectorAll('tr');
-				const rowSpanFills: Array<{ rowIndex: number; colIndex: number; colSpan: number }> = [];
-
-				const matrix = Array.from(rows).reduce((acc, row, rowIndex) => {
-					const cells = row.querySelectorAll('td, th');
-					const rowData: string[] = [];
-					let actualCol = 0; // Track actual column position in the output matrix
-
-					Array.from(cells).forEach((cell) => {
-						const colSpan = parseInt(cell.getAttribute('colspan') || '1');
-						const rowSpan = parseInt(cell.getAttribute('rowspan') || '1');
-
-						// Add the cell content
-						// Add the cell content, quoting if it contains commas, quotes, or newlines
-						const content = cell.textContent || '';
-						const needsQuoting = /[,"\n]/.test(content);
-						const escapedContent = content.replace(/"/g, '""');
-						rowData.push(needsQuoting ? `"${escapedContent}"` : content);
-
-						// Add empty cells for colspan
-						for (let i = 0; i < colSpan - 1; i++) {
-							rowData.push('');
-						}
-
-						// Track rowspan fills needed in future rows
-						if (rowSpan > 1) {
-							for (let r = 1; r < rowSpan; r++) {
-								rowSpanFills.push({
-									rowIndex: rowIndex + r,
-									colIndex: actualCol,
-									colSpan: colSpan
-								});
-							}
-						}
-
-						actualCol += colSpan;
-					});
-
-					acc.push(rowData);
-					return acc;
-				}, [] as string[][]);
-
-				// Process rowspan fills - insert empty cells at correct positions
-				rowSpanFills.forEach(({ rowIndex, colIndex, colSpan }) => {
-					if (matrix[rowIndex]) {
-						matrix[rowIndex].splice(colIndex, 0, ...Array(colSpan).fill(''));
-					}
-				});
-
-				const csv = matrix.map((row) => row.join(',')).join('\n');
-				copyValue = csv;
-				if (modeState === 'copy') {
-					copy.copy();
-				} else {
-					save('table.csv', copyValue, 'text/csv');
-				}
+			copyValue = tableDataToCSV(tableData);
+			if (modeState === 'copy') {
+				copy.copy();
+			} else {
+				save('table.csv', copyValue, 'text/csv');
 			}
+		} else {
+			copyValue = tableDataToTSV(tableData);
+			copy.copy();
 		}
+
 		popover.isOpen = false;
 	};
+
+	const menuOptions = $derived(
+		modeState === 'download' ? ['Markdown', 'CSV'] : ['Markdown', 'CSV', 'TSV']
+	);
+	const buttonModes = $derived(
+		[
+			showDownload ? 'download' : null,
+			showCopy ? 'copy' : null
+		].filter((mode): mode is 'download' | 'copy' => mode !== null)
+	);
 </script>
 
 {#if popover.isOpen}
@@ -189,46 +102,42 @@
 		transition:scale|global={{ start: 0.95, duration: 100 }}
 		{@attach clickOutside.attachment}
 		{@attach popover.popoverAttachment}
-		open
-		style:width="fit-content !important"
-		style:min-width="fit-content !important"
-		class={streamdown.theme.components.popover}
-	>
-		{#each ['Markdown', 'HTML', 'CSV'] as type}
+	open
+	style:width="fit-content !important"
+	style:min-width="fit-content !important"
+	class={streamdown.theme.components.popover}
+>
+		{#each menuOptions as type}
 			{@const label =
 				modeState === 'download'
 					? type === 'Markdown'
 						? streamdown.translations.downloadTableAsMarkdown
-						: type === 'HTML'
-							? streamdown.translations.downloadTableAsHtml
-							: streamdown.translations.downloadTableAsCsv
+						: streamdown.translations.downloadTableAsCsv
 					: type === 'Markdown'
 						? streamdown.translations.copyTableAsMarkdown
-						: type === 'HTML'
-							? streamdown.translations.copyTableAsHtml
-							: streamdown.translations.copyTableAsCsv}
+						: type === 'CSV'
+							? streamdown.translations.copyTableAsCsv
+							: streamdown.translations.copyTableAsTsv}
 			<button
 				style="width: 100%; text-align: left; justify-content: flex-start; padding: 1rem 1rem; margin: 0.2rem 0;"
-				onclick={() => copyOrDownload(type as 'Markdown' | 'HTML' | 'CSV')}
+				onclick={() => copyOrDownload(type as 'Markdown' | 'CSV' | 'TSV')}
 				class={streamdown.theme.components.button}
 				title={label}
 				aria-label={label}
 			>
 				{type === 'Markdown'
 					? streamdown.translations.tableFormatMarkdown
-					: type === 'HTML'
-						? streamdown.translations.tableFormatHtml
-						: streamdown.translations.tableFormatCsv}
+					: type === 'CSV'
+						? streamdown.translations.tableFormatCsv
+						: streamdown.translations.tableFormatTsv}
 			</button>
 		{/each}
 	</dialog>
 {/if}
 
-<div
-	data-streamdown-table-download
-	class=" right-0 ml-auto flex items-center justify-end gap-2 p-1"
->
-	{#each ['download', 'copy'] as mode (mode)}
+{#if buttonModes.length > 0}
+	<div data-streamdown-table-download class=" right-0 ml-auto flex items-center justify-end gap-2 p-1">
+		{#each buttonModes as mode (mode)}
 		<button
 			class={streamdown.theme.components.button}
 			onclick={async (e: MouseEvent) => {
@@ -263,8 +172,9 @@
 				{@render (streamdown.icons?.copy || copyIcon)()}
 			{/if}
 		</button>
-	{/each}
-</div>
+		{/each}
+	</div>
+{/if}
 
 <style>
 	:global([data-streamdown-table-download] + div) {
