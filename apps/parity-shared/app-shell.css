@@ -1,0 +1,145 @@
+:root {
+	color-scheme: light;
+	font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+	background:
+		radial-gradient(circle at top left, rgba(225, 236, 255, 0.8), transparent 32%),
+		linear-gradient(180deg, #f8fbff 0%, #eef2f7 100%);
+	color: #10233f;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+}
+
+button,
+select,
+textarea {
+	font: inherit;
+}
+
+.parity-app {
+	min-height: 100vh;
+	padding: 24px;
+}
+
+.parity-shell {
+	max-width: 1280px;
+	margin: 0 auto;
+	display: grid;
+	gap: 20px;
+}
+
+.parity-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 20px 24px;
+	border: 1px solid rgba(16, 35, 63, 0.12);
+	border-radius: 20px;
+	background: rgba(255, 255, 255, 0.84);
+	backdrop-filter: blur(10px);
+}
+
+.parity-header h1 {
+	margin: 0;
+	font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+	font-size: 1rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.parity-header p {
+	margin: 6px 0 0;
+	max-width: 60ch;
+	color: #42536d;
+}
+
+.parity-picker {
+	display: grid;
+	gap: 6px;
+	min-width: min(100%, 320px);
+}
+
+.parity-picker label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #42536d;
+}
+
+.parity-picker select,
+.parity-source {
+	border: 1px solid rgba(16, 35, 63, 0.16);
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.92);
+}
+
+.parity-picker select {
+	padding: 12px 14px;
+	color: inherit;
+}
+
+.parity-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+	gap: 20px;
+}
+
+.parity-panel {
+	display: grid;
+	gap: 12px;
+	padding: 20px 24px 24px;
+	border: 1px solid rgba(16, 35, 63, 0.12);
+	border-radius: 20px;
+	background: rgba(255, 255, 255, 0.84);
+	backdrop-filter: blur(10px);
+}
+
+.parity-panel h2 {
+	margin: 0;
+	font-size: 0.95rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.parity-panel p {
+	margin: 0;
+	color: #42536d;
+}
+
+.parity-source {
+	width: 100%;
+	min-height: 360px;
+	padding: 16px;
+	font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+	resize: vertical;
+}
+
+.parity-rendered {
+	min-height: 360px;
+	padding: 18px;
+	border-radius: 16px;
+	background: #fff;
+	border: 1px solid rgba(16, 35, 63, 0.08);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 900px) {
+	.parity-app {
+		padding: 16px;
+	}
+
+	.parity-grid {
+		grid-template-columns: 1fr;
+	}
+}
