@@ -39,6 +39,9 @@ describeInBrowser('ported streamdown mermaid controls', () => {
 			}
 		});
 
+		expect(screen.container.querySelector('button[title="Download diagram"]')).toBeNull();
+		expect(screen.container.querySelector('button[title="View fullscreen"]')).toBeNull();
+
 		await vi.waitFor(() => {
 			expect(screen.container.querySelector('button[title="Download diagram"]')).toBeTruthy();
 			expect(screen.container.querySelector('button[title="View fullscreen"]')).toBeTruthy();

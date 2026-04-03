@@ -98,20 +98,28 @@
 	};
 
 	const downloadSvg = async () => {
-		const svgString = await getSvgMarkup();
-		if (!svgString) return;
+		try {
+			const svgString = await getSvgMarkup();
+			if (!svgString) return;
 
-		save('diagram.svg', svgString, 'image/svg+xml');
-		popover.isOpen = false;
+			save('diagram.svg', svgString, 'image/svg+xml');
+			popover.isOpen = false;
+		} catch (err) {
+			console.error('Failed to download SVG:', err);
+		}
 	};
 
 	const downloadPng = async () => {
-		const svgString = await getSvgMarkup();
-		if (!svgString) return;
+		try {
+			const svgString = await getSvgMarkup();
+			if (!svgString) return;
 
-		const blob = await svgToPngBlob(svgString);
-		save('diagram.png', blob, 'image/png');
-		popover.isOpen = false;
+			const blob = await svgToPngBlob(svgString);
+			save('diagram.png', blob, 'image/png');
+			popover.isOpen = false;
+		} catch (err) {
+			console.error('Failed to download PNG:', err);
+		}
 	};
 
 	const download = async (type: 'SVG' | 'PNG') => {

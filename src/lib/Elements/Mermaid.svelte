@@ -33,7 +33,7 @@
 	const renderedSvg = $derived(svgContent || lastValidSvg);
 	const controls = $derived(streamdown.controls.mermaid);
 	const showActionBar = $derived(
-		controls.enabled && (controls.download || controls.fullscreen || controls.panZoom)
+		!!mermaid && controls.enabled && (controls.download || controls.fullscreen || controls.panZoom)
 	);
 
 	const createRenderId = (chart: string) => {
