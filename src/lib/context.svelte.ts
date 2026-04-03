@@ -7,6 +7,8 @@ import type { LanguageInfo } from './utils/bundledLanguages.js';
 import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
 
+export type AllowedTags = Record<string, string[]>;
+
 export interface StreamdownContext
 	extends Omit<
 		StreamdownProps,
@@ -208,6 +210,9 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 		mermaid?: boolean;
 		table?: boolean;
 	};
+	allowedTags?: AllowedTags;
+	literalTagContent?: string[];
+	normalizeHtmlIndentation?: boolean;
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
 
 	animation?: {

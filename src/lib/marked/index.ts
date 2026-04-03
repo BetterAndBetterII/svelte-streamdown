@@ -39,6 +39,47 @@ import { markedCitations, type CitationToken } from './marked-citations.js';
 import { markedMdx, type MdxToken } from './marked-mdx.js';
 import { markedCjk } from './marked-cjk.js';
 
+const VOID_HTML_TAGS = new Set([
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr'
+]);
+
+const getOpeningHtmlTagName = (raw: string): string | null => {
+	const match = raw.match(/^\s*<([A-Za-z][\w:-]*)(?=[\s/>])/);
+	if (!match) {
+		return null;
+	}
+
+	const tagName = match[1].toLowerCase();
+	if (VOID_HTML_TAGS.has(tagName) || /^\s*<\//.test(raw) || /\/>\s*$/.test(raw)) {
+		return null;
+	}
+
+	return tagName;
+};
+
+const getHtmlTagDepthDelta = (raw: string, tagName: string): number => {
+	const openPattern = new RegExp(`<${tagName}(?=[\\s>/])[^>]*>`, 'gi');
+	const closePattern = new RegExp(`</${tagName}\\s*>`, 'gi');
+	const selfClosingPattern = new RegExp(`<${tagName}(?=[\\s>/])[^>]*\\/\\s*>`, 'gi');
+	const opens =
+		(raw.match(openPattern) ?? []).length - (raw.match(selfClosingPattern) ?? []).length;
+	const closes = (raw.match(closePattern) ?? []).length;
+	return opens - closes;
+};
+
 export type GenericToken = {
 	type: string;
 	raw: string;
@@ -168,14 +209,40 @@ export const parseBlocks = (markdown: string, extensions: Extension[] = []): str
 		)
 	);
 
-	return blockLexer.blockTokens(markdown, []).reduce((acc, block) => {
-		if (block.type === 'space' || block.type === 'footnote') {
-			return acc;
-		} else {
-			acc.push(block.raw);
+	const rawBlocks = blockLexer
+		.blockTokens(markdown, [])
+		.filter((block) => block.type !== 'space' && block.type !== 'footnote');
+
+	const mergedBlocks: string[] = [];
+
+	for (let index = 0; index < rawBlocks.length; index += 1) {
+		const block = rawBlocks[index];
+
+		if (block.type !== 'html') {
+			mergedBlocks.push(block.raw);
+			continue;
 		}
-		return acc;
-	}, [] as string[]);
+
+		const tagName = getOpeningHtmlTagName(block.raw);
+		if (!tagName) {
+			mergedBlocks.push(block.raw);
+			continue;
+		}
+
+		let mergedRaw = block.raw;
+		let depth = getHtmlTagDepthDelta(block.raw, tagName);
+
+		while (depth > 0 && index + 1 < rawBlocks.length) {
+			index += 1;
+			const nextBlock = rawBlocks[index];
+			mergedRaw += nextBlock.raw;
+			depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
+		}
+
+		mergedBlocks.push(mergedRaw);
+	}
+
+	return mergedBlocks;
 };
 
 export type {

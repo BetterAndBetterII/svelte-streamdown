@@ -4,6 +4,7 @@
 	import { mergeTheme, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
 	import { mergeTranslations } from './translations.js';
+	import { prepareMarkdownForHtml } from './utils/html-support.js';
 
 	let {
 		content = '',
@@ -23,6 +24,9 @@
 		mergeTheme: shouldMergeTheme = true,
 		streamdown = $bindable(),
 		renderHtml,
+		allowedTags,
+		literalTagContent,
+		normalizeHtmlIndentation = false,
 		controls,
 		animation,
 		element = $bindable(),
@@ -95,7 +99,16 @@
 			return katexConfig;
 		},
 		get renderHtml() {
-			return renderHtml;
+			return renderHtml ?? true;
+		},
+		get allowedTags() {
+			return allowedTags;
+		},
+		get literalTagContent() {
+			return literalTagContent;
+		},
+		get normalizeHtmlIndentation() {
+			return normalizeHtmlIndentation;
 		},
 		get translations() {
 			return mergeTranslations(translations);
@@ -155,12 +168,22 @@
 
 	const id = $props.id();
 
-	const blocks = $derived(isStatic ? content : parseBlocks(content, streamdown.extensions));
+	const preparedContent = $derived(
+		prepareMarkdownForHtml(content, {
+			allowedTags,
+			literalTagContent,
+			normalizeIndentation: normalizeHtmlIndentation
+		})
+	);
+
+	const blocks = $derived(
+		isStatic ? preparedContent : parseBlocks(preparedContent, streamdown.extensions)
+	);
 </script>
 
 <div bind:this={element} class={className}>
 	{#if isStatic}
-		<Block static={isStatic} block={content} />
+		<Block static={isStatic} block={preparedContent} />
 	{:else}
 		{#each blocks as block, index (`${id}-block-${index}`)}
 			<Block static={isStatic} {block} />

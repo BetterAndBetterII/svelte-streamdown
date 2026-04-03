@@ -4,17 +4,7 @@ import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 import { expect } from 'vitest';
 
 describeInBrowser('ported streamdown security HTML handling', () => {
-	testInBrowser.fails('reference default escapes HTML text when raw HTML processing is disabled', () => {
-		const screen = render(Streamdown, {
-			content: '<div>Hello</div>',
-			static: true
-		});
-
-		expect(screen.container.textContent).toContain('<div>Hello</div>');
-		expect(screen.container.querySelector('details')).toBeNull();
-	});
-
-	testInBrowser.fails('reference default renders multiline content inside details blocks', () => {
+	testInBrowser('reference default renders multiline content inside details blocks', () => {
 		const screen = render(Streamdown, {
 			content: `<details>
 <summary>Summary</summary>
@@ -34,7 +24,7 @@ Paragraph inside details.
 		expect(details?.contains(paragraph as Node)).toBe(true);
 	});
 
-	testInBrowser.fails('reference default renders safe self-closing img HTML blocks', () => {
+	testInBrowser('reference default renders safe self-closing img HTML blocks', () => {
 		const screen = render(Streamdown, {
 			content: `<p>Before image</p>
 <img src="https://example.com/image.jpg" alt="Test Image" width="100" height="100">
@@ -51,5 +41,29 @@ Paragraph inside details.
 		expect(image?.getAttribute('width')).toBe('100');
 		expect(image?.getAttribute('height')).toBe('100');
 		expect(paragraphs).toHaveLength(2);
+	});
+
+	testInBrowser('reference normalizeHtmlIndentation renders indented HTML blocks as HTML', () => {
+		const screen = render(Streamdown, {
+			content: `<div class="wrapper">
+    <div class="inner">
+      <h4>Title One</h4>
+    </div>
+
+    <div class="another">
+      <h4>Title Two</h4>
+    </div>
+</div>`,
+			static: true,
+			normalizeHtmlIndentation: true
+		});
+
+		const headings = [...screen.container.querySelectorAll('h4')].map(
+			(element) => element.textContent
+		);
+
+		expect(headings).toContain('Title One');
+		expect(headings).toContain('Title Two');
+		expect(screen.container.querySelectorAll('code')).toHaveLength(0);
 	});
 });

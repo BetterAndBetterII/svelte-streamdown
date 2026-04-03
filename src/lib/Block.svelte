@@ -5,6 +5,7 @@
 	import AnimatedText from './AnimatedText.svelte';
 	import { useStreamdown } from './context.svelte.js';
 	import { getContext } from 'svelte';
+	import { containsHtml, renderMarkdownToHtml } from './utils/html-support.js';
 
 	let {
 		block,
@@ -15,30 +16,46 @@
 	} = $props();
 
 	const streamdown = useStreamdown();
-	const tokens = $derived(
-		lex(isStatic ? block : parseIncompleteMarkdown(block.trim()), streamdown.extensions)
+	const normalizedBlock = $derived(isStatic ? block : parseIncompleteMarkdown(block.trim()));
+	const shouldRenderHtmlBlock = $derived(
+		typeof streamdown.renderHtml !== 'function' &&
+			streamdown.renderHtml !== false &&
+			containsHtml(normalizedBlock)
 	);
+	const renderedHtml = $derived(
+		shouldRenderHtmlBlock
+			? renderMarkdownToHtml(normalizedBlock, {
+					allowedTags: streamdown.allowedTags,
+					literalTagContent: streamdown.literalTagContent
+				})
+			: ''
+	);
+	const tokens = $derived(lex(normalizedBlock, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
 </script>
 
-{#snippet renderChildren(tokens: StreamdownToken[])}
-	{#each tokens as token}
-		{#if token}
-			{@const children = (token as any)?.tokens || []}
-			{@const isTextOnlyNode = children.length === 0}
-			<Element {token}>
-				{#if isTextOnlyNode}
-					{#if streamdown.animation.enabled && !insidePopover && !isStatic}
-						<AnimatedText text={'text' in token ? token.text || '' : ''} />
+{#if shouldRenderHtmlBlock}
+	{@html renderedHtml}
+{:else}
+	{#snippet renderChildren(tokens: StreamdownToken[])}
+		{#each tokens as token}
+			{#if token}
+				{@const children = (token as any)?.tokens || []}
+				{@const isTextOnlyNode = children.length === 0}
+				<Element {token}>
+					{#if isTextOnlyNode}
+						{#if streamdown.animation.enabled && !insidePopover && !isStatic}
+							<AnimatedText text={'text' in token ? token.text || '' : ''} />
+						{:else}
+							{'text' in token ? token.text : ''}
+						{/if}
 					{:else}
-						{'text' in token ? token.text : ''}
+						{@render renderChildren(children)}
 					{/if}
-				{:else}
-					{@render renderChildren(children)}
-				{/if}
-			</Element>
-		{/if}
-	{/each}
-{/snippet}
+				</Element>
+			{/if}
+		{/each}
+	{/snippet}
 
-{@render renderChildren(tokens)}
+	{@render renderChildren(tokens)}
+{/if}
