@@ -1,37 +1,42 @@
 import { expect } from 'vitest';
 import {
 	describeInNode,
-	getFirstTokenByType,
-	getInlineTokens,
-	loadFixturePair,
 	parseIncompleteMarkdownText,
 	testInNode
 } from '../../helpers/index.js';
 
-describeInNode('ported remend streaming helpers', () => {
-	testInNode('closes incomplete inline code from fixture data', async () => {
-		const { input, expected } = await loadFixturePair(
-			'ported/remend/streaming/input.md',
-			'ported/remend/streaming/expected.md'
+describeInNode('ported remend streaming behavior', () => {
+	testInNode('handles nested formatting cut mid-stream', () => {
+		expect(parseIncompleteMarkdownText('This is **bold with *ital')).toBe('This is **bold with *ital***');
+		expect(parseIncompleteMarkdownText('**bold _und')).toBe('**bold _und_**');
+	});
+
+	testInNode('handles headings, blockquotes, tables, and mixed incomplete formats', () => {
+		expect(parseIncompleteMarkdownText('# Main Title\n## Subtitle with **emph')).toBe(
+			'# Main Title\n## Subtitle with **emph**'
 		);
-
-		expect(parseIncompleteMarkdownText(input)).toBe(expected);
+		expect(parseIncompleteMarkdownText('> Quote with **bold')).toBe('> Quote with **bold**');
+		expect(parseIncompleteMarkdownText('| Col1 | Col2 |\n|------|------|\n| **dat')).toBe(
+			'| Col1 | Col2 |\n|------|------|\n| **dat**'
+		);
+		expect(parseIncompleteMarkdownText('Text **bold `code')).toBe('Text **bold `code**`');
 	});
 
-	testInNode('extracts inline tokens for future streamdown ports', () => {
-		const tokens = getInlineTokens('Paragraph with [fixture link](https://example.com).');
-		const link = getFirstTokenByType(tokens, 'link');
+	testInNode('matches the chunk-by-chunk real-world streaming expectations', () => {
+		const chunks = [
+			'Here is',
+			'Here is a **bold',
+			'Here is a **bold statement',
+			'Here is a **bold statement** about',
+			'Here is a **bold statement** about `code',
+			'Here is a **bold statement** about `code`.'
+		];
 
-		expect(link).toBeDefined();
-		expect(link?.href).toBe('https://example.com');
-		expect(link?.text).toBe('fixture link');
-	});
-
-	testInNode('extracts inline tokens from non-paragraph blocks', () => {
-		const tokens = getInlineTokens('# [Heading Link](https://example.com/heading)');
-		const link = getFirstTokenByType(tokens, 'link');
-
-		expect(link).toBeDefined();
-		expect(link?.href).toBe('https://example.com/heading');
+		expect(parseIncompleteMarkdownText(chunks[0])).toBe('Here is');
+		expect(parseIncompleteMarkdownText(chunks[1])).toBe('Here is a **bold**');
+		expect(parseIncompleteMarkdownText(chunks[2])).toBe('Here is a **bold statement**');
+		expect(parseIncompleteMarkdownText(chunks[3])).toBe('Here is a **bold statement** about');
+		expect(parseIncompleteMarkdownText(chunks[4])).toBe('Here is a **bold statement** about `code`');
+		expect(parseIncompleteMarkdownText(chunks[5])).toBe(chunks[5]);
 	});
 });

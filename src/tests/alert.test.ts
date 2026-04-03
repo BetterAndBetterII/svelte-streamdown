@@ -352,12 +352,11 @@ describe('incomplete markdown', () => {
 		expect(result).toBe('> [!TIP]\n> First line with **incomplete**\n> Second line continues');
 	});
 
-	test('should handle incomplete subscript inside alert', () => {
+	test('should escape incomplete single-tilde text inside alert', () => {
 		const input = '> [!NOTE]\n> Chemical formula H~2';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete the subscript formatting inside alert
-		expect(result).toBe('> [!NOTE]\n> Chemical formula H~2~');
+		expect(result).toBe('> [!NOTE]\n> Chemical formula H\\~2');
 	});
 
 	test('should handle incomplete superscript inside alert', () => {

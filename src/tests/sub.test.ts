@@ -351,20 +351,18 @@ describe('tokenization', () => {
 });
 
 describe('incomplete markdown', () => {
-	test('should complete basic incomplete subscript', () => {
+	test('should escape incomplete single-tilde text instead of auto-closing subscript', () => {
 		const input = 'Water formula H~2';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete the subscript formatting
-		expect(result).toBe('Water formula H~2~');
+		expect(result).toBe('Water formula H\\~2');
 	});
 
-	test('should handle line breaks with incomplete subscript', () => {
+	test('should keep escaping behavior across line breaks', () => {
 		const input = 'First line H~2\nSecond line';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete subscript before line break
-		expect(result).toBe('First line H~2~\nSecond line');
+		expect(result).toBe('First line H\\~2\nSecond line');
 	});
 
 	test('should not complete empty or whitespace-only subscript', () => {

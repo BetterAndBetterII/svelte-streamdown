@@ -26,6 +26,7 @@ interface ParseState {
 	context: 'normal' | 'list' | 'blockquote' | 'descriptionList';
 	blockingContexts: Set<'code' | 'math' | 'center' | 'right'>;
 	lineContexts?: Array<{ code: boolean; math: boolean; center: boolean; right: boolean }>;
+	lines?: string[];
 	fenceInfo?: string;
 	mdxUnclosedTags?: Array<{ tagName: string; lineIndex: number }>;
 	mdxLineStates?: Array<{ inMdx: boolean; incompletePositions: number[] }>;
@@ -206,6 +207,7 @@ export class IncompleteMarkdownParser {
 					return {
 						text: text, // Don't modify text in preprocess
 						state: {
+							lines,
 							blockingContexts: finalContexts as Set<'code' | 'math' | 'center' | 'right'>,
 							lineContexts
 						}
@@ -226,6 +228,43 @@ export class IncompleteMarkdownParser {
 						return text + '\n[/right]';
 					}
 					return text;
+				}
+			},
+			{
+				name: 'singleTildeEscape',
+				pattern: /~/,
+				skipInBlockTypes: ['code', 'math'],
+				handler: ({ line }) => escapeSingleTildes(line)
+			},
+			{
+				name: 'comparisonOperators',
+				pattern: /^(\s*(?:[-*+]|\d+[.)]) +)>(=?\s*[$]?\d)/,
+				skipInBlockTypes: ['code', 'math'],
+				handler: ({ line }) =>
+					line.replace(
+						/^(\s*(?:[-*+]|\d+[.)]) +)>(=?\s*[$]?\d)/,
+						(_, prefix: string, suffix: string) => `${prefix}\\>${suffix}`
+					)
+			},
+			{
+				name: 'htmlTags',
+				postprocess: ({ text }) => stripTrailingIncompleteHtmlTag(text)
+			},
+			{
+				name: 'setextHeadingGuard',
+				pattern: /^[ \t]*[-=]{1,2}[ \t]*$/,
+				skipInBlockTypes: ['code', 'math', 'center', 'right'],
+				handler: ({ line, state }) => {
+					const lines = state.lines ?? [];
+					const isLastLine = state.currentLine === lines.length - 1;
+					const previousLine = state.currentLine > 0 ? lines[state.currentLine - 1] : undefined;
+					const marker = line.trim();
+
+					if (!isLastLine || !previousLine?.trim() || !/^[-=]{1,2}$/.test(marker)) {
+						return line;
+					}
+
+					return line.trimEnd() + '\u200B';
 				}
 			},
 			{
@@ -461,9 +500,12 @@ export class IncompleteMarkdownParser {
 						}
 
 						if (firstSingleUnderscoreIndex !== -1) {
-							const endOfCellOrLine = findEndOfCellOrLineContaining(
+							const endOfCellOrLine = findTrailingClosureInsertionPoint(
 								line,
-								firstSingleUnderscoreIndex
+								findEndOfCellOrLineContaining(
+									line,
+									firstSingleUnderscoreIndex
+								)
 							);
 							return line.substring(0, endOfCellOrLine) + '_' + line.substring(endOfCellOrLine);
 						}
@@ -475,31 +517,7 @@ export class IncompleteMarkdownParser {
 				name: 'subscript',
 				pattern: /~/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					// Inline countSingleTildes logic
-					let singleTildes = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '~') {
-							const prevChar = i > 0 ? line[i - 1] : '';
-							const nextChar = i < line.length - 1 ? line[i + 1] : '';
-							if (prevChar === '\\') continue;
-							if (prevChar !== '~' && nextChar !== '~') singleTildes++;
-						}
-					}
-
-					if (singleTildes % 2 === 1) {
-						const lastTildeIndex = line.lastIndexOf('~');
-						if (lastTildeIndex !== -1 && !isWithinMathBlock(line, lastTildeIndex)) {
-							const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastTildeIndex);
-							// Only complete if there's content after the tilde
-							const contentAfterTilde = line.substring(lastTildeIndex + 1, endOfCellOrLine);
-							if (contentAfterTilde.trim().length > 0) {
-								return line.substring(0, endOfCellOrLine) + '~' + line.substring(endOfCellOrLine);
-							}
-						}
-					}
-					return line;
-				}
+				handler: ({ line }) => line
 			},
 			{
 				name: 'inlineCitation',
@@ -857,7 +875,7 @@ export class IncompleteMarkdownParser {
 							const pos = currentState.incompletePositions[i];
 							const before = result.substring(0, pos);
 							// Simply remove the incomplete MDX tag
-							result = before;
+							result = before.trimEnd();
 						}
 						return result;
 					}
@@ -903,6 +921,26 @@ const findEndOfCellOrLineContaining = (text: string, position: number): number =
 	return endPos;
 };
 
+const INLINE_CLOSURE_MARKERS = ['***', '**', '__', '~~', '`', '*', '_', '^'] as const;
+
+const findTrailingClosureInsertionPoint = (text: string, fallbackPosition: number): number => {
+	let insertionPoint = fallbackPosition;
+
+	while (insertionPoint > 0) {
+		const marker = INLINE_CLOSURE_MARKERS.find((candidate) =>
+			text.slice(Math.max(0, insertionPoint - candidate.length), insertionPoint) === candidate
+		);
+
+		if (!marker) {
+			break;
+		}
+
+		insertionPoint -= marker.length;
+	}
+
+	return insertionPoint;
+};
+
 const isWithinMathBlock = (text: string, position: number): boolean => {
 	let inInlineMath = false;
 	let inBlockMath = false;
@@ -925,6 +963,116 @@ const isWithinMathBlock = (text: string, position: number): boolean => {
 	}
 
 	return inInlineMath || inBlockMath;
+};
+
+const isWithinCompleteInlineCode = (text: string, position: number): boolean => {
+	let inInlineCode = false;
+	let inFencedCode = false;
+	let inlineCodeStart = -1;
+
+	for (let i = 0; i < text.length; i++) {
+		if (text[i] === '\\' && text[i + 1] === '`') {
+			i++;
+			continue;
+		}
+
+		if (text.slice(i, i + 3) === '```') {
+			inFencedCode = !inFencedCode;
+			i += 2;
+			continue;
+		}
+
+		if (inFencedCode || text[i] !== '`') {
+			continue;
+		}
+
+		if (inInlineCode) {
+			if (inlineCodeStart < position && position < i) {
+				return true;
+			}
+			inInlineCode = false;
+			inlineCodeStart = -1;
+			continue;
+		}
+
+		inInlineCode = true;
+		inlineCodeStart = i;
+	}
+
+	return false;
+};
+
+const isWithinFencedCodeBlock = (text: string, position: number): boolean => {
+	let inFencedCode = false;
+
+	for (let i = 0; i < text.length && i < position; i++) {
+		if (text[i] === '\\' && text[i + 1] === '`') {
+			i++;
+			continue;
+		}
+
+		if (text.slice(i, i + 3) === '```') {
+			inFencedCode = !inFencedCode;
+			i += 2;
+		}
+	}
+
+	return inFencedCode;
+};
+
+const isWordCharacter = (char: string): boolean => /[\p{L}\p{N}_]/u.test(char);
+
+const escapeSingleTildes = (text: string): string => {
+	let result = '';
+
+	for (let i = 0; i < text.length; i++) {
+		const char = text[i];
+		if (char !== '~') {
+			result += char;
+			continue;
+		}
+
+		const prevChar = i > 0 ? text[i - 1] : '';
+		const nextChar = i < text.length - 1 ? text[i + 1] : '';
+		const isSingleTilde = prevChar !== '~' && nextChar !== '~';
+		const shouldEscape =
+			isSingleTilde &&
+			prevChar !== '\\' &&
+			prevChar !== '' &&
+			nextChar !== '' &&
+			isWordCharacter(prevChar) &&
+			isWordCharacter(nextChar) &&
+			!isWithinCompleteInlineCode(text, i) &&
+			!isWithinMathBlock(text, i);
+
+		result += shouldEscape ? '\\~' : '~';
+	}
+
+	return result;
+};
+
+const stripTrailingIncompleteHtmlTag = (text: string): string => {
+	const trimmedText = text.trimEnd();
+	const lastOpeningBracketIndex = trimmedText.lastIndexOf('<');
+
+	if (lastOpeningBracketIndex === -1 || trimmedText.includes('>', lastOpeningBracketIndex)) {
+		return text;
+	}
+
+	if (
+		isWithinCompleteInlineCode(trimmedText, lastOpeningBracketIndex) ||
+		isWithinFencedCodeBlock(trimmedText, lastOpeningBracketIndex) ||
+		isWithinMathBlock(trimmedText, lastOpeningBracketIndex)
+	) {
+		return text;
+	}
+
+	const candidate = trimmedText.slice(lastOpeningBracketIndex);
+	if (!/^<\/?[A-Za-z][A-Za-z0-9-]*(?:\s+[^<>]*)?$/.test(candidate)) {
+		return text;
+	}
+
+	return trimmedText.slice(0, lastOpeningBracketIndex).trimEnd();
 };
 
 const isWithinFootnoteRef = (text: string, position: number): boolean => {
