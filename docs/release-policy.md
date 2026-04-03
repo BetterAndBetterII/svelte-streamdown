@@ -16,6 +16,7 @@ Its purpose is to make releases trusted, reproducible, and reviewable instead of
   - `P1-03`: verify package contents
   - `P1-04`: add export surface verification
   - `P1-05`: add dependency and license audit gate
+  - `P1-06`: add release provenance and artifact metadata
 
 ## Trusted Release Definition
 
@@ -33,7 +34,7 @@ If any item above is false, the release is not trusted and must not be presented
 
 As of the commit that introduced this policy, this repository is not yet authorized for a trusted release.
 
-The blocker is explicit: trusted publish automation is still missing, and the repository still has approved dependency-policy exceptions that must be removed before the first trusted release.
+The blocker is explicit: the repository still has approved dependency-policy exceptions, and the npm package must be configured for trusted publishing before the first trusted release.
 
 Until those gates exist and are passing in CI:
 
@@ -79,6 +80,7 @@ Every trusted release must be blocked on the exact jobs below.
 | `verify-pack`              | Prove the tarball contains only policy-approved files                                          | `scripts/verify-pack.mjs` plus `npm pack` inspection                            | `P1-03`       |
 | `verify-exports`           | Prove every declared export resolves from the packed tarball                                   | `scripts/verify-exports.mjs` plus temp-project smoke import                     | `P1-04`       |
 | `verify-dependency-policy` | Prove high-severity dependency advisories and production-license drift are explicitly reviewed | `scripts/verify-dependency-policy.mjs` plus `pnpm audit` / `pnpm licenses list` | `P1-05`       |
+| `verify-release-metadata`  | Prove the release workflow emits traceable tarball metadata before publish                     | `scripts/verify-release-metadata.mjs` plus `artifacts/release/` contract        | `P1-06`       |
 | `publish-with-provenance`  | Publish from CI with npm provenance enabled and preserve the release commit SHA                | release workflow logs plus npm provenance record                                | release gate  |
 | `post-publish-verify`      | Verify the registry artifact matches the reviewed commit and intended version                  | install published package, inspect metadata, verify provenance, confirm tag     | release gate  |
 
@@ -107,6 +109,7 @@ The release checklist is mandatory and must be satisfied in order.
 - Review the `npm pack` output or the future `verify-pack` job output.
 - Review export verification evidence from the future `verify-exports` job.
 - Review dependency audit and license inventory evidence from `verify-dependency-policy`.
+- Review `artifacts/release/` metadata and attestation evidence from `verify-release-metadata`.
 - Confirm the release runner uses the pinned toolchain required by `P1-01`.
 
 ### 3. Publish
@@ -121,6 +124,7 @@ The release checklist is mandatory and must be satisfied in order.
 - Install the published version from the registry in a clean temp environment.
 - Verify the package name and version match the release commit.
 - Verify the published tarball contents match the reviewed pack evidence.
+- Verify the published tarball hash matches `artifact-metadata.json`.
 - Verify npm provenance links the published artifact back to the release workflow and commit SHA.
 - Verify the GitHub tag points to the same commit that produced the published package.
 
@@ -139,8 +143,9 @@ Minimum expectations:
 2. The publish job must use npm provenance so the registry artifact is traceable to the workflow run and commit SHA.
 3. The package tarball must be inspected from `npm pack` output before publish.
 4. The tarball must contain only intended release files.
-5. Every declared export in `package.json` must exist in the built tarball and be importable from a clean temp project.
-6. High-severity dependency advisories and production-license exceptions must be explicitly reviewed through the dependency policy gate.
+5. The release workflow must emit `build-metadata.json`, `artifact-metadata.json`, and `provenance-metadata.json` for the tarball being reviewed.
+6. Every declared export in `package.json` must exist in the built tarball and be importable from a clean temp project.
+7. High-severity dependency advisories and production-license exceptions must be explicitly reviewed through the dependency policy gate.
 
 A release fails policy if any of the following is observed:
 
@@ -175,6 +180,7 @@ This policy is grounded in the current repository and the frozen reference imple
 
 - local package metadata and release-facing scripts: `package.json`
 - current roadmap and future release-hardening tasks: `PLAN.md`
+- release artifact verification contract: `docs/release-artifact-verification.md`
 - frozen upstream release workflow example: `references/streamdown/.github/workflows/release.yml`
 - frozen upstream CI gate examples: `references/streamdown/.github/workflows/test.yml`
 - frozen upstream version-governance example: `references/streamdown/.github/workflows/verify-changesets.yml`

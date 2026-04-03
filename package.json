@@ -18,7 +18,9 @@
 		"verify:exports": "node scripts/verify-exports.mjs",
 		"verify:toolchain": "node scripts/verify-toolchain.mjs",
 		"verify:clean-build": "node scripts/verify-clean-build.mjs",
-		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs"
+		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs",
+		"release:metadata": "node scripts/release-metadata.mjs",
+		"verify:release-metadata": "node scripts/verify-release-metadata.mjs"
 	},
 	"files": [
 		"dist",
@@ -80,6 +82,10 @@
 		"wrangler": "^4.34.0"
 	},
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/BetterAndBetterII/svelte-streamdown.git"
+	},
 	"keywords": [
 		"svelte"
 	],

@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to npm with trusted publishing after all release gates pass
+        required: true
+        type: boolean
+        default: false
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    name: release
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Update npm for trusted publishing
+        run: npm install --global npm@latest
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Verify pinned toolchain
+        run: pnpm verify:toolchain
+
+      - name: Verify clean build
+        run: pnpm verify:clean-build
+
+      - name: Verify packed tarball contents
+        run: pnpm verify:pack
+
+      - name: Verify packed export surface
+        run: pnpm verify:exports
+
+      - name: Verify dependency policy
+        run: pnpm verify:dependency-policy
+
+      - name: Verify release metadata generator
+        run: pnpm verify:release-metadata
+
+      - name: Emit release metadata artifacts
+        run: pnpm release:metadata -- --output-dir artifacts/release
+
+      - name: Generate GitHub build attestation
+        id: attest
+        uses: actions/attest@v4
+        with:
+          subject-path: artifacts/release/*.tgz
+
+      - name: Record attestation and publish status
+        env:
+          ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+          SHOULD_PUBLISH: ${{ inputs.publish }}
+        run: |
+          node --input-type=module <<'EOF'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const filePath = 'artifacts/release/provenance-metadata.json';
+          const metadata = JSON.parse(readFileSync(filePath, 'utf8'));
+          metadata.githubAttestation.attestationUrl = process.env.ATTESTATION_URL || null;
+          metadata.githubAttestation.bundlePath = process.env.BUNDLE_PATH || null;
+          metadata.npmProvenance.publishRequested = process.env.SHOULD_PUBLISH === 'true';
+          writeFileSync(filePath, `${JSON.stringify(metadata, null, 2)}\n`);
+          EOF
+
+      - name: Publish package to npm
+        if: ${{ inputs.publish }}
+        run: npm publish artifacts/release/*.tgz
+
+      - name: Update provenance metadata after publish
+        if: ${{ inputs.publish }}
+        run: |
+          node --input-type=module <<'EOF'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const filePath = 'artifacts/release/provenance-metadata.json';
+          const metadata = JSON.parse(readFileSync(filePath, 'utf8'));
+          metadata.npmProvenance.published = true;
+          metadata.npmProvenance.publishMethod = 'trusted-publishing';
+          writeFileSync(filePath, `${JSON.stringify(metadata, null, 2)}\n`);
+          EOF
+
+      - name: Tag published release commit
+        if: ${{ inputs.publish }}
+        run: |
+          VERSION="$(node --input-type=module <<'EOF'
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          process.stdout.write(`v${pkg.version}`);
+          EOF
+          )"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists" >&2
+            exit 1
+          fi
+          git tag "$VERSION" "$GITHUB_SHA"
+          git push origin "$VERSION"
+
+      - name: Upload release metadata bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            artifacts/release
+            ${{ steps.attest.outputs.bundle-path }}
