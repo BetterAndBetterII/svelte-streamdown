@@ -177,7 +177,7 @@ export class IncompleteMarkdownParser {
 						if (line.trim().startsWith('```') || line.trim().startsWith('~~~')) {
 							inCodeBlock = !inCodeBlock;
 						}
-						if (line.trim().startsWith('$$') && !line.trim().includes('$$', 2)) {
+						if (line.trim() === '$$') {
 							inMathBlock = !inMathBlock;
 						}
 						if (line.trim() === '[center]') {
@@ -327,12 +327,10 @@ export class IncompleteMarkdownParser {
 						tripleBackticks > 0 && tripleBackticks % 2 === 0 && line.includes('\n');
 
 					if (singleBacktickCount % 2 === 1 && !hasCompleteBlock) {
-						const lastBacktickIndex = line.lastIndexOf('`');
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, lastBacktickIndex);
-						// Only complete if there's content after the backtick and it doesn't contain table delimiters
-						const contentAfterBacktick = line.substring(lastBacktickIndex + 1, endOfCellOrLine);
-						if (contentAfterBacktick.trim().length > 0 && !contentAfterBacktick.includes('|')) {
-							return line.substring(0, endOfCellOrLine) + '`' + line.substring(endOfCellOrLine);
+						const inlineCodeMatch = line.match(/(`)([^`]*?)$/);
+						const contentAfterMarker = inlineCodeMatch?.[2];
+						if (contentAfterMarker && !whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+							return `${line}\``;
 						}
 					}
 					return line;
@@ -452,7 +450,10 @@ export class IncompleteMarkdownParser {
 					// Only complete if there's content after $$ on the same line (no newline immediately after)
 					const hasNewlineAfterStart = line.indexOf('\n', firstDollarIndex) !== -1;
 					if (!hasNewlineAfterStart) {
-						// Single line case: $$content → $$content$$
+						// Single line case: $$content → $$content$$, with half-closed $$content$ → $$content$$
+						if (line.endsWith('$') && !line.endsWith('$$')) {
+							return line + '$';
+						}
 						return line + '$$';
 					}
 					// Multi-line cases are handled by contextManager

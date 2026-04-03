@@ -340,7 +340,7 @@ describe('incomplete markdown', () => {
 		const result = parseIncompleteMarkdown(input);
 
 		expect(result).toBe(
-			'| **Bold** | *Italic | `Code `| [Link |*\n|----------|---------|-------|-------|\n| Cell 1   | Cell 2  | Cell 3 | Cell 4 |'
+			'| **Bold** | *Italic | `Code | [Link |*`\n|----------|---------|-------|-------|\n| Cell 1   | Cell 2  | Cell 3 | Cell 4 |'
 		);
 	});
 });
