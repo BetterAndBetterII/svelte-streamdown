@@ -8,6 +8,8 @@
 		type FootnoteState,
 		type StreamdownToken
 	} from './marked/index.js';
+	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
+	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
 	import { mergeTranslations } from './translations.js';
 	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
 	import Footnotes from './Elements/Footnotes.svelte';
@@ -23,6 +25,8 @@
 		defaultOrigin,
 		allowedLinkPrefixes = ['*'],
 		allowedImagePrefixes = ['*'],
+		allowedTags,
+		literalTagContent,
 		theme,
 		mermaidConfig = {},
 		katexConfig,
@@ -60,6 +64,22 @@
 		mermaidConfig?.theme ? mermaidConfig.theme : darkMode.current ? 'dark' : 'default'
 	);
 
+	const allowedTagNames = $derived(allowedTags ? Object.keys(allowedTags) : []);
+
+	const preprocessedContent = $derived.by(() => {
+		let result = content;
+
+		if (literalTagContent && literalTagContent.length > 0) {
+			result = preprocessLiteralTagContent(result, literalTagContent);
+		}
+
+		if (allowedTagNames.length > 0) {
+			result = preprocessCustomTags(result, allowedTagNames);
+		}
+
+		return result;
+	});
+
 	streamdown = new StreamdownContext({
 		get element() {
 			return element;
@@ -78,6 +98,12 @@
 		},
 		get allowedImagePrefixes() {
 			return allowedImagePrefixes;
+		},
+		get allowedTags() {
+			return allowedTags;
+		},
+		get literalTagContent() {
+			return literalTagContent;
 		},
 		get shikiTheme() {
 			return shikiTheme || shikiThemedTheme;
@@ -171,14 +197,14 @@
 
 	const parsedDocument = $derived.by(() => {
 		if (isStatic) {
-			const parsed = lexWithFootnotes(content, streamdown.extensions);
+			const parsed = lexWithFootnotes(preprocessedContent, streamdown.extensions);
 			return {
-				blocks: [content],
+				blocks: [preprocessedContent],
 				footnotes: parsed.footnotes
 			};
 		}
 
-		return parseBlocksWithFootnotes(content, streamdown.extensions);
+		return parseBlocksWithFootnotes(preprocessedContent, streamdown.extensions);
 	});
 
 	const parsedBlocks = $derived.by(() => {

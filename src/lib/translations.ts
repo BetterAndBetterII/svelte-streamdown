@@ -14,6 +14,7 @@ export type StreamdownTranslations = {
 	copyTableAsMarkdown: string;
 	copyTableAsHtml: string;
 	copyTableAsCsv: string;
+	copyTableAsTsv: string;
 	downloadTable: string;
 	downloadTableAsCsv: string;
 	downloadTableAsMarkdown: string;
@@ -21,6 +22,7 @@ export type StreamdownTranslations = {
 	tableFormatMarkdown: string;
 	tableFormatHtml: string;
 	tableFormatCsv: string;
+	tableFormatTsv: string;
 	imageNotAvailable: string;
 	downloadImage: string;
 	alert: {
@@ -48,6 +50,7 @@ export const defaultTranslations: StreamdownTranslations = {
 	copyTableAsMarkdown: 'Copy table as Markdown',
 	copyTableAsHtml: 'Copy table as HTML',
 	copyTableAsCsv: 'Copy table as CSV',
+	copyTableAsTsv: 'Copy table as TSV',
 	downloadTable: 'Download table',
 	downloadTableAsCsv: 'Download table as CSV',
 	downloadTableAsMarkdown: 'Download table as Markdown',
@@ -55,6 +58,7 @@ export const defaultTranslations: StreamdownTranslations = {
 	tableFormatMarkdown: 'Markdown',
 	tableFormatHtml: 'HTML',
 	tableFormatCsv: 'CSV',
+	tableFormatTsv: 'TSV',
 	imageNotAvailable: 'Image not available',
 	downloadImage: 'Download image',
 	alert: {

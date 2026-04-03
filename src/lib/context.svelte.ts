@@ -6,6 +6,7 @@ import { getContext, onMount, setContext } from 'svelte';
 import type { LanguageInfo } from './utils/bundledLanguages.js';
 import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
+import type { AllowedTags } from './security/types.js';
 
 export interface StreamdownContext
 	extends Omit<
@@ -19,7 +20,7 @@ export interface StreamdownContext
 	controls: {
 		code: boolean;
 		mermaid: boolean;
-		table: boolean;
+		table: TableControlsConfig;
 	};
 	inlineCitationsMode: 'list' | 'carousel';
 	animation: {
@@ -84,6 +85,14 @@ export const useStreamdown = () => {
 	}
 	return context;
 };
+
+export type TableControlsConfig =
+	| boolean
+	| {
+			copy?: boolean;
+			download?: boolean;
+			fullscreen?: boolean;
+	  };
 
 import type {
 	AlertToken,
@@ -176,6 +185,47 @@ export type Snippets<Source extends Record<string, any> = Record<string, any>> =
 	>;
 };
 
+type ComponentOverrideProps<Token> = {
+	children?: Snippet;
+	token: Token;
+	class?: string;
+	style?: string;
+};
+
+type HeadingComponentProps = ComponentOverrideProps<Tokens.Heading>;
+type ParagraphComponentProps = ComponentOverrideProps<Tokens.Paragraph>;
+type LinkComponentProps = ComponentOverrideProps<Tokens.Link> & {
+	href?: string;
+	target?: string;
+	rel?: string;
+	title?: string | null;
+};
+type ImageComponentProps = ComponentOverrideProps<Tokens.Image> & {
+	src?: string | null;
+	alt?: string;
+	onload?: () => void;
+	onerror?: () => void;
+};
+type TableComponentProps = ComponentOverrideProps<TableToken>;
+type InlineCodeComponentProps = ComponentOverrideProps<Tokens.Codespan>;
+
+export type StreamdownComponents = {
+	h1?: Component<HeadingComponentProps, any, any>;
+	h2?: Component<HeadingComponentProps, any, any>;
+	h3?: Component<HeadingComponentProps, any, any>;
+	h4?: Component<HeadingComponentProps, any, any>;
+	h5?: Component<HeadingComponentProps, any, any>;
+	h6?: Component<HeadingComponentProps, any, any>;
+	p?: Component<ParagraphComponentProps, any, any>;
+	a?: Component<LinkComponentProps, any, any>;
+	img?: Component<ImageComponentProps, any, any>;
+	table?: Component<TableComponentProps, any, any>;
+	inlineCode?: Component<InlineCodeComponentProps, any, any>;
+	code?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
+	math?: Component<{ token: MathToken; id: string }, any, any>;
+};
+
 export type StreamdownProps<Source extends Record<string, any> = Record<string, any>> = {
 	streamdown?: StreamdownContext;
 	static?: boolean;
@@ -192,6 +242,8 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	defaultOrigin?: string;
 	allowedLinkPrefixes?: string[];
 	allowedImagePrefixes?: string[];
+	allowedTags?: AllowedTags;
+	literalTagContent?: string[];
 
 	// Theme
 	theme?: DeepPartialTheme;
@@ -206,7 +258,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	controls?: {
 		code?: boolean;
 		mermaid?: boolean;
-		table?: boolean;
+		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
 
@@ -248,9 +300,5 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 			any
 		>
 	>;
-	components?: {
-		code?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		mermaid?: Component<{ token: Tokens.Code; id: string }, any, any>;
-		math?: Component<{ token: MathToken; id: string }, any, any>;
-	};
+	components?: StreamdownComponents;
 } & Partial<Snippets<Source>>;

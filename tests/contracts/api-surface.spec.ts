@@ -126,7 +126,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'DiagramPlugin',
 			'escapeMarkdownTableCell',
 			'ExtraProps',
-			'extractTableDataFromElement',
 			'HighlightOptions',
 			'IconMap',
 			'LinkSafetyConfig',
@@ -141,10 +140,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'StreamdownContextType',
 			'TableCopyDropdown',
 			'TableCopyDropdownProps',
-			'TableData',
-			'tableDataToCSV',
-			'tableDataToMarkdown',
-			'tableDataToTSV',
 			'TableDownloadButton',
 			'TableDownloadButtonProps',
 			'TableDownloadDropdown',
@@ -279,13 +274,12 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'components',
 				reference: 'Components',
-				local:
-					'{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}'
+				local: 'StreamdownComponents'
 			},
 			{
 				name: 'controls',
 				reference: 'ControlsConfig',
-				local: '{code?:boolean;mermaid?:boolean;table?:boolean;}'
+				local: '{code?:boolean;mermaid?:boolean;table?:TableControlsConfig;}'
 			},
 			{
 				name: 'icons',
