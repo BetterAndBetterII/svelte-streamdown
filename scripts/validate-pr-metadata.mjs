@@ -62,6 +62,11 @@ export function isRegressionCoveragePath(path) {
 	return parityFixturePattern.test(path) || regressionTestPattern.test(path);
 }
 
+/** @param {ChangedFile | undefined} file */
+export function isDurableCoverageFile(file) {
+	return file != null && file.status !== 'removed';
+}
+
 /**
  * @param {RegressionCoverageInput} input
  * @returns {RegressionCoverageResult}
@@ -88,10 +93,15 @@ export function validateRegressionCoverage({ body, changedFiles }) {
 		problems.push(
 			'`Coverage path` must point to a parity fixture in `fixtures/parity/` or a regression test file in `tests/` or `src/tests/`.'
 		);
-	} else if (!changedFileMap.has(metadata.coveragePath)) {
-		problems.push(
-			'`Coverage path` must match a regression fixture or test file that is added or updated in this PR.'
-		);
+	}
+
+	const coverageFile = changedFileMap.get(metadata.coveragePath);
+	if (isMeaningfulValue(metadata.coveragePath) && isRegressionCoveragePath(metadata.coveragePath)) {
+		if (!isDurableCoverageFile(coverageFile)) {
+			problems.push(
+				'`Coverage path` must match a regression fixture or test file that is added or updated in this PR.'
+			);
+		}
 	}
 
 	if (!isMeaningfulValue(metadata.coverageType)) {
@@ -100,7 +110,6 @@ export function validateRegressionCoverage({ body, changedFiles }) {
 		);
 	}
 
-	const coverageFile = changedFileMap.get(metadata.coveragePath);
 	if (
 		coverageFile?.status === 'added' &&
 		metadata.coveragePath.startsWith('fixtures/parity/') &&

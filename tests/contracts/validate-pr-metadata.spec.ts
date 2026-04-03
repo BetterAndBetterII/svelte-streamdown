@@ -61,6 +61,25 @@ describe('validateRegressionCoverage', () => {
 		);
 	});
 
+	test('rejects bug-fix PRs that point to a removed regression asset', () => {
+		const result = validateRegressionCoverage({
+			body: `## Type of Change
+
+- [x] Bug fix
+
+## Regression Coverage
+
+- Coverage path: tests/contracts/parser-parity.spec.ts
+- Coverage type: contract test
+`,
+			changedFiles: [{ filename: 'tests/contracts/parser-parity.spec.ts', status: 'removed' }]
+		});
+
+		expect(result.problems).toContain(
+			'`Coverage path` must match a regression fixture or test file that is added or updated in this PR.'
+		);
+	});
+
 	test('rejects new parity fixtures that are not registered', () => {
 		const result = validateRegressionCoverage({
 			body: `## Type of Change
