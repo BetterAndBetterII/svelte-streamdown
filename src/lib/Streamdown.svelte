@@ -1,4 +1,5 @@
 <script lang="ts" generics="Source extends Record<string, any> = Record<string, any>">
+	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 	import Block from './Block.svelte';
 	import {
 		normalizeMermaidControls,
@@ -8,10 +9,10 @@
 	import { getThemeName } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
+	import { normalizeHtmlIndentation } from './security/html.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
 	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
 	import { mergeTranslations } from './translations.js';
-	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 
 	const carets = {
 		block: ' ▋',
@@ -87,6 +88,7 @@
 		linkSafety = { enabled: true },
 		allowedTags,
 		literalTagContent,
+		normalizeHtmlIndentation: shouldNormalizeHtmlIndentation = false,
 		prefix,
 		lineNumbers = true,
 		theme,
@@ -175,7 +177,7 @@
 	const allowedTagNames = $derived(allowedTags ? Object.keys(allowedTags) : []);
 
 	const preprocessedContent = $derived.by(() => {
-		let result = content;
+		let result = shouldNormalizeHtmlIndentation ? normalizeHtmlIndentation(content) : content;
 
 		if (literalTagContent && literalTagContent.length > 0) {
 			result = preprocessLiteralTagContent(result, literalTagContent);
@@ -222,6 +224,9 @@
 		get literalTagContent() {
 			return literalTagContent;
 		},
+		get normalizeHtmlIndentation() {
+			return shouldNormalizeHtmlIndentation;
+		},
 		get prefix() {
 			return prefix;
 		},
@@ -262,7 +267,7 @@
 			return plugins;
 		},
 		get renderHtml() {
-			return renderHtml;
+			return renderHtml ?? true;
 		},
 		get translations() {
 			return mergeTranslations(translations);
