@@ -1,10 +1,12 @@
 <script lang="ts" generics="Source extends Record<string, any> = Record<string, any>">
+	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 	import Block from './Block.svelte';
 	import {
 		normalizeMermaidControls,
 		StreamdownContext,
 		type StreamdownProps
 	} from './context.svelte.js';
+	import { getThemeName } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import {
 		lexWithFootnotes,
@@ -12,13 +14,13 @@
 		type FootnoteState,
 		type StreamdownToken
 	} from './marked/index.js';
+	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
+	import Footnotes from './Elements/Footnotes.svelte';
+	import { normalizeHtmlIndentation } from './security/html.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
 	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
 	import { mergeTranslations } from './translations.js';
 	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
-	import Footnotes from './Elements/Footnotes.svelte';
-	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
-	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 
 	const carets = {
 		block: ' ▋',
@@ -83,6 +85,7 @@
 		shikiTheme,
 		shikiLanguages,
 		shikiThemes,
+		plugins,
 		parseIncompleteMarkdown = true,
 		mode = 'streaming',
 		dir,
@@ -92,6 +95,7 @@
 		linkSafety = { enabled: true },
 		allowedTags,
 		literalTagContent,
+		normalizeHtmlIndentation: shouldNormalizeHtmlIndentation = false,
 		prefix,
 		lineNumbers = true,
 		theme,
@@ -180,7 +184,7 @@
 	const allowedTagNames = $derived(allowedTags ? Object.keys(allowedTags) : []);
 
 	const preprocessedContent = $derived.by(() => {
-		let result = content;
+		let result = shouldNormalizeHtmlIndentation ? normalizeHtmlIndentation(content) : content;
 
 		if (literalTagContent && literalTagContent.length > 0) {
 			result = preprocessLiteralTagContent(result, literalTagContent);
@@ -227,6 +231,9 @@
 		get literalTagContent() {
 			return literalTagContent;
 		},
+		get normalizeHtmlIndentation() {
+			return shouldNormalizeHtmlIndentation;
+		},
 		get prefix() {
 			return prefix;
 		},
@@ -234,7 +241,16 @@
 			return lineNumbers;
 		},
 		get shikiTheme() {
-			return shikiTheme || shikiThemedTheme;
+			if (shikiTheme) {
+				return shikiTheme;
+			}
+
+			if (plugins?.code) {
+				const [lightTheme, darkTheme] = plugins.code.getThemes();
+				return darkMode.current ? getThemeName(darkTheme) : getThemeName(lightTheme);
+			}
+
+			return shikiThemedTheme;
 		},
 		get snippets() {
 			return snippets;
@@ -254,8 +270,11 @@
 		get katexConfig() {
 			return katexConfig;
 		},
+		get plugins() {
+			return plugins;
+		},
 		get renderHtml() {
-			return renderHtml;
+			return renderHtml ?? true;
 		},
 		get translations() {
 			return mergeTranslations(translations);
@@ -264,7 +283,23 @@
 			return shikiLanguages;
 		},
 		get shikiThemes() {
-			return shikiThemes;
+			if (!plugins?.code) {
+				return shikiThemes;
+			}
+
+			const [lightTheme, darkTheme] = plugins.code.getThemes();
+			const pluginThemes = [lightTheme, darkTheme].filter(
+				(theme): theme is Exclude<typeof theme, string> => typeof theme !== 'string'
+			);
+
+			if (pluginThemes.length === 0) {
+				return shikiThemes;
+			}
+
+			return {
+				...(shikiThemes ?? {}),
+				...Object.fromEntries(pluginThemes.map((theme) => [theme.name ?? 'custom-theme', theme]))
+			};
 		},
 		get sources() {
 			return sources;

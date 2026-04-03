@@ -18,6 +18,9 @@ type SecurityRenderOptions = {
 	defaultOrigin?: string;
 };
 
+const HTML_BLOCK_START_PATTERN = /^[ \t]*<[\w!/?-]/;
+const HTML_LINE_INDENT_PATTERN = /(^|\n)[ \t]{4,}(?=<[\w!/?-])/g;
+
 const defaultSanitizeSchema = {
 	...defaultSchema,
 	protocols: {
@@ -45,12 +48,26 @@ function createSanitizeSchema(allowedTags?: AllowedTags) {
 
 	return {
 		...defaultSanitizeSchema,
-		tagNames: [...new Set([...(defaultSanitizeSchema.tagNames ?? []), ...Object.keys(allowedTags)])],
+		tagNames: [
+			...new Set([...(defaultSanitizeSchema.tagNames ?? []), ...Object.keys(allowedTags)])
+		],
 		attributes: {
 			...defaultSanitizeSchema.attributes,
 			...allowedTags
 		}
 	};
+}
+
+export function normalizeHtmlIndentation(content: string): string {
+	if (typeof content !== 'string' || content.length === 0) {
+		return content;
+	}
+
+	if (!HTML_BLOCK_START_PATTERN.test(content)) {
+		return content;
+	}
+
+	return content.replace(HTML_LINE_INDENT_PATTERN, '$1');
 }
 
 export function renderMarkdownFragment(

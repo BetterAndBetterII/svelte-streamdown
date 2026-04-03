@@ -10,6 +10,7 @@ const repoRoot = resolve(dirname(scriptFile), '..');
 const entryFile = join(repoRoot, 'src', 'lib', 'index.ts');
 const streamdownComponentFile = join(repoRoot, 'src', 'lib', 'Streamdown.svelte');
 const streamdownContextFile = join(repoRoot, 'src', 'lib', 'context.svelte.ts');
+const streamdownPluginsFile = join(repoRoot, 'src', 'lib', 'plugins.ts');
 const fixturePath = join(repoRoot, 'fixtures', 'parity', 'local-api-surface.json');
 
 const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
@@ -454,6 +455,15 @@ function extractStreamdownProps() {
 		.sort((left, right) => left.name.localeCompare(right.name));
 }
 
+function extractPluginConfigEntries() {
+	const declaration = findTypeAliasDeclaration(streamdownPluginsFile, 'PluginConfig');
+	if (!declaration || !ts.isInterfaceDeclaration(declaration)) {
+		throw new Error('Unable to resolve PluginConfig in local source');
+	}
+
+	return dedupeAndSortProperties(collectPropertiesFromTypeLiteral(declaration));
+}
+
 function inferSourceEntryFile(exportTarget) {
 	if (!exportTarget || typeof exportTarget !== 'object') {
 		return null;
@@ -515,7 +525,7 @@ export function generateLocalApiSurfaceSnapshot() {
 			plugins: []
 		},
 		streamdownProps: extractStreamdownProps(),
-		pluginConfig: [],
+		pluginConfig: extractPluginConfigEntries(),
 		subpathExports: collectSubpathExports(packageJson)
 	};
 }
