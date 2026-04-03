@@ -9,7 +9,12 @@ export default defineConfig({
 	fullyParallel: true,
 	retries: process.env.CI ? 2 : 0,
 	use: {
+		colorScheme: 'light',
+		deviceScaleFactor: 1,
 		headless: true,
+		locale: 'en-US',
+		reducedMotion: 'reduce',
+		timezoneId: 'UTC',
 		viewport: {
 			width: 1280,
 			height: 900
