@@ -311,7 +311,7 @@
 		<Citation {token} />
 	</Slot>
 {:else if token.type === 'footnote'}
-	<!-- TODO Footnotes are rendered inside the FootnoteRef popover -->
+	<!-- Footnotes render as a trailing section in Streamdown.svelte. -->
 {:else if token.type === 'descriptionList'}
 	<Slot props={{ children, token }} render={streamdown.snippets.descriptionList}>
 		<dl

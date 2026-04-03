@@ -274,13 +274,6 @@ export class IncompleteMarkdownParser {
 				}
 			},
 			{
-				name: 'linksAndImages',
-				pattern: /\[/,
-				skipInBlockTypes: ['code', 'math'],
-				stopProcessingOnChange: true,
-				handler: ({ line }) => handleIncompleteLinksAndImages(line)
-			},
-			{
 				name: 'boldItalic',
 				pattern: /\*\*\*/,
 				skipInBlockTypes: ['code', 'math'],
@@ -297,6 +290,12 @@ export class IncompleteMarkdownParser {
 				pattern: /__/,
 				skipInBlockTypes: ['code', 'math'],
 				handler: ({ line }) => handleIncompleteDoubleUnderscoreItalic(line)
+			},
+			{
+				name: 'strikethrough',
+				pattern: /~~/,
+				skipInBlockTypes: ['code', 'math'],
+				handler: ({ line }) => handleIncompleteStrikethrough(line)
 			},
 			{
 				name: 'singleAsteriskItalic',
@@ -351,18 +350,31 @@ export class IncompleteMarkdownParser {
 				handler: ({ line }) => line
 			},
 			{
+				name: 'footnoteRef',
+				pattern: /\[\^[^\]\s,]*/,
+				skipInBlockTypes: ['code', 'math'],
+				handler: ({ line }) => replaceIncompleteFootnoteRefs(line)
+			},
+			{
 				name: 'inlineCitation',
 				pattern: /\[/,
 				skipInBlockTypes: ['code', 'math'],
 				handler: ({ line }) => {
-					// Count unescaped opening brackets without matching closing brackets
-					let unclosedBrackets = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '[' && (i === 0 || line[i - 1] !== '\\')) {
-							if (isInsideCodeBlock(line, i) || isWithinCompleteInlineCode(line, i)) {
+					let result = line;
+
+					while (true) {
+						const unmatchedBrackets: number[] = [];
+						const matchedBrackets: number[] = [];
+						for (let i = 0; i < result.length; i++) {
+							if (result[i] !== '[' || (i > 0 && result[i - 1] === '\\')) {
 								continue;
 							}
-							const candidate = line.substring(i + 1);
+
+							if (isInsideCodeBlock(result, i) || isWithinCompleteInlineCode(result, i)) {
+								continue;
+							}
+
+							const candidate = result.substring(i + 1);
 							if (
 								candidate.includes('|') ||
 								candidate.includes('`') ||
@@ -371,32 +383,48 @@ export class IncompleteMarkdownParser {
 							) {
 								continue;
 							}
-							// Check if this bracket has a matching closing bracket later in the line
-							const closingIndex = candidate.indexOf(']');
-							if (closingIndex === -1) {
-								unclosedBrackets++;
+
+							if (result[i + 1] === '^') {
+								continue;
 							}
+
+							const closingIndex = result.indexOf(']', i + 1);
+							if (closingIndex === -1) {
+								unmatchedBrackets.push(i);
+								continue;
+							}
+
+							matchedBrackets.push(i);
+						}
+
+						if (unmatchedBrackets.length === 0) {
+							return result;
+						}
+
+						const current = unmatchedBrackets[0];
+						const nextUnmatched = unmatchedBrackets[1] ?? -1;
+
+						if (result[current - 1] === '!') {
+							return result;
+						}
+
+						let insertionPoint =
+							nextUnmatched === -1
+								? findEndOfCellOrLineContaining(result, result.length - 1)
+								: nextUnmatched;
+
+						const between = nextUnmatched === -1 ? '' : result.slice(current, nextUnmatched);
+						const conjunctionMatch = between.match(/\s+and\s+$/);
+						if (conjunctionMatch && nextUnmatched !== -1) {
+							insertionPoint = current + between.length - conjunctionMatch[0].length;
+						}
+
+						result = result.slice(0, insertionPoint) + ']' + result.slice(insertionPoint);
+
+						if (matchedBrackets.length === 0 && nextUnmatched === -1) {
+							return result;
 						}
 					}
-
-					// If there's an odd number of unclosed brackets, add closing bracket
-					if (unclosedBrackets % 2 === 1) {
-						const endOfCellOrLine = findEndOfCellOrLineContaining(line, line.length - 1);
-						return line.substring(0, endOfCellOrLine) + ']' + line.substring(endOfCellOrLine);
-					}
-
-					return line;
-				}
-			},
-			{
-				name: 'footnoteRef',
-				pattern: /\[\^[^\]\s,]*/,
-				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => {
-					if (!line.includes(']')) {
-						return line.replace(/\[\^[^\]\s,]*/, '[^streamdown:footnote]');
-					}
-					return line;
 				}
 			},
 			{
@@ -457,12 +485,6 @@ export class IncompleteMarkdownParser {
 				}
 			},
 			{
-				name: 'strikethrough',
-				pattern: /~~/,
-				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => handleIncompleteStrikethrough(line)
-			},
-			{
 				name: 'descriptionList',
 				pattern: /^(\s*):/,
 				skipInBlockTypes: ['code', 'math'],
@@ -479,6 +501,13 @@ export class IncompleteMarkdownParser {
 					}
 					return line;
 				}
+			},
+			{
+				name: 'linksAndImages',
+				pattern: /\[/,
+				skipInBlockTypes: ['code', 'math'],
+				stopProcessingOnChange: true,
+				handler: ({ line }) => handleIncompleteLinksAndImages(line)
 			},
 			{
 				name: 'alignmentBlocks',
@@ -1554,6 +1583,29 @@ const isWithinFootnoteRef = (text: string, position: number): boolean => {
 	}
 
 	return false;
+};
+
+const replaceIncompleteFootnoteRefs = (line: string): string => {
+	const matches = line.matchAll(/\[\^[^\]\s,]*/g);
+	let result = '';
+	let lastIndex = 0;
+	let foundMatch = false;
+
+	for (const match of matches) {
+		if (match.index === undefined) {
+			continue;
+		}
+
+		foundMatch = true;
+		const start = match.index;
+		const end = start + match[0].length;
+
+		result += line.slice(lastIndex, start);
+		result += line[end] === ']' ? match[0] : '[^streamdown:footnote]';
+		lastIndex = end;
+	}
+
+	return foundMatch ? result + line.slice(lastIndex) : line;
 };
 
 // Export the class and interfaces

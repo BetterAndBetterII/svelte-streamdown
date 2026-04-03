@@ -272,9 +272,7 @@ test.describe('interaction parity fixtures', () => {
 		}
 	});
 
-	test('captures the approved footnote interaction drift between reference and local', async ({
-		browser
-	}) => {
+	test('matches footnote section rendering and backref affordances', async ({ browser }) => {
 		const context = await browser.newContext();
 		const referencePage = await context.newPage();
 		const localPage = await context.newPage();
@@ -285,15 +283,23 @@ test.describe('interaction parity fixtures', () => {
 				openParityFixture(localPage, localBaseUrl, '14-footnote-interaction.md')
 			]);
 
-			await expect(
-				referencePage.locator(`${renderedSelector} section[data-footnotes]`)
-			).toHaveCount(1);
-			await expect(localPage.locator('[data-streamdown-footnote-ref]')).toHaveCount(1);
+			const referenceSection = referencePage.locator(`${renderedSelector} section[data-footnotes]`);
+			const localSection = localPage.locator(`${renderedSelector} section[data-footnotes]`);
+			const referenceRefs = referencePage.locator(`${renderedSelector} sup`);
+			const localRefs = localPage.locator(`${renderedSelector} sup`);
+			await Promise.all([
+				expect(referenceSection).toHaveCount(1),
+				expect(localSection).toHaveCount(1),
+				expect(referenceRefs).toHaveCount(1),
+				expect(localRefs).toHaveCount(1)
+			]);
 
-			await localPage.locator('[data-streamdown-footnote-ref]').click();
-			await expect(localPage.locator('[data-streamdown-footnote-popover]')).toContainText(
-				'Footnote content for parity interaction.'
-			);
+			await Promise.all([
+				expect(referenceSection).toContainText('Footnote content for parity interaction.'),
+				expect(localSection).toContainText('Footnote content for parity interaction.')
+			]);
+
+			await expect(localPage.locator('[data-streamdown-footnote-popover]')).toHaveCount(0);
 		} finally {
 			await context.close();
 		}

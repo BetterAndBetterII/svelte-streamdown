@@ -329,6 +329,13 @@ describe('incomplete markdown', () => {
 		expect(result).toBe('Text with incomplete footnote[^streamdown:footnote]');
 	});
 
+	test('should handle multiple incomplete footnote references on the same line', () => {
+		const input = 'Text with [^1 and [^2';
+		const result = parseIncompleteMarkdown(input);
+
+		expect(result).toBe('Text with [^streamdown:footnote] and [^streamdown:footnote]');
+	});
+
 	test('should complete incomplete formatting around complete footnotes', () => {
 		const input = 'Complete footnote[^1] and **incomplete bold.\n\n[^1]: Complete footnote.';
 		const result = parseIncompleteMarkdown(input);
@@ -344,7 +351,6 @@ describe('incomplete markdown', () => {
 		const result = parseIncompleteMarkdown(input);
 
 		// Should complete footnote and italic
-		console.log(result);
 		expect(result).toBe(
 			'# Heading with footnote[^streamdown:footnote]\n\n> Blockquote with *incomplete*'
 		);

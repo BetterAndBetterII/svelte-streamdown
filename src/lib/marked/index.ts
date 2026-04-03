@@ -10,7 +10,7 @@ import {
 	type TokensList
 } from 'marked';
 import { markedAlert, type AlertToken } from './marked-alert.js';
-import { markedFootnote, type FootnoteToken } from './marked-footnotes.js';
+import { markedFootnote, type Footnote, type FootnoteRef, type FootnoteToken } from './marked-footnotes.js';
 import { markedMath, type MathToken } from './marked-math.js';
 import { markedSub, markedSup, type SubSupToken } from './marked-subsup.js';
 import { markedList, type ListItemToken, type ListToken } from './marked-list.js';
@@ -123,6 +123,11 @@ export type StreamdownToken =
 	| AlignToken
 	| CitationToken
 	| MdxToken;
+
+export type FootnoteState = {
+	refs: Map<string, FootnoteRef>;
+	footnotes: Map<string, Footnote>;
+};
 
 // Re-export table types from marked-table
 export type { TableToken, THead, TBody, TFoot, THeadRow, TRow, TH, TD } from './marked-table.js';
@@ -256,12 +261,27 @@ const parseExtensions = (...extensions: Extension[]) => {
 	return options;
 };
 
-export const lex = (markdown: string, extensions: Extension[] = []): StreamdownToken[] => {
-	return new Lexer(
+const cloneFootnoteState = (state?: FootnoteState): FootnoteState => ({
+	refs: new Map(state?.refs ?? []),
+	footnotes: new Map(state?.footnotes ?? [])
+});
+
+type LexerWithFootnotes = Lexer & {
+	footnotes?: FootnoteState;
+};
+
+export const lexWithFootnotes = (
+	markdown: string,
+	extensions: Extension[] = []
+): {
+	tokens: StreamdownToken[];
+	footnotes: FootnoteState;
+} => {
+	const lexer = new Lexer(
 		parseExtensions(
 			markedHr,
 			markedTable,
-			...markedFootnote(),
+			...markedFootnote({ preferContext: false }),
 			markedAlert,
 			...markedMath,
 			...markedCjk,
@@ -275,20 +295,37 @@ export const lex = (markdown: string, extensions: Extension[] = []): StreamdownT
 			markedMdx,
 			...extensions
 		)
-	)
-		.lex(markdown)
-		.filter((token) => token.type !== 'space' && token.type !== 'footnote') as StreamdownToken[];
+	) as LexerWithFootnotes;
+
+	return {
+		tokens: lexer
+			.lex(markdown)
+			.filter((token) => token.type !== 'space' && token.type !== 'footnote') as StreamdownToken[],
+		footnotes: cloneFootnoteState(lexer.footnotes)
+	};
 };
 
-export const parseBlocks = (markdown: string, extensions: Extension[] = []): string[] => {
-	if (footnoteReferencePattern.test(markdown) || footnoteDefinitionPattern.test(markdown)) {
-		return [markdown];
-	}
+export const lex = (markdown: string, extensions: Extension[] = []): StreamdownToken[] => {
+	return lexWithFootnotes(markdown, extensions).tokens;
+};
 
+export const parseBlocksWithFootnotes = (
+	markdown: string,
+	extensions: Extension[] = []
+): {
+	blocks: string[];
+	footnotes: FootnoteState;
+} => {
+	if (footnoteReferencePattern.test(markdown) || footnoteDefinitionPattern.test(markdown)) {
+		return {
+			blocks: [markdown],
+			footnotes: lexWithFootnotes(markdown, extensions).footnotes
+		};
+	}
 	const blockLexer = new Lexer(
 		parseExtensions(
 			markedHr,
-			...markedFootnote(),
+			...markedFootnote({ preferContext: false }),
 			markedDl,
 			markedTable,
 			markedAlign,
@@ -297,7 +334,7 @@ export const parseBlocks = (markdown: string, extensions: Extension[] = []): str
 				({ level, applyInBlockParsing }) => level === 'block' && applyInBlockParsing
 			)
 		)
-	);
+	) as LexerWithFootnotes;
 
 	const rawBlocks = blockLexer
 		.blockTokens(markdown, [])
@@ -337,7 +374,14 @@ export const parseBlocks = (markdown: string, extensions: Extension[] = []): str
 		previousTokenWasCode = block.type === 'code';
 	}
 
-	return mergedBlocks;
+	return {
+		blocks: mergedBlocks,
+		footnotes: cloneFootnoteState(blockLexer.footnotes)
+	};
+};
+
+export const parseBlocks = (markdown: string, extensions: Extension[] = []): string[] => {
+	return parseBlocksWithFootnotes(markdown, extensions).blocks;
 };
 
 export type {

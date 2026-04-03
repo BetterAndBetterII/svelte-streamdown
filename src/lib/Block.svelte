@@ -13,11 +13,13 @@
 	let {
 		block,
 		static: isStatic = false,
+		tokens: providedTokens,
 		parseIncompleteMarkdown: shouldParseIncompleteMarkdown = true,
 		isIncomplete = false
 	}: {
 		block: string;
 		static?: boolean;
+		tokens?: StreamdownToken[];
 		parseIncompleteMarkdown?: boolean;
 		isIncomplete?: boolean;
 	} = $props();
@@ -25,14 +27,16 @@
 	const streamdown = useStreamdown();
 	const markdown = $derived(
 		applyPluginMarkdownTransforms(
-			isStatic || !shouldParseIncompleteMarkdown || streamdown.parseIncompleteMarkdown === false
+			providedTokens
 				? block
-				: completeIncompleteMarkdown(block.trim()),
+				: isStatic || !shouldParseIncompleteMarkdown || streamdown.parseIncompleteMarkdown === false
+					? block
+					: completeIncompleteMarkdown(block.trim()),
 			streamdown.plugins
 		)
 	);
 	const isIncompleteCodeFence = $derived(streamdown.isAnimating && !isStatic && hasIncompleteCodeFence(block));
-	const tokens = $derived(lex(markdown, streamdown.extensions));
+	const tokens = $derived(providedTokens ?? lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
 	const allowedTagNames = $derived(
 		streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []

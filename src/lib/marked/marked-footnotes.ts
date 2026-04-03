@@ -13,9 +13,13 @@ const safeGetContext = () => {
 	}
 };
 
-export function markedFootnote(): Extension[] {
+type MarkedFootnoteOptions = {
+	preferContext?: boolean;
+};
+
+export function markedFootnote({ preferContext = true }: MarkedFootnoteOptions = {}): Extension[] {
 	const ensureMaps = (tokenizer: any) => {
-		const streamdown = safeGetContext();
+		const streamdown = preferContext ? safeGetContext() : null;
 
 		if (!streamdown) {
 			if (!tokenizer.lexer.hasFootnotes) {

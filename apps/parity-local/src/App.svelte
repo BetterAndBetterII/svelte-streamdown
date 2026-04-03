@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from '../../../src/lib/index.js';
 	import Code from '../../../src/lib/Elements/Code.svelte';
 	import Mermaid from '../../../src/lib/Elements/Mermaid.svelte';
 	import { onMount } from 'svelte';
