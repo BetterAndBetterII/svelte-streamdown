@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contribution Guide
+    url: https://github.com/BetterAndBetterII/svelte-streamdown/blob/master/CONTRIBUTING.md
+    about: Read the regression intake workflow, fixture naming convention, and PR expectations before sending a fix.
