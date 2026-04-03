@@ -4,6 +4,7 @@ export interface Plugin {
 	pattern?: RegExp;
 	handler?: (payload: HandlerPayload) => string;
 	skipInBlockTypes?: string[]; // block types where this plugin should be skipped
+	stopProcessingOnChange?: boolean;
 	preprocess?: (payload: HookPayload) => string | { text: string; state: Partial<ParseState> };
 	postprocess?: (payload: HookPayload) => string;
 }
@@ -119,7 +120,7 @@ export class IncompleteMarkdownParser {
 							setState: this.setState
 						});
 
-						if (plugin.name === 'linksAndImages' && line !== previousLine) {
+						if (plugin.stopProcessingOnChange && line !== previousLine) {
 							break;
 						}
 					}
@@ -276,6 +277,7 @@ export class IncompleteMarkdownParser {
 				name: 'linksAndImages',
 				pattern: /\[/,
 				skipInBlockTypes: ['code', 'math'],
+				stopProcessingOnChange: true,
 				handler: ({ line }) => handleIncompleteLinksAndImages(line)
 			},
 			{
@@ -429,12 +431,6 @@ export class IncompleteMarkdownParser {
 					}
 					return line;
 				}
-			},
-			{
-				name: 'inlineMath',
-				pattern: /\$/,
-				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line }) => line
 			},
 			{
 				name: 'blockMath',
