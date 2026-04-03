@@ -132,6 +132,92 @@ export type FootnoteState = {
 // Re-export table types from marked-table
 export type { TableToken, THead, TBody, TFoot, THeadRow, TRow, TH, TD } from './marked-table.js';
 
+const footnoteReferencePattern = /\[\^[\w-]{1,200}\](?!:)/;
+const footnoteDefinitionPattern = /\[\^[\w-]{1,200}\]:/;
+const closingTagPattern = /<\/(\w+)>/;
+const openingTagPattern = /<(\w+)[\s>]/;
+
+const voidElements = new Set([
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr'
+]);
+
+const openTagPatternCache = new Map<string, RegExp>();
+const closeTagPatternCache = new Map<string, RegExp>();
+
+const getOpenTagPattern = (tagName: string): RegExp => {
+	const normalizedTag = tagName.toLowerCase();
+	const cached = openTagPatternCache.get(normalizedTag);
+	if (cached) {
+		return cached;
+	}
+
+	const pattern = new RegExp(`<${normalizedTag}(?=[\\s>/])[^>]*>`, 'gi');
+	openTagPatternCache.set(normalizedTag, pattern);
+	return pattern;
+};
+
+const getCloseTagPattern = (tagName: string): RegExp => {
+	const normalizedTag = tagName.toLowerCase();
+	const cached = closeTagPatternCache.get(normalizedTag);
+	if (cached) {
+		return cached;
+	}
+
+	const pattern = new RegExp(`</${normalizedTag}(?=[\\s>])[^>]*>`, 'gi');
+	closeTagPatternCache.set(normalizedTag, pattern);
+	return pattern;
+};
+
+const countNonSelfClosingOpenTags = (block: string, tagName: string): number => {
+	if (voidElements.has(tagName.toLowerCase())) {
+		return 0;
+	}
+
+	const matches = block.match(getOpenTagPattern(tagName));
+	if (!matches) {
+		return 0;
+	}
+
+	let count = 0;
+	for (const match of matches) {
+		if (!match.trimEnd().endsWith('/>')) {
+			count += 1;
+		}
+	}
+
+	return count;
+};
+
+const countClosingTags = (block: string, tagName: string): number => {
+	const matches = block.match(getCloseTagPattern(tagName));
+	return matches ? matches.length : 0;
+};
+
+const countDoubleDollars = (value: string): number => {
+	let count = 0;
+	for (let i = 0; i < value.length - 1; i += 1) {
+		if (value[i] === '$' && value[i + 1] === '$') {
+			count += 1;
+			i += 1;
+		}
+	}
+
+	return count;
+};
+
 const parseExtensions = (...extensions: Extension[]) => {
 	const options: {
 		gfm: boolean;
@@ -230,6 +316,12 @@ export const parseBlocksWithFootnotes = (
 	blocks: string[];
 	footnotes: FootnoteState;
 } => {
+	if (footnoteReferencePattern.test(markdown) || footnoteDefinitionPattern.test(markdown)) {
+		return {
+			blocks: [markdown],
+			footnotes: lexWithFootnotes(markdown, extensions).footnotes
+		};
+	}
 	const blockLexer = new Lexer(
 		parseExtensions(
 			markedHr,
@@ -249,32 +341,37 @@ export const parseBlocksWithFootnotes = (
 		.filter((block) => block.type !== 'space' && block.type !== 'footnote');
 
 	const mergedBlocks: string[] = [];
+	let previousTokenWasCode = false;
 
 	for (let index = 0; index < rawBlocks.length; index += 1) {
 		const block = rawBlocks[index];
+		let currentBlock = block.raw;
 
-		if (block.type !== 'html') {
-			mergedBlocks.push(block.raw);
-			continue;
+		if (block.type === 'html') {
+			const tagName = getOpeningHtmlTagName(block.raw);
+			if (tagName) {
+				let depth = getHtmlTagDepthDelta(block.raw, tagName);
+
+				while (depth > 0 && index + 1 < rawBlocks.length) {
+					index += 1;
+					const nextBlock = rawBlocks[index];
+					currentBlock += nextBlock.raw;
+					depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
+				}
+			}
 		}
 
-		const tagName = getOpeningHtmlTagName(block.raw);
-		if (!tagName) {
-			mergedBlocks.push(block.raw);
-			continue;
+		if (mergedBlocks.length > 0 && !previousTokenWasCode) {
+			const previousBlock = mergedBlocks[mergedBlocks.length - 1];
+			if (countDoubleDollars(previousBlock) % 2 === 1) {
+				mergedBlocks[mergedBlocks.length - 1] = previousBlock + currentBlock;
+				previousTokenWasCode = block.type === 'code';
+				continue;
+			}
 		}
 
-		let mergedRaw = block.raw;
-		let depth = getHtmlTagDepthDelta(block.raw, tagName);
-
-		while (depth > 0 && index + 1 < rawBlocks.length) {
-			index += 1;
-			const nextBlock = rawBlocks[index];
-			mergedRaw += nextBlock.raw;
-			depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
-		}
-
-		mergedBlocks.push(mergedRaw);
+		mergedBlocks.push(currentBlock);
+		previousTokenWasCode = block.type === 'code';
 	}
 
 	return {

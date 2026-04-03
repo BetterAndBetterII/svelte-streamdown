@@ -11,10 +11,12 @@
 
 	const {
 		token,
-		id
+		id,
+		isIncomplete = false
 	}: {
 		token: Tokens.Code;
 		id: string;
+		isIncomplete?: boolean;
 	} = $props();
 
 	const mermaidPlugin = $derived(streamdown.plugins?.mermaid ?? null);
@@ -144,7 +146,7 @@
 	});
 </script>
 
-<div data-streamdown-mermaid={id}>
+<div data-streamdown-mermaid={id} data-incomplete={isIncomplete || undefined}>
 	<div
 		style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
 		class={streamdown.theme.mermaid.base}
@@ -184,16 +186,12 @@
 				{#if controls.fullscreen}
 					<button
 						class={streamdown.theme.components.button}
-						aria-label={
-							panzoom.expanded
-								? streamdown.translations.exitFullscreen
-								: streamdown.translations.viewFullscreen
-						}
-						title={
-							panzoom.expanded
-								? streamdown.translations.exitFullscreen
-								: streamdown.translations.viewFullscreen
-						}
+						aria-label={panzoom.expanded
+							? streamdown.translations.exitFullscreen
+							: streamdown.translations.viewFullscreen}
+						title={panzoom.expanded
+							? streamdown.translations.exitFullscreen
+							: streamdown.translations.viewFullscreen}
 						onclick={() => panzoom.toggleExpand()}
 						data-panzoom-ignore
 					>

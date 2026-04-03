@@ -20,7 +20,15 @@
 		extractCodeFenceMeta,
 		findCustomRenderer
 	} from '$lib/plugins.js';
-	let { token, children }: { token: StreamdownToken; children: Snippet } = $props();
+	let {
+		token,
+		children,
+		isIncomplete = false
+	}: {
+		token: StreamdownToken;
+		children: Snippet;
+		isIncomplete?: boolean;
+	} = $props();
 	const streamdown = useStreamdown();
 	const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 
@@ -114,17 +122,21 @@
 	{@const Renderer = customRenderer.component}
 	<Renderer
 		code={token.text}
-		isIncomplete={false}
+		{isIncomplete}
 		language={extractCodeFenceLanguage(token)}
 		meta={extractCodeFenceMeta(token)}
 	/>
 {:else if token.type === 'code' && extractCodeFenceLanguage(token) === 'mermaid'}
 	<Slot props={{ children, token }} render={streamdown.snippets.code}>
-		<MermaidComponent {id} {token} />
+		{#if isIncomplete}
+			<MermaidFallback {id} {token} isIncomplete={true} />
+		{:else}
+			<MermaidComponent {id} {token} isIncomplete={false} />
+		{/if}
 	</Slot>
 {:else if token.type === 'code'}
 	<Slot props={{ children, token }} render={streamdown.snippets.code}>
-		<CodeComponent {id} {token} />
+		<CodeComponent {id} {token} {isIncomplete} />
 	</Slot>
 {:else if token.type === 'codespan'}
 	<Slot

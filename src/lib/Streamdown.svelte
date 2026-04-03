@@ -17,15 +17,11 @@
 	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
 	import Footnotes from './Elements/Footnotes.svelte';
 	import { normalizeHtmlIndentation } from './security/html.js';
+	import { parseIncompleteMarkdown as repairIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
 	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
+	import { carets, hasIncompleteCodeFence, hasTable } from './streaming.js';
 	import { mergeTranslations } from './translations.js';
-	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
-
-	const carets = {
-		block: ' ▋',
-		circle: ' ●'
-	} as const;
 
 	const animationNameMap = {
 		blurIn: 'blur',
@@ -82,11 +78,13 @@
 	let {
 		content = '',
 		class: className,
+		className: futureClassName,
 		shikiTheme,
 		shikiLanguages,
 		shikiThemes,
 		plugins,
 		parseIncompleteMarkdown = true,
+		parseMarkdownIntoBlocksFn,
 		mode = 'streaming',
 		dir,
 		defaultOrigin,
@@ -129,18 +127,10 @@
 	const resolvedMode = $derived(isStatic === undefined ? mode : isStatic ? 'static' : 'streaming');
 	const resolvedStatic = $derived(resolvedMode === 'static');
 	const prefixedCn = $derived.by(() => createCn(prefix));
+	const resolvedClassName = $derived(
+		[className, futureClassName].filter((value): value is string => Boolean(value)).join(' ')
+	);
 	const shouldShowCaret = $derived(resolvedMode !== 'static' && Boolean(caret) && isAnimating);
-	const rootStyle = $derived(
-		shouldShowCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
-	);
-	const rootClassName = $derived(
-		prefixedCn(
-			'whitespace-normal',
-			className,
-			shouldShowCaret &&
-				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
-		)
-	);
 	const resolvedAnimation = $derived.by(() => {
 		if (animation) {
 			if (!animation.enabled) {
@@ -206,6 +196,9 @@
 		},
 		get parseIncompleteMarkdown() {
 			return parseIncompleteMarkdown;
+		},
+		get parseMarkdownIntoBlocksFn() {
+			return parseMarkdownIntoBlocksFn;
 		},
 		get mode() {
 			return resolvedMode;
@@ -377,33 +370,45 @@
 		raw: string;
 		tokens: StreamdownToken[];
 		footnotes: FootnoteState;
+		isIncomplete: boolean;
 	};
 
+	const splitBlocks = $derived(
+		parseMarkdownIntoBlocksFn ??
+			((markdown: string) => parseBlocksWithFootnotes(markdown, streamdown.extensions).blocks)
+	);
+	const rawBlocks = $derived(
+		resolvedStatic ? [preprocessedContent] : splitBlocks(preprocessedContent)
+	);
+	const blockIsIncomplete = $derived(
+		rawBlocks.map(
+			(block, index) =>
+				resolvedMode === 'streaming' &&
+				isAnimating &&
+				index === rawBlocks.length - 1 &&
+				hasIncompleteCodeFence(block)
+		)
+	);
 	const parsedDocument = $derived.by(() => {
-		if (resolvedStatic) {
-			const parsed = lexWithFootnotes(preprocessedContent, streamdown.extensions);
-			return {
-				blocks: [preprocessedContent],
-				footnotes: parsed.footnotes
-			};
-		}
-
-		return parseBlocksWithFootnotes(preprocessedContent, streamdown.extensions);
+		return {
+			footnotes: lexWithFootnotes(preprocessedContent, streamdown.extensions).footnotes
+		};
 	});
 
 	const parsedBlocks = $derived.by(() => {
-		const rawBlocks = parsedDocument.blocks;
-
-		return rawBlocks.map((raw) => {
-			const parsed = lexWithFootnotes(
-				resolvedStatic ? raw : completeIncompleteMarkdown(raw.trim()),
-				streamdown.extensions
-			);
+		return rawBlocks.map((raw, index) => {
+			const isIncomplete = blockIsIncomplete[index] ?? false;
+			const markdown =
+				resolvedStatic || !parseIncompleteMarkdown || isIncomplete
+					? raw
+					: repairIncompleteMarkdown(raw);
+			const parsed = lexWithFootnotes(markdown, streamdown.extensions);
 
 			return {
 				raw,
 				tokens: parsed.tokens,
-				footnotes: parsed.footnotes
+				footnotes: parsed.footnotes,
+				isIncomplete
 			};
 		}) satisfies ParsedBlock[];
 	});
@@ -443,14 +448,43 @@
 		streamdown.footnotes.refs = new Map(footnoteState.refs);
 		streamdown.footnotes.footnotes = new Map(footnoteState.footnotes);
 	});
+	const shouldHideCaret = $derived(
+		!shouldShowCaret || rawBlocks.length === 0
+			? false
+			: (() => {
+					const lastBlock = rawBlocks.at(-1) as string;
+					return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
+				})()
+	);
+	const rootStyle = $derived(
+		shouldShowCaret && !shouldHideCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
+	);
+	const rootClassName = $derived(
+		prefixedCn(
+			'whitespace-normal',
+			resolvedClassName,
+			shouldShowCaret &&
+				!shouldHideCaret &&
+				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
+		)
+	);
 </script>
 
 <div bind:this={element} class={rootClassName} style={rootStyle}>
+	{#if shouldShowCaret && !shouldHideCaret && parsedBlocks.length === 0}
+		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
+	{/if}
 	{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}
-		<Block static={resolvedStatic} block={parsedBlock.raw} tokens={parsedBlock.tokens} />
+		<Block
+			static={resolvedStatic}
+			block={parsedBlock.raw}
+			tokens={parsedBlock.tokens}
+			parseIncompleteMarkdown={false}
+			isIncomplete={parsedBlock.isIncomplete}
+		/>
 	{/each}
 	<Footnotes entries={footnoteEntries} />
-	{#if shouldShowCaret && !content.trim()}
+	{#if shouldShowCaret && !shouldHideCaret && !content.trim()}
 		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
 	{/if}
 </div>

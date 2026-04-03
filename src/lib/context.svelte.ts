@@ -7,6 +7,7 @@ import type { LanguageInfo } from './utils/bundledLanguages.js';
 import type { ThemeRegistration } from 'shiki';
 import type { StreamdownTranslations } from './translations.js';
 import type { AllowedTags } from './security/types.js';
+import { carets } from './streaming.js';
 import type { PluginConfig } from './plugins.js';
 
 export type { AllowedTags } from './security/types.js';
@@ -48,6 +49,8 @@ export interface StreamdownContext
 	};
 	plugins?: PluginConfig;
 	inlineCitationsMode: 'list' | 'carousel';
+	isAnimating: boolean;
+	mode: 'static' | 'streaming';
 	animation: {
 		enabled: boolean;
 	} & StreamdownProps['animation'];
@@ -253,10 +256,16 @@ export type StreamdownComponents = {
 };
 
 export type StreamdownProps<Source extends Record<string, any> = Record<string, any>> = {
-	mode?: 'static' | 'streaming';
-	dir?: 'auto' | 'ltr' | 'rtl';
 	streamdown?: StreamdownContext;
 	static?: boolean;
+	mode?: 'static' | 'streaming';
+	isAnimating?: boolean;
+	animated?: boolean | AnimateOptions;
+	caret?: keyof typeof carets;
+	onAnimationStart?: () => void;
+	onAnimationEnd?: () => void;
+	parseMarkdownIntoBlocksFn?: (markdown: string) => string[];
+	dir?: 'auto' | 'ltr' | 'rtl';
 	sources?: {
 		[key: string]: Source;
 	};
@@ -265,6 +274,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	element?: HTMLElement;
 	content: string;
 	class?: string;
+	className?: string;
 	parseIncompleteMarkdown?: boolean;
 	// Security props
 	defaultOrigin?: string;
@@ -294,12 +304,6 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 		table?: TableControlsConfig;
 	};
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
-	isAnimating?: boolean;
-	animated?: boolean | AnimateOptions;
-	caret?: 'block' | 'circle';
-	onAnimationStart?: () => void;
-	onAnimationEnd?: () => void;
-
 	animation?: {
 		animateOnMount?: boolean;
 		enabled?: boolean;
