@@ -6,6 +6,7 @@
 	import type { StreamdownToken } from '$lib/marked/index.js';
 	import Slot from './Slot.svelte';
 	import { useStreamdown } from '$lib/context.svelte.js';
+	import { renderHtmlToken } from '$lib/security/html.js';
 	import FootnoteRef from './FootnoteRef.svelte';
 	import Citation from './Citation.svelte';
 	import Table from './Table.svelte';
@@ -13,11 +14,24 @@
 	import { CodeFallback, MermaidFallback, MathFallback } from './fallbacks/index.js';
 	let { token, children }: { token: StreamdownToken; children: Snippet } = $props();
 	const streamdown = useStreamdown();
+	const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 
 	// Use provided components or fallback to lightweight versions
 	const CodeComponent = $derived(streamdown.components?.code ?? CodeFallback);
 	const MermaidComponent = $derived(streamdown.components?.mermaid ?? MermaidFallback);
 	const MathComponent = $derived(streamdown.components?.math ?? MathFallback);
+	const headingThemeKey = $derived(
+		token.type === 'heading' ? (headingTags[token.depth - 1] ?? 'h1') : 'h1'
+	);
+	const HeadingComponent = $derived(
+		token.type === 'heading' ? streamdown.components?.[headingThemeKey] : undefined
+	);
+	const ParagraphComponent = $derived(
+		token.type === 'paragraph' ? streamdown.components?.p : undefined
+	);
+	const InlineCodeComponent = $derived(
+		token.type === 'codespan' ? streamdown.components?.inlineCode : undefined
+	);
 
 	// Only apply animation on block level elements. Leaves text elements to be animated by their text children.
 	const style = $derived(streamdown.isMounted ? streamdown.animationBlockStyle : '');
@@ -28,9 +42,12 @@
 	<Slot
 		props={{
 			children,
-			token
+			token,
+			class: streamdown.theme[headingThemeKey].base,
+			style
 		}}
 		render={streamdown.snippets.heading}
+		component={HeadingComponent}
 	>
 		{#if token.depth === 1}
 			<h1 data-streamdown-heading-1={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
@@ -59,7 +76,11 @@
 		{/if}
 	</Slot>
 {:else if token.type === 'paragraph'}
-	<Slot props={{ children, token }} render={streamdown.snippets.paragraph}>
+	<Slot
+		props={{ children, token, class: streamdown.theme.paragraph.base, style }}
+		render={streamdown.snippets.paragraph}
+		component={ParagraphComponent}
+	>
 		<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>
 			{@render children()}
 		</p>
@@ -79,7 +100,11 @@
 		<CodeComponent {id} {token} />
 	</Slot>
 {:else if token.type === 'codespan'}
-	<Slot props={{ children, token }} render={streamdown.snippets.codespan}>
+	<Slot
+		props={{ children, token, class: streamdown.theme.codespan.base }}
+		render={streamdown.snippets.codespan}
+		component={InlineCodeComponent}
+	>
 		<code data-streamdown-codespan={id} class={streamdown.theme.codespan.base}>
 			{@render children()}
 		</code>
@@ -125,7 +150,7 @@
 {:else if token.type === 'table'}
 	<Slot props={{ token, children }} render={streamdown.snippets.table}>
 		<div {style}>
-			<Table {id}>
+			<Table {id} {token}>
 				{@render children()}
 			</Table>
 		</div>
@@ -289,11 +314,14 @@
 {:else if token.type === 'text'}
 	{@render children()}
 {:else if token.type === 'html'}
-	{#if streamdown.renderHtml}
-		{@const content =
-			typeof streamdown.renderHtml === 'function' ? streamdown.renderHtml(token) : token.raw}
-		{@html content}
-	{/if}
+	{@const content = renderHtmlToken(token, {
+		allowedImagePrefixes: streamdown.allowedImagePrefixes,
+		allowedLinkPrefixes: streamdown.allowedLinkPrefixes,
+		allowedTags: streamdown.allowedTags,
+		defaultOrigin: streamdown.defaultOrigin,
+		renderHtml: streamdown.renderHtml
+	})}
+	{@html content}
 {:else if token.type === 'mdx'}
 	{@const Component = streamdown.mdxComponents?.[token.tagName]}
 	{#if Component}

@@ -99,7 +99,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 	rootExports: {
 		// api-02, api-03, api-04, api-05, api-06
 		missingFromLocal: [
-			'AllowedTags',
 			'AllowElement',
 			'AnimateOptions',
 			'Block',
@@ -176,7 +175,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		// prop-17, prop-18, prop-20, api-01
 		missingFromLocal: [
 			'allowedElements',
-			'allowedTags',
 			'allowElement',
 			'animated',
 			'BlockComponent',
@@ -187,7 +185,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'isAnimating',
 			'lineNumbers',
 			'linkSafety',
-			'literalTagContent',
 			'mode',
 			'normalizeHtmlIndentation',
 			'onAnimationEnd',
@@ -274,8 +271,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'components',
 				reference: 'Components',
-				local:
-					'{code?:Component<{token:Tokens.Code;id:string;},any,any>;mermaid?:Component<{token:Tokens.Code;id:string;},any,any>;mermaidError?:Component<MermaidErrorComponentProps,any,any>;math?:Component<{token:MathToken;id:string;},any,any>;}'
+				local: 'StreamdownComponents'
 			},
 			{
 				name: 'controls',

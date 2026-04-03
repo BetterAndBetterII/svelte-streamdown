@@ -24,27 +24,26 @@
 			kind: 'link'
 		})
 	);
+	const href = $derived(isRelativeUrl ? token.href : (transformedUrl ?? token.href));
+	const target = $derived(isRelativeUrl ? undefined : '_blank');
+	const rel = $derived(isRelativeUrl ? undefined : 'noopener noreferrer');
 </script>
 
 {#if transformedUrl || token.href === 'streamdown:incomplete-link' || isRelativeUrl}
 	<Slot
 		props={{
-			href: transformedUrl,
-			target: '_blank',
-			rel: 'noopener noreferrer',
+			href,
+			target,
+			rel,
 			title: token.title,
+			class: streamdown.theme.link.base,
 			children,
 			token
 		}}
 		render={streamdown.snippets.link}
+		component={streamdown.components?.a}
 	>
-		<a
-			data-streamdown-link={id}
-			class={streamdown.theme.link.base}
-			{...isRelativeUrl
-				? { href: token.href }
-				: { href: transformedUrl, target: '_blank', rel: 'noopener noreferrer' }}
-		>
+		<a data-streamdown-link={id} class={streamdown.theme.link.base} {href} {target} {rel}>
 			{@render children()}
 		</a>
 	</Slot>

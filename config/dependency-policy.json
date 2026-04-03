@@ -140,6 +140,13 @@
 				],
 				"approvedPackages": [
 					{
+						"name": "entities",
+						"license": "BSD-2-Clause",
+						"reason": "Transitive via rehype-raw/parse5 in the current production graph; keep the exception package-specific until broader BSD-2-Clause policy review is completed.",
+						"evidence": "node_modules/.pnpm/entities@6.0.1/node_modules/entities/LICENSE",
+						"reviewBy": "if the entities version changes"
+					},
+					{
 						"name": "khroma",
 						"license": "Unknown",
 						"reason": "The published package omits SPDX metadata, but the bundled license file in the installed package is MIT.",
