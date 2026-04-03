@@ -46,7 +46,7 @@ type StreamdownContextInit<Source extends Record<string, any> = Record<string, a
 	controls: {
 		code: boolean;
 		mermaid: boolean;
-		table: boolean;
+		table: TableControlsConfig;
 	};
 	codeControls: {
 		copy: boolean;
