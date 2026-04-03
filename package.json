@@ -14,7 +14,7 @@
 		"test:ui": "vitest --ui",
 		"test:unit": "vitest",
 		"test:contracts": "vitest --run tests/contracts/*.spec.ts",
-		"test:playwright:parity": "playwright test tests/playwright/parity/harness.spec.ts",
+		"test:playwright:parity": "playwright test tests/playwright/parity",
 		"test": "npm run test:unit -- --run",
 		"docs:test-migration-status": "node scripts/test-migration-status.mjs --write && prettier --write docs/test-migration-status.md",
 		"verify:test-migration-status": "node scripts/test-migration-status.mjs --write && prettier --write docs/test-migration-status.md && git diff --exit-code -- docs/test-migration-status.md",
