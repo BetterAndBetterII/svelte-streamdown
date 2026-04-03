@@ -49,6 +49,9 @@ export function getFirstTokenByType<TToken extends TokenLike, TType extends TTok
 }
 
 export function getInlineTokens(markdown: string): Token[] {
-	const paragraph = getFirstTokenByType(parseMarkdownTokens(markdown), 'paragraph');
-	return paragraph?.tokens ?? [];
+	const firstTokenWithChildren = parseMarkdownTokens(markdown).find(
+		(token): token is StreamdownToken & { tokens: Token[] } => 'tokens' in token && Array.isArray(token.tokens)
+	);
+
+	return firstTokenWithChildren?.tokens ?? [];
 }

@@ -9,7 +9,7 @@ import {
 
 describeInBrowser('ported streamdown render helpers', () => {
 	testInBrowser('renders a fixture through shared DOM helpers', async () => {
-		const { input, expected } = loadFixturePair(
+		const { input, expected } = await loadFixturePair(
 			'ported/streamdown/basic-render/input.md',
 			'ported/streamdown/basic-render/expected.html'
 		);

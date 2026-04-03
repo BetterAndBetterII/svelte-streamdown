@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest';
 import { listFixturePaths, loadFixtureText } from './fixtures.js';
 
-test('loads local and reference fixtures by exact path', () => {
+test('loads local and reference fixtures by exact path', async () => {
 	expect(listFixturePaths('local')).toContain('ported/remend/streaming/input.md');
-	expect(loadFixtureText('ported/remend/streaming/input.md')).toContain('**bold statement**');
+	expect(await loadFixtureText('ported/remend/streaming/input.md')).toContain('**bold statement**');
 	expect(
-		loadFixtureText(
+		await loadFixtureText(
 			'packages/streamdown/__tests__/__fixtures__/code-block-big-html.html',
 			'reference'
 		)

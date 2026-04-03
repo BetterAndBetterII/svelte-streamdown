@@ -9,8 +9,8 @@ import {
 } from '../../helpers/index.js';
 
 describeInNode('ported remend streaming helpers', () => {
-	testInNode('closes incomplete inline code from fixture data', () => {
-		const { input, expected } = loadFixturePair(
+	testInNode('closes incomplete inline code from fixture data', async () => {
+		const { input, expected } = await loadFixturePair(
 			'ported/remend/streaming/input.md',
 			'ported/remend/streaming/expected.md'
 		);
@@ -25,5 +25,13 @@ describeInNode('ported remend streaming helpers', () => {
 		expect(link).toBeDefined();
 		expect(link?.href).toBe('https://example.com');
 		expect(link?.text).toBe('fixture link');
+	});
+
+	testInNode('extracts inline tokens from non-paragraph blocks', () => {
+		const tokens = getInlineTokens('# [Heading Link](https://example.com/heading)');
+		const link = getFirstTokenByType(tokens, 'link');
+
+		expect(link).toBeDefined();
+		expect(link?.href).toBe('https://example.com/heading');
 	});
 });
