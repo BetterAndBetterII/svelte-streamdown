@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { useStreamdown } from '$lib/context.svelte.js';
+	import {
+		extractCodeFenceLanguage,
+		getThemeName,
+		type HighlightToken
+	} from '$lib/plugins.js';
 	import { save } from '$lib/utils/save.js';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
 	import { HighlighterManager, languageExtensionMap } from '$lib/utils/hightlighter.svelte.js';
 	import { bundledLanguagesInfo } from '$lib/utils/bundledLanguages.js';
 	import type { Tokens } from 'marked';
-	import { type ThemedToken } from 'shiki';
 	import { untrack } from 'svelte';
 	import { checkIcon, copyIcon, downloadIcon } from './icons.js';
 
@@ -23,6 +27,18 @@
 		streamdown.shikiThemes,
 		streamdown.shikiLanguages
 	);
+	const codePlugin = $derived(streamdown.plugins?.code ?? null);
+	const language = $derived(extractCodeFenceLanguage(token) || token.lang || 'text');
+	const pluginThemes = $derived(codePlugin?.getThemes() ?? null);
+	const activeTheme = $derived(
+		pluginThemes
+			? (typeof window !== 'undefined' &&
+				window.matchMedia?.('(prefers-color-scheme: dark)').matches
+					? getThemeName(pluginThemes[1])
+					: getThemeName(pluginThemes[0]))
+			: streamdown.shikiTheme
+	);
+	let pluginTokens = $state<HighlightToken[][] | null>(null);
 
 	const copy = useCopy({
 		get content() {
@@ -47,14 +63,39 @@
 	};
 
 	$effect(() => {
-		const theme = streamdown.shikiTheme;
-		const lang = token.lang;
+		const theme = activeTheme;
+		const lang = language;
+		if (codePlugin) {
+			const result = codePlugin.highlight(
+				{
+					code: token.text,
+					language: lang,
+					themes: codePlugin.getThemes()
+				},
+				(asyncResult) => {
+					pluginTokens = asyncResult.tokens;
+				}
+			);
+			pluginTokens = result?.tokens ?? null;
+			return;
+		}
 		untrack(() => {
 			void highlighter.load(theme, lang);
 		});
 	});
 
 	const showLineNumbers = $derived(streamdown.lineNumbers !== false);
+	const renderedLines = $derived.by(() => {
+		if (codePlugin) {
+			return pluginTokens;
+		}
+
+		if (!highlighter.isReady(activeTheme, token.lang)) {
+			return null;
+		}
+
+		return highlighter.highlightCode(token.text, language, activeTheme);
+	});
 </script>
 
 <div
@@ -63,7 +104,7 @@
 	class={streamdown.theme.code.base}
 >
 	<div class={streamdown.theme.code.header}>
-		<span class={streamdown.theme.code.language}>{token.lang}</span>
+		<span class={streamdown.theme.code.language}>{language}</span>
 		{#if streamdown.controls.code}
 			<div class={streamdown.theme.code.buttons}>
 				<button
@@ -93,13 +134,11 @@
 		{/if}
 	</div>
 	<div style="height: fit-content; width: 100%;" class={streamdown.theme.code.container}>
-		{#if highlighter.isReady(streamdown.shikiTheme, token.lang)}
+		{#if renderedLines}
 			<pre class={streamdown.theme.code.pre}><code
 					class:sd-line-numbers={showLineNumbers}
 					data-streamdown-line-numbers={showLineNumbers}
-					>{@render Tokens(
-						highlighter.highlightCode(token.text, token.lang, streamdown.shikiTheme)
-					)}</code
+					>{@render Tokens(renderedLines)}</code
 				></pre>
 		{:else}
 			<pre class={streamdown.theme.code.pre}><code
@@ -111,7 +150,7 @@
 	</div>
 </div>
 
-{#snippet Tokens(lines: ThemedToken[][])}
+{#snippet Tokens(lines: HighlightToken[][])}
 	{#each lines as tokens}
 		<span class={`sd-code-line ${streamdown.theme.code.line}`}>
 			{#each tokens as token}

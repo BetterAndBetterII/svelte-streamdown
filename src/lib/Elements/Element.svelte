@@ -11,15 +11,34 @@
 	import Citation from './Citation.svelte';
 	import Table from './Table.svelte';
 	// Import fallback components
+	import Code from './Code.svelte';
+	import Mermaid from './Mermaid.svelte';
+	import Math from './Math.svelte';
 	import { CodeFallback, MermaidFallback, MathFallback } from './fallbacks/index.js';
+	import {
+		extractCodeFenceLanguage,
+		extractCodeFenceMeta,
+		findCustomRenderer
+	} from '$lib/plugins.js';
 	let { token, children }: { token: StreamdownToken; children: Snippet } = $props();
 	const streamdown = useStreamdown();
 	const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 
 	// Use provided components or fallback to lightweight versions
-	const CodeComponent = $derived(streamdown.components?.code ?? CodeFallback);
-	const MermaidComponent = $derived(streamdown.components?.mermaid ?? MermaidFallback);
-	const MathComponent = $derived(streamdown.components?.math ?? MathFallback);
+	const CodeComponent = $derived(
+		streamdown.components?.code ?? (streamdown.plugins?.code ? Code : CodeFallback)
+	);
+	const MermaidComponent = $derived(
+		streamdown.components?.mermaid ?? (streamdown.plugins?.mermaid ? Mermaid : MermaidFallback)
+	);
+	const MathComponent = $derived(
+		streamdown.components?.math ?? (streamdown.plugins?.math ? Math : MathFallback)
+	);
+	const customRenderer = $derived(
+		token.type === 'code'
+			? findCustomRenderer(streamdown.plugins?.renderers, extractCodeFenceLanguage(token))
+			: null
+	);
 	const headingThemeKey = $derived(
 		token.type === 'heading' ? (headingTags[token.depth - 1] ?? 'h1') : 'h1'
 	);
@@ -91,7 +110,15 @@
 			{@render children()}
 		</blockquote>
 	</Slot>
-{:else if token.type === 'code' && token.lang === 'mermaid'}
+{:else if token.type === 'code' && customRenderer}
+	{@const Renderer = customRenderer.component}
+	<Renderer
+		code={token.text}
+		isIncomplete={false}
+		language={extractCodeFenceLanguage(token)}
+		meta={extractCodeFenceMeta(token)}
+	/>
+{:else if token.type === 'code' && extractCodeFenceLanguage(token) === 'mermaid'}
 	<Slot props={{ children, token }} render={streamdown.snippets.code}>
 		<MermaidComponent {id} {token} />
 	</Slot>

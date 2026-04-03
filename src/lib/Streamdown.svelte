@@ -6,6 +6,7 @@
 		StreamdownContext,
 		type StreamdownProps
 	} from './context.svelte.js';
+	import { getThemeName } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
 	import { normalizeHtmlIndentation } from './security/html.js';
@@ -77,6 +78,7 @@
 		shikiTheme,
 		shikiLanguages,
 		shikiThemes,
+		plugins,
 		parseIncompleteMarkdown = true,
 		mode = 'streaming',
 		dir,
@@ -232,7 +234,16 @@
 			return lineNumbers;
 		},
 		get shikiTheme() {
-			return shikiTheme || shikiThemedTheme;
+			if (shikiTheme) {
+				return shikiTheme;
+			}
+
+			if (plugins?.code) {
+				const [lightTheme, darkTheme] = plugins.code.getThemes();
+				return darkMode.current ? getThemeName(darkTheme) : getThemeName(lightTheme);
+			}
+
+			return shikiThemedTheme;
 		},
 		get snippets() {
 			return snippets;
@@ -252,6 +263,9 @@
 		get katexConfig() {
 			return katexConfig;
 		},
+		get plugins() {
+			return plugins;
+		},
 		get renderHtml() {
 			return renderHtml ?? true;
 		},
@@ -262,7 +276,23 @@
 			return shikiLanguages;
 		},
 		get shikiThemes() {
-			return shikiThemes;
+			if (!plugins?.code) {
+				return shikiThemes;
+			}
+
+			const [lightTheme, darkTheme] = plugins.code.getThemes();
+			const pluginThemes = [lightTheme, darkTheme].filter(
+				(theme): theme is Exclude<typeof theme, string> => typeof theme !== 'string'
+			);
+
+			if (pluginThemes.length === 0) {
+				return shikiThemes;
+			}
+
+			return {
+				...(shikiThemes ?? {}),
+				...Object.fromEntries(pluginThemes.map((theme) => [theme.name ?? 'custom-theme', theme]))
+			};
 		},
 		get sources() {
 			return sources;

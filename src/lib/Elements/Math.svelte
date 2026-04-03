@@ -2,6 +2,7 @@
 	import { onMount, untrack } from 'svelte';
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { MathToken } from '$lib/marked/index.js';
+	import { getMathPluginOptions } from '$lib/plugins.js';
 	import type { KatexOptions } from 'katex';
 	import 'katex/dist/katex.min.css';
 
@@ -14,6 +15,7 @@
 	} = $props();
 
 	const streamdown = useStreamdown();
+	const mathPluginOptions = $derived(getMathPluginOptions(streamdown.plugins?.math));
 	let katexInstance = $state<typeof import('katex') | null>(null);
 
 	onMount(() => {
@@ -30,6 +32,7 @@
 		const config: KatexOptions = {
 			output: 'html',
 			displayMode: !token.isInline,
+			errorColor: mathPluginOptions.errorColor,
 			...(typeof streamdown.katexConfig === 'function'
 				? streamdown.katexConfig(token.isInline)
 				: streamdown.katexConfig || {})

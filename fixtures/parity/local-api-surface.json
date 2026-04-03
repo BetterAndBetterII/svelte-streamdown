@@ -48,10 +48,58 @@
 				"importedName": "AllowedTags"
 			},
 			{
+				"name": "CjkPlugin",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "CjkPlugin"
+			},
+			{
+				"name": "CodeHighlighterPlugin",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "CodeHighlighterPlugin"
+			},
+			{
+				"name": "CustomRenderer",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "CustomRenderer"
+			},
+			{
+				"name": "CustomRendererProps",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "CustomRendererProps"
+			},
+			{
+				"name": "DiagramPlugin",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "DiagramPlugin"
+			},
+			{
 				"name": "Extension",
 				"kind": "type",
 				"source": "./marked/index.js",
 				"importedName": "Extension"
+			},
+			{
+				"name": "HighlightOptions",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "HighlightOptions"
+			},
+			{
+				"name": "HighlightResult",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "HighlightResult"
+			},
+			{
+				"name": "HighlightToken",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "HighlightToken"
 			},
 			{
 				"name": "LanguageInfo",
@@ -60,10 +108,28 @@
 				"importedName": "LanguageInfo"
 			},
 			{
+				"name": "MathPlugin",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "MathPlugin"
+			},
+			{
+				"name": "MermaidInstance",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "MermaidInstance"
+			},
+			{
 				"name": "Plugin",
 				"kind": "type",
 				"source": "./utils/parse-incomplete-markdown.js",
 				"importedName": "Plugin"
+			},
+			{
+				"name": "PluginConfig",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "PluginConfig"
 			},
 			{
 				"name": "StreamdownProps",
@@ -96,16 +162,58 @@
 				"importedName": "Theme"
 			},
 			{
+				"name": "ThemeInput",
+				"kind": "type",
+				"source": "./plugins.js",
+				"importedName": "ThemeInput"
+			},
+			{
 				"name": "bundledLanguagesInfo",
 				"kind": "value",
 				"source": "./utils/bundledLanguages.js",
 				"importedName": "bundledLanguagesInfo"
 			},
 			{
+				"name": "cjk",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "cjk"
+			},
+			{
+				"name": "code",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "code"
+			},
+			{
+				"name": "createCjkPlugin",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "createCjkPlugin"
+			},
+			{
+				"name": "createCodePlugin",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "createCodePlugin"
+			},
+			{
 				"name": "createLanguageSet",
 				"kind": "value",
 				"source": "./utils/bundledLanguages.js",
 				"importedName": "createLanguageSet"
+			},
+			{
+				"name": "createMathPlugin",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "createMathPlugin"
+			},
+			{
+				"name": "createMermaidPlugin",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "createMermaidPlugin"
 			},
 			{
 				"name": "defaultTranslations",
@@ -120,6 +228,18 @@
 				"importedName": "extractTableDataFromElement"
 			},
 			{
+				"name": "findCustomRenderer",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "findCustomRenderer"
+			},
+			{
+				"name": "getThemeName",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "getThemeName"
+			},
+			{
 				"name": "IncompleteMarkdownParser",
 				"kind": "value",
 				"source": "./utils/parse-incomplete-markdown.js",
@@ -132,6 +252,12 @@
 				"importedName": "lex"
 			},
 			{
+				"name": "math",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "math"
+			},
+			{
 				"name": "mergeTheme",
 				"kind": "value",
 				"source": "./theme.js",
@@ -142,6 +268,12 @@
 				"kind": "value",
 				"source": "./translations.js",
 				"importedName": "mergeTranslations"
+			},
+			{
+				"name": "mermaid",
+				"kind": "value",
+				"source": "./plugins.js",
+				"importedName": "mermaid"
 			},
 			{
 				"name": "normalizeHtmlIndentation",
@@ -614,6 +746,13 @@
 			"default": "true"
 		},
 		{
+			"name": "plugins",
+			"optional": true,
+			"type": "PluginConfig",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "prefix",
 			"optional": true,
 			"type": "string",
@@ -761,7 +900,43 @@
 			"default": null
 		}
 	],
-	"pluginConfig": [],
+	"pluginConfig": [
+		{
+			"name": "cjk",
+			"optional": true,
+			"type": "CjkPlugin",
+			"source": "src/lib/plugins.ts",
+			"default": null
+		},
+		{
+			"name": "code",
+			"optional": true,
+			"type": "CodeHighlighterPlugin",
+			"source": "src/lib/plugins.ts",
+			"default": null
+		},
+		{
+			"name": "math",
+			"optional": true,
+			"type": "MathPlugin",
+			"source": "src/lib/plugins.ts",
+			"default": null
+		},
+		{
+			"name": "mermaid",
+			"optional": true,
+			"type": "DiagramPlugin",
+			"source": "src/lib/plugins.ts",
+			"default": null
+		},
+		{
+			"name": "renderers",
+			"optional": true,
+			"type": "CustomRenderer[]",
+			"source": "src/lib/plugins.ts",
+			"default": null
+		}
+	],
 	"subpathExports": [
 		{
 			"subpath": "./code",

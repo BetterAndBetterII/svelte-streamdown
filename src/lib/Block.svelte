@@ -4,6 +4,7 @@
 	import Element from './Elements/Element.svelte';
 	import { useStreamdown } from './context.svelte.js';
 	import { lex, type StreamdownToken } from './marked/index.js';
+	import { applyPluginMarkdownTransforms } from './plugins.js';
 	import { renderMarkdownFragment } from './security/html.js';
 	import { detectTextDirection } from './utils/detectDirection.js';
 	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
@@ -18,9 +19,12 @@
 
 	const streamdown = useStreamdown();
 	const markdown = $derived(
-		isStatic || streamdown.parseIncompleteMarkdown === false
-			? block
-			: completeIncompleteMarkdown(block.trim())
+		applyPluginMarkdownTransforms(
+			isStatic || streamdown.parseIncompleteMarkdown === false
+				? block
+				: completeIncompleteMarkdown(block.trim()),
+			streamdown.plugins
+		)
 	);
 	const tokens = $derived(lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
