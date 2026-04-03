@@ -424,6 +424,13 @@
 			"default": null
 		},
 		{
+			"name": "className",
+			"optional": true,
+			"type": "string",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "code",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Code;}]>",
@@ -746,6 +753,13 @@
 			"default": "true"
 		},
 		{
+			"name": "parseMarkdownIntoBlocksFn",
+			"optional": true,
+			"type": "((markdown:string)=>string[])",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "plugins",
 			"optional": true,
 			"type": "PluginConfig",
@@ -954,6 +968,13 @@
 					"default": null
 				},
 				{
+					"name": "isIncomplete",
+					"optional": true,
+					"type": "boolean",
+					"source": "src/lib/Elements/Code.svelte",
+					"default": null
+				},
+				{
 					"name": "token",
 					"optional": false,
 					"type": "Tokens.Code",
@@ -998,6 +1019,13 @@
 					"name": "id",
 					"optional": false,
 					"type": "string",
+					"source": "src/lib/Elements/Mermaid.svelte",
+					"default": null
+				},
+				{
+					"name": "isIncomplete",
+					"optional": true,
+					"type": "boolean",
 					"source": "src/lib/Elements/Mermaid.svelte",
 					"default": null
 				},

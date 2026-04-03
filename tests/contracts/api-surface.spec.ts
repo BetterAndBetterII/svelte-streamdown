@@ -179,9 +179,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'allowedElements',
 			'allowElement',
 			'BlockComponent',
-			'className',
 			'disallowedElements',
-			'parseMarkdownIntoBlocksFn',
 			'rehypePlugins',
 			'remarkPlugins',
 			'remarkRehypeOptions',
@@ -295,6 +293,11 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 				local: '(()=>void)'
 			},
 			{
+				name: 'parseMarkdownIntoBlocksFn',
+				reference: '(markdown:string)=>string[]',
+				local: '((markdown:string)=>string[])'
+			},
+			{
 				name: 'shikiTheme',
 				reference: '[ThemeInput,ThemeInput]',
 				local: 'string'
@@ -316,6 +319,11 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 				name: 'mode',
 				reference: '"streaming"',
 				local: "'streaming'"
+			},
+			{
+				name: 'parseMarkdownIntoBlocksFn',
+				reference: 'parseMarkdownIntoBlocks',
+				local: null
 			},
 			{
 				name: 'shikiTheme',
