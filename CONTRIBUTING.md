@@ -38,6 +38,9 @@ Every bug should leave behind a reproducible asset that can fail again in CI if 
 
 Shared parity fixtures live in `fixtures/parity/markdown/` or `fixtures/parity/interactions/`.
 
+- Use `fixtures/parity/markdown/` for parser or rendering regressions that can be expressed as a static markdown sample.
+- Use `fixtures/parity/interactions/` for browser-driven regressions that require clicking, hover state, streaming controls, or other UI actions.
+
 - Name each file `NN-short-description.md`.
 - `NN` is the next available two-digit sequence in that directory.
 - `short-description` is lowercase, hyphen-separated, and describes the behavior instead of the issue number, user, or temporary workaround.
