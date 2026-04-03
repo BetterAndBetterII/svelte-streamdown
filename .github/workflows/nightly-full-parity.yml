@@ -1,0 +1,567 @@
+name: Nightly Full Parity
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ported-tests:
+    name: ported-tests
+    runs-on: ubuntu-latest
+    env:
+      SUITE_DIR: artifacts/nightly/ported-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$SUITE_DIR"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Run full ported tests
+        id: suite
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile="$SUITE_DIR/junit.xml" 2>&1 | tee "$SUITE_DIR/output.log"
+          exit_code=${PIPESTATUS[0]}
+          end=$(date +%s)
+          echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Render suite summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          status=success
+          failure_stage=
+          note=
+
+          if [ "${{ steps.install.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=install
+            note="pnpm install --frozen-lockfile failed before the ported Vitest suite could run."
+          elif [ "${{ steps.suite.outcome }}" = "failure" ]; then
+            status=failure
+            failure_stage=test
+            note="One or more ported Vitest suites failed. See the captured log and JUnit artifact for the failing test list."
+          elif [ "${{ steps.suite.outcome }}" = "skipped" ]; then
+            status=failure
+            failure_stage=test
+            note="The ported Vitest step was skipped unexpectedly."
+          fi
+
+          args=(
+            scripts/nightly-parity-report.mjs
+            suite
+            --suite
+            ported-tests
+            --status
+            "$status"
+            --summary-file
+            "$SUITE_DIR/summary.md"
+            --json-file
+            "$SUITE_DIR/status.json"
+            --command
+            "pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile=$SUITE_DIR/junit.xml"
+            --log-file
+            "$SUITE_DIR/output.log"
+            --artifact
+            "summary=$SUITE_DIR/summary.md"
+            --artifact
+            "status=$SUITE_DIR/status.json"
+            --artifact
+            "log=$SUITE_DIR/output.log"
+            --artifact
+            "junit=$SUITE_DIR/junit.xml"
+          )
+
+          if [ -n "${{ steps.suite.outputs.duration_ms }}" ]; then
+            args+=(--duration-ms "${{ steps.suite.outputs.duration_ms }}")
+          fi
+
+          if [ -n "$failure_stage" ]; then
+            args+=(--failure-stage "$failure_stage")
+          fi
+
+          if [ -n "$note" ]; then
+            args+=(--note "$note")
+          fi
+
+          node "${args[@]}"
+          cat "$SUITE_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload suite artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-ported-tests
+          path: ${{ env.SUITE_DIR }}
+          if-no-files-found: warn
+
+      - name: Fail job if suite did not pass
+        if: ${{ always() && (steps.install.outcome != 'success' || steps.suite.outcome == 'failure' || steps.suite.outcome == 'skipped') }}
+        run: exit 1
+
+  playwright-parity:
+    name: playwright-parity
+    runs-on: ubuntu-latest
+    env:
+      SUITE_DIR: artifacts/nightly/playwright-parity
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$SUITE_DIR"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        id: browser
+        if: ${{ steps.install.outcome == 'success' }}
+        run: pnpm exec playwright install chromium
+
+      - name: Run Playwright parity suite
+        id: suite
+        if: ${{ steps.browser.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          PLAYWRIGHT_HTML_OUTPUT_DIR="$SUITE_DIR/html-report" \
+            pnpm exec playwright test tests/playwright/parity --reporter=line,html --output="$SUITE_DIR/test-results" 2>&1 | tee "$SUITE_DIR/output.log"
+          exit_code=${PIPESTATUS[0]}
+          end=$(date +%s)
+
+          echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Render suite summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          status=success
+          failure_stage=
+          note=
+
+          if [ "${{ steps.install.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=install
+            note="pnpm install --frozen-lockfile failed before Playwright setup."
+          elif [ "${{ steps.browser.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=browser-install
+            note="Chromium installation failed before the Playwright parity suite could run."
+          elif [ "${{ steps.suite.outcome }}" = "failure" ]; then
+            status=failure
+            failure_stage=test
+            note="Playwright parity failed. The captured HTML report, test-results directory, and console log are uploaded for offline debugging."
+          elif [ "${{ steps.suite.outcome }}" = "skipped" ]; then
+            status=failure
+            failure_stage=test
+            note="The Playwright parity step was skipped unexpectedly."
+          fi
+
+          args=(
+            scripts/nightly-parity-report.mjs
+            suite
+            --suite
+            playwright-parity
+            --status
+            "$status"
+            --summary-file
+            "$SUITE_DIR/summary.md"
+            --json-file
+            "$SUITE_DIR/status.json"
+            --command
+            "pnpm exec playwright test tests/playwright/parity --reporter=line,html --output=$SUITE_DIR/test-results"
+            --log-file
+            "$SUITE_DIR/output.log"
+            --artifact
+            "summary=$SUITE_DIR/summary.md"
+            --artifact
+            "status=$SUITE_DIR/status.json"
+            --artifact
+            "log=$SUITE_DIR/output.log"
+            --artifact
+            "html-report=$SUITE_DIR/html-report"
+            --artifact
+            "test-results=$SUITE_DIR/test-results"
+          )
+
+          if [ -n "${{ steps.suite.outputs.duration_ms }}" ]; then
+            args+=(--duration-ms "${{ steps.suite.outputs.duration_ms }}")
+          fi
+
+          if [ -n "$failure_stage" ]; then
+            args+=(--failure-stage "$failure_stage")
+          fi
+
+          if [ -n "$note" ]; then
+            args+=(--note "$note")
+          fi
+
+          node "${args[@]}"
+          cat "$SUITE_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload suite artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-playwright-parity
+          path: ${{ env.SUITE_DIR }}
+          if-no-files-found: warn
+
+      - name: Fail job if suite did not pass
+        if: ${{ always() && (steps.install.outcome != 'success' || steps.browser.outcome != 'success' || steps.suite.outcome == 'failure' || steps.suite.outcome == 'skipped') }}
+        run: exit 1
+
+  pack-smoke:
+    name: pack-smoke
+    runs-on: ubuntu-latest
+    env:
+      SUITE_DIR: artifacts/nightly/pack-smoke
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$SUITE_DIR"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify pack contents
+        id: verify_pack
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          pnpm verify:pack >"$SUITE_DIR/verify-pack.json" 2>"$SUITE_DIR/verify-pack.stderr.log"
+          exit_code=$?
+          end=$(date +%s)
+          echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Verify packed export smoke
+        id: verify_exports
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          pnpm verify:exports >"$SUITE_DIR/verify-exports.json" 2>"$SUITE_DIR/verify-exports.stderr.log"
+          exit_code=$?
+          end=$(date +%s)
+          echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Render suite summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          status=success
+          failure_stage=
+          note=
+          duration_ms=0
+
+          if [ -n "${{ steps.verify_pack.outputs.duration_ms }}" ]; then
+            duration_ms=$((duration_ms + ${{ steps.verify_pack.outputs.duration_ms }}))
+          fi
+
+          if [ -n "${{ steps.verify_exports.outputs.duration_ms }}" ]; then
+            duration_ms=$((duration_ms + ${{ steps.verify_exports.outputs.duration_ms }}))
+          fi
+
+          if [ "${{ steps.install.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=install
+            note="pnpm install --frozen-lockfile failed before pack smoke verification."
+          elif [ "${{ steps.verify_pack.outcome }}" = "failure" ]; then
+            status=failure
+            failure_stage=verify-pack
+            note="Tarball layout verification failed. See verify-pack stderr and JSON output for the packaged file policy breach."
+          elif [ "${{ steps.verify_exports.outcome }}" = "failure" ]; then
+            status=failure
+            failure_stage=verify-exports
+            note="Packed export smoke failed. See verify-exports stderr and JSON output for the failing import/build phase."
+          elif [ "${{ steps.verify_pack.outcome }}" = "skipped" ] || [ "${{ steps.verify_exports.outcome }}" = "skipped" ]; then
+            status=failure
+            failure_stage=pack-smoke
+            note="One of the pack smoke verification steps was skipped unexpectedly."
+          fi
+
+          args=(
+            scripts/nightly-parity-report.mjs
+            suite
+            --suite
+            pack-smoke
+            --status
+            "$status"
+            --summary-file
+            "$SUITE_DIR/summary.md"
+            --json-file
+            "$SUITE_DIR/status.json"
+            --command
+            "pnpm verify:pack && pnpm verify:exports"
+            --artifact
+            "summary=$SUITE_DIR/summary.md"
+            --artifact
+            "status=$SUITE_DIR/status.json"
+            --artifact
+            "verify-pack-json=$SUITE_DIR/verify-pack.json"
+            --artifact
+            "verify-pack-stderr=$SUITE_DIR/verify-pack.stderr.log"
+            --artifact
+            "verify-exports-json=$SUITE_DIR/verify-exports.json"
+            --artifact
+            "verify-exports-stderr=$SUITE_DIR/verify-exports.stderr.log"
+          )
+
+          if [ "$duration_ms" -gt 0 ]; then
+            args+=(--duration-ms "$duration_ms")
+          fi
+
+          if [ -n "$failure_stage" ]; then
+            args+=(--failure-stage "$failure_stage")
+          fi
+
+          if [ -n "$note" ]; then
+            args+=(--note "$note")
+          fi
+
+          node "${args[@]}"
+          cat "$SUITE_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload suite artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-pack-smoke
+          path: ${{ env.SUITE_DIR }}
+          if-no-files-found: warn
+
+      - name: Fail job if suite did not pass
+        if: ${{ always() && (steps.install.outcome != 'success' || steps.verify_pack.outcome == 'failure' || steps.verify_pack.outcome == 'skipped' || steps.verify_exports.outcome == 'failure' || steps.verify_exports.outcome == 'skipped') }}
+        run: exit 1
+
+  dependency-audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    env:
+      SUITE_DIR: artifacts/nightly/dependency-audit
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$SUITE_DIR"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Run dependency audit
+        id: suite
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          pnpm verify:dependency-policy >"$SUITE_DIR/dependency-policy.json" 2>"$SUITE_DIR/dependency-policy.stderr.log"
+          exit_code=$?
+          end=$(date +%s)
+          echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Render suite summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          status=success
+          failure_stage=
+          note=
+
+          if [ "${{ steps.install.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=install
+            note="pnpm install --frozen-lockfile failed before the dependency audit could run."
+          elif [ "${{ steps.suite.outcome }}" = "failure" ]; then
+            status=failure
+            failure_stage=audit
+            note="Dependency policy verification failed. The uploaded JSON report includes failing advisory and license-review details."
+          elif [ "${{ steps.suite.outcome }}" = "skipped" ]; then
+            status=failure
+            failure_stage=audit
+            note="The dependency audit step was skipped unexpectedly."
+          fi
+
+          args=(
+            scripts/nightly-parity-report.mjs
+            suite
+            --suite
+            dependency-audit
+            --status
+            "$status"
+            --summary-file
+            "$SUITE_DIR/summary.md"
+            --json-file
+            "$SUITE_DIR/status.json"
+            --command
+            "pnpm verify:dependency-policy"
+            --artifact
+            "summary=$SUITE_DIR/summary.md"
+            --artifact
+            "status=$SUITE_DIR/status.json"
+            --artifact
+            "report=$SUITE_DIR/dependency-policy.json"
+            --artifact
+            "stderr=$SUITE_DIR/dependency-policy.stderr.log"
+          )
+
+          if [ -n "${{ steps.suite.outputs.duration_ms }}" ]; then
+            args+=(--duration-ms "${{ steps.suite.outputs.duration_ms }}")
+          fi
+
+          if [ -n "$failure_stage" ]; then
+            args+=(--failure-stage "$failure_stage")
+          fi
+
+          if [ -n "$note" ]; then
+            args+=(--note "$note")
+          fi
+
+          node "${args[@]}"
+          cat "$SUITE_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload suite artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-dependency-audit
+          path: ${{ env.SUITE_DIR }}
+          if-no-files-found: warn
+
+      - name: Fail job if suite did not pass
+        if: ${{ always() && (steps.install.outcome != 'success' || steps.suite.outcome == 'failure' || steps.suite.outcome == 'skipped') }}
+        run: exit 1
+
+  publish-summary:
+    name: publish-summary
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - ported-tests
+      - playwright-parity
+      - pack-smoke
+      - dependency-audit
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Download suite artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: nightly-*
+          path: artifacts/nightly/downloaded
+          merge-multiple: false
+
+      - name: Render aggregate summary
+        run: |
+          node scripts/nightly-parity-report.mjs aggregate \
+            --input-dir artifacts/nightly/downloaded \
+            --summary-file artifacts/nightly/summary/summary.md \
+            --json-file artifacts/nightly/summary/status.json \
+            --expected-suite ported-tests \
+            --expected-suite playwright-parity \
+            --expected-suite pack-smoke \
+            --expected-suite dependency-audit
+          cat artifacts/nightly/summary/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload aggregate summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-summary
+          path: artifacts/nightly/summary
+          if-no-files-found: error
+
+      - name: Fail job if any suite failed
+        run: |
+          node -e "const { readFileSync } = require('node:fs'); const report = JSON.parse(readFileSync('artifacts/nightly/summary/status.json', 'utf8')); if (!report.ok) { process.exit(1); }"
