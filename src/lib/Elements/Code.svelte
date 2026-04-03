@@ -18,10 +18,12 @@
 
 	const {
 		token,
-		id
+		id,
+		isIncomplete = false
 	}: {
 		token: Tokens.Code;
 		id: string;
+		isIncomplete?: boolean;
 	} = $props();
 
 	const streamdown = useStreamdown();
@@ -44,7 +46,8 @@
 			: streamdown.shikiTheme
 	);
 	const showLineNumbers = $derived(streamdown.lineNumbers && fence.showLineNumbers);
-	const buttonDisabled = $derived(streamdown.isAnimating || block?.isIncompleteCodeFence);
+	const incomplete = $derived(Boolean(isIncomplete || block?.isIncompleteCodeFence));
+	const buttonDisabled = $derived(streamdown.isAnimating || incomplete);
 	const showCodeActions = $derived(
 		streamdown.controls.code && (streamdown.codeControls.copy || streamdown.codeControls.download)
 	);
@@ -118,8 +121,8 @@
 <div
 	data-streamdown="code-block"
 	data-language={language}
-	data-incomplete={block?.isIncompleteCodeFence ? 'true' : undefined}
 	data-streamdown-code={id}
+	data-incomplete={incomplete ? 'true' : undefined}
 	style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
 	class={streamdown.theme.code.base}
 >

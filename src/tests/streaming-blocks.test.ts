@@ -1,0 +1,29 @@
+import { describe, expect, test } from 'vitest';
+import { parseBlocks } from '../lib/marked/index.js';
+
+describe('streaming block segmentation parity', () => {
+	test('keeps footnote references and definitions in a single block', () => {
+		const markdown = 'Paragraph with ref[^note]\n\n[^note]: Footnote body';
+
+		expect(parseBlocks(markdown)).toEqual([markdown]);
+	});
+
+	test('merges multiline html blocks before continuing with later paragraphs', () => {
+		const markdown = '<details>\n<summary>Title</summary>\n\nBody\n</details>\n\nNext paragraph';
+		const blocks = parseBlocks(markdown);
+
+		expect(blocks).toHaveLength(2);
+		expect(blocks[0]).toContain('<details>');
+		expect(blocks[0]).toContain('</details>');
+		expect(blocks[1].trim()).toBe('Next paragraph');
+	});
+
+	test('keeps block math content together when interior lines look like setext markers', () => {
+		const markdown = '$$\na =\n2\n$$\n\nAfter';
+		const blocks = parseBlocks(markdown);
+
+		expect(blocks).toHaveLength(2);
+		expect(blocks[0]).toContain('$$\na =\n2\n$$');
+		expect(blocks[1].trim()).toBe('After');
+	});
+});

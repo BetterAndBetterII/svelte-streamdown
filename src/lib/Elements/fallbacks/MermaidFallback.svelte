@@ -4,16 +4,18 @@
 
 	const {
 		token,
-		id
+		id,
+		isIncomplete = false
 	}: {
 		token: Tokens.Code;
 		id: string;
+		isIncomplete?: boolean;
 	} = $props();
 
 	const streamdown = useStreamdown();
 </script>
 
-<div data-streamdown-mermaid={id}>
+<div data-streamdown-mermaid={id} data-incomplete={isIncomplete || undefined}>
 	<div
 		style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
 		class={streamdown.theme.code.base}

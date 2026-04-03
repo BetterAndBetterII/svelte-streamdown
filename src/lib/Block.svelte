@@ -12,16 +12,20 @@
 
 	let {
 		block,
-		static: isStatic = false
+		static: isStatic = false,
+		parseIncompleteMarkdown: shouldParseIncompleteMarkdown = true,
+		isIncomplete = false
 	}: {
 		block: string;
 		static?: boolean;
+		parseIncompleteMarkdown?: boolean;
+		isIncomplete?: boolean;
 	} = $props();
 
 	const streamdown = useStreamdown();
 	const markdown = $derived(
 		applyPluginMarkdownTransforms(
-			isStatic || streamdown.parseIncompleteMarkdown === false
+			isStatic || !shouldParseIncompleteMarkdown || streamdown.parseIncompleteMarkdown === false
 				? block
 				: completeIncompleteMarkdown(block.trim()),
 			streamdown.plugins
@@ -94,7 +98,7 @@
 			{#if token}
 				{@const children = (token as any)?.tokens || []}
 				{@const isTextOnlyNode = children.length === 0}
-				<Element {token}>
+				<Element {token} {isIncomplete}>
 					{#if isTextOnlyNode}
 						{#if streamdown.animation.enabled && !insidePopover && !isStatic}
 							<AnimatedText text={'text' in token ? token.text || '' : ''} />

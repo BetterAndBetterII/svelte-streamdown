@@ -10,14 +10,11 @@
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import { parseBlocks } from './marked/index.js';
 	import { normalizeHtmlIndentation } from './security/html.js';
+	import { parseIncompleteMarkdown as repairIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
 	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
+	import { carets, hasIncompleteCodeFence, hasTable } from './streaming.js';
 	import { mergeTranslations } from './translations.js';
-
-	const carets = {
-		block: ' ▋',
-		circle: ' ●'
-	} as const;
 
 	const animationNameMap = {
 		blurIn: 'blur',
@@ -75,11 +72,13 @@
 	let {
 		content = '',
 		class: className,
+		className: futureClassName,
 		shikiTheme,
 		shikiLanguages,
 		shikiThemes,
 		plugins,
 		parseIncompleteMarkdown = true,
+		parseMarkdownIntoBlocksFn,
 		mode = 'streaming',
 		dir,
 		defaultOrigin,
@@ -122,18 +121,10 @@
 	const resolvedMode = $derived(isStatic === undefined ? mode : isStatic ? 'static' : 'streaming');
 	const resolvedStatic = $derived(resolvedMode === 'static');
 	const prefixedCn = $derived.by(() => createCn(prefix));
+	const resolvedClassName = $derived(
+		[className, futureClassName].filter((value): value is string => Boolean(value)).join(' ')
+	);
 	const shouldShowCaret = $derived(resolvedMode !== 'static' && Boolean(caret) && isAnimating);
-	const rootStyle = $derived(
-		shouldShowCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
-	);
-	const rootClassName = $derived(
-		prefixedCn(
-			'whitespace-normal',
-			className,
-			shouldShowCaret &&
-				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
-		)
-	);
 	const resolvedAnimation = $derived.by(() => {
 		if (animation) {
 			if (!animation.enabled) {
@@ -199,6 +190,9 @@
 		},
 		get parseIncompleteMarkdown() {
 			return parseIncompleteMarkdown;
+		},
+		get parseMarkdownIntoBlocksFn() {
+			return parseMarkdownIntoBlocksFn;
 		},
 		get mode() {
 			return resolvedMode;
@@ -387,20 +381,74 @@
 		previousIsAnimating = isAnimating;
 	});
 
-	const blocks = $derived(
-		resolvedStatic ? [preprocessedContent] : parseBlocks(preprocessedContent, streamdown.extensions)
+	const splitBlocks = $derived(
+		parseMarkdownIntoBlocksFn ??
+			((markdown: string) => parseBlocks(markdown, streamdown.extensions))
+	);
+	const rawBlocks = $derived(
+		resolvedStatic ? [preprocessedContent] : splitBlocks(preprocessedContent)
+	);
+	const blockIsIncomplete = $derived(
+		rawBlocks.map(
+			(block, index) =>
+				resolvedMode === 'streaming' &&
+				isAnimating &&
+				index === rawBlocks.length - 1 &&
+				hasIncompleteCodeFence(block)
+		)
+	);
+	const blocks = $derived.by(() => {
+		if (resolvedStatic) {
+			return [preprocessedContent];
+		}
+
+		return rawBlocks.map((block, index) => {
+			if (!parseIncompleteMarkdown || blockIsIncomplete[index]) {
+				return block;
+			}
+
+			return repairIncompleteMarkdown(block);
+		});
+	});
+	const shouldHideCaret = $derived(
+		!shouldShowCaret || rawBlocks.length === 0
+			? false
+			: (() => {
+					const lastBlock = rawBlocks.at(-1) as string;
+					return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
+				})()
+	);
+	const rootStyle = $derived(
+		shouldShowCaret && !shouldHideCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
+	);
+	const rootClassName = $derived(
+		prefixedCn(
+			'whitespace-normal',
+			resolvedClassName,
+			shouldShowCaret &&
+				!shouldHideCaret &&
+				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
+		)
 	);
 </script>
 
 <div bind:this={element} class={rootClassName} style={rootStyle}>
 	{#if resolvedStatic}
-		<Block static={resolvedStatic} block={preprocessedContent} />
+		<Block static={resolvedStatic} block={preprocessedContent} parseIncompleteMarkdown={false} />
 	{:else}
+		{#if shouldShowCaret && !shouldHideCaret && blocks.length === 0}
+			<span aria-hidden="true" data-streamdown-caret-placeholder></span>
+		{/if}
 		{#each blocks as block, index (`${id}-block-${index}`)}
-			<Block static={resolvedStatic} {block} />
+			<Block
+				static={resolvedStatic}
+				{block}
+				parseIncompleteMarkdown={false}
+				isIncomplete={blockIsIncomplete[index]}
+			/>
 		{/each}
 	{/if}
-	{#if shouldShowCaret && !content.trim()}
+	{#if shouldShowCaret && !shouldHideCaret && !content.trim()}
 		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
 	{/if}
 </div>
