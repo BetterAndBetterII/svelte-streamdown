@@ -1,0 +1,153 @@
+{
+	"audit": {
+		"scopes": {
+			"prod": {
+				"threshold": "high",
+				"approvedAdvisories": [
+					{
+						"id": "1115805",
+						"module": "lodash-es",
+						"reason": "Transitive through mermaid@11.11.0 in the current lockfile; removing it requires a dependency upgrade outside the P1-05 gate wiring scope.",
+						"reviewBy": "before the first trusted release"
+					}
+				]
+			},
+			"dev": {
+				"threshold": "high",
+				"approvedAdvisories": [
+					{
+						"id": "1109208",
+						"module": "playwright",
+						"reason": "Accepted temporarily while the repository baseline still pins Playwright 1.53.x; removal requires a coordinated tooling upgrade.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1112183",
+						"module": "devalue",
+						"reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1112188",
+						"module": "devalue",
+						"reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1112190",
+						"module": "@sveltejs/kit",
+						"reason": "Accepted temporarily while the repository baseline still pins the current SvelteKit line; removal requires a framework upgrade sweep.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1112456",
+						"module": "wrangler",
+						"reason": "Accepted temporarily while the current Cloudflare toolchain remains pinned for release hardening work.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1112659",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1113300",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1113375",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1113515",
+						"module": "rollup",
+						"reason": "Accepted temporarily while the current Vite/Rollup stack remains pinned for parity work.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114200",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114302",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114526",
+						"module": "flatted",
+						"reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114591",
+						"module": "undici",
+						"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114637",
+						"module": "undici",
+						"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114639",
+						"module": "undici",
+						"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1114680",
+						"module": "tar",
+						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1115357",
+						"module": "flatted",
+						"reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
+						"id": "1115554",
+						"module": "picomatch",
+						"reason": "Transitive via the current Vitest UI graph; removal requires dependency upgrades outside P1-05.",
+						"reviewBy": "before the first trusted release"
+					}
+				]
+			}
+		}
+	},
+	"licenses": {
+		"scopes": {
+			"prod": {
+				"allowedLicenses": [
+					"MIT",
+					"ISC",
+					"Apache-2.0",
+					"BSD-3-Clause",
+					"(MPL-2.0 OR Apache-2.0)",
+					"Unlicense"
+				],
+				"approvedPackages": [
+					{
+						"name": "khroma",
+						"license": "Unknown",
+						"reason": "The published package omits SPDX metadata, but the bundled license file in the installed package is MIT.",
+						"evidence": "node_modules/.pnpm/khroma@2.1.0/node_modules/khroma/license",
+						"reviewBy": "if the khroma version changes"
+					}
+				]
+			}
+		}
+	}
+}

@@ -17,7 +17,8 @@
 		"verify:pack": "node scripts/verify-pack.mjs",
 		"verify:exports": "node scripts/verify-exports.mjs",
 		"verify:toolchain": "node scripts/verify-toolchain.mjs",
-		"verify:clean-build": "node scripts/verify-clean-build.mjs"
+		"verify:clean-build": "node scripts/verify-clean-build.mjs",
+		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs"
 	},
 	"files": [
 		"dist",

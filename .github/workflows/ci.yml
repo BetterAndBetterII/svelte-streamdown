@@ -110,3 +110,29 @@ jobs:
 
       - name: Verify export surface
         run: pnpm verify:exports
+
+  verify-dependency-policy:
+    name: verify-dependency-policy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify dependency and license policy
+        run: pnpm verify:dependency-policy
