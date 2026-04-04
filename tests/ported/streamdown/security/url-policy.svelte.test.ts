@@ -8,7 +8,10 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 		const screen = render(Streamdown, {
 			content:
 				'[phone](tel:01392498505) [email](mailto:foo@example.com) [website](http://example.com)',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		const links = screen.container.querySelectorAll('a');
@@ -34,7 +37,10 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 	testInBrowser('blocks javascript links instead of rendering anchors', () => {
 		const screen = render(Streamdown, {
 			content: '[danger](javascript:alert(1))',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.querySelector('a')).toBeNull();
@@ -44,7 +50,10 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 	testInBrowser('renders data images under the default wildcard image policy', () => {
 		const screen = render(Streamdown, {
 			content: '![Data image](data:image/png;base64,AAAA)',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		const image = screen.container.querySelector('img');
@@ -56,7 +65,10 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 	testInBrowser('blocks javascript images and renders the fallback text', () => {
 		const screen = render(Streamdown, {
 			content: '![Blocked image](javascript:alert(1))',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.querySelector('img')).toBeNull();

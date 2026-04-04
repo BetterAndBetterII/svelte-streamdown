@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { useStreamdown } from '$lib/context.svelte.js';
+	import { useStreamdown, type LinkSafetyModalProps } from '$lib/context.svelte.js';
 	import { applyMarkdownUrlTransform, createMarkdownElement } from '$lib/markdown.js';
 	import { isPathRelativeUrl, transformUrl } from '$lib/utils/url.js';
 	import Slot from './Slot.svelte';
+	import LinkSafetyModal from './LinkSafetyModal.svelte';
 	import type { Tokens } from 'marked';
 	import type { Snippet } from 'svelte';
 
@@ -24,7 +25,9 @@
 				href: undefined,
 				rel: undefined,
 				state: 'anchor' as const,
-				target: undefined
+				target: undefined,
+				isIncomplete: true,
+				isRelative: false
 			};
 		}
 
@@ -43,7 +46,9 @@
 				href: undefined,
 				rel: undefined,
 				state: 'anchor' as const,
-				target: undefined
+				target: undefined,
+				isIncomplete: false,
+				isRelative: false
 			};
 		}
 
@@ -52,7 +57,9 @@
 				href: '',
 				rel: undefined,
 				state: 'anchor' as const,
-				target: undefined
+				target: undefined,
+				isIncomplete: false,
+				isRelative: false
 			};
 		}
 
@@ -61,7 +68,9 @@
 				href: transformedHref,
 				rel: undefined,
 				state: 'anchor' as const,
-				target: undefined
+				target: undefined,
+				isIncomplete: false,
+				isRelative: true
 			};
 		}
 
@@ -79,7 +88,9 @@
 				href: safeHref,
 				rel: 'noopener noreferrer',
 				state: 'anchor' as const,
-				target: '_blank'
+				target: '_blank',
+				isIncomplete: false,
+				isRelative: false
 			};
 		}
 
@@ -87,35 +98,110 @@
 			href: undefined,
 			rel: undefined,
 			state: 'blocked' as const,
-			target: undefined
+			target: undefined,
+			isIncomplete: false,
+			isRelative: false
 		};
 	});
+
+	const shouldIntercept = $derived(
+		Boolean(
+			streamdown.linkSafety?.enabled &&
+				resolvedLink.state === 'anchor' &&
+				resolvedLink.href &&
+				!resolvedLink.isRelative &&
+				!resolvedLink.isIncomplete
+		)
+	);
+	const customModal = $derived(
+		streamdown.linkSafety?.renderModal as Snippet<[LinkSafetyModalProps]> | undefined
+	);
+	let isModalOpen = $state(false);
+
+	const openHref = () => {
+		if (typeof window === 'undefined' || !resolvedLink.href || resolvedLink.isIncomplete) {
+			return;
+		}
+
+		window.open(resolvedLink.href, '_blank', 'noreferrer');
+	};
+
+	const handleInterceptedClick = async (event: MouseEvent) => {
+		if (!shouldIntercept || resolvedLink.isIncomplete || !resolvedLink.href) {
+			return;
+		}
+
+		event.preventDefault();
+
+		try {
+			if (streamdown.linkSafety?.onLinkCheck) {
+				const isAllowed = await streamdown.linkSafety.onLinkCheck(resolvedLink.href);
+				if (isAllowed) {
+					openHref();
+					return;
+				}
+			}
+		} catch {
+			// Fall through to the confirmation modal when the checker fails closed.
+		}
+
+		isModalOpen = true;
+	};
+
+	const modalProps = $derived({
+		url: resolvedLink.href ?? '',
+		isOpen: isModalOpen,
+		onClose: () => {
+			isModalOpen = false;
+		},
+		onConfirm: openHref
+	} satisfies LinkSafetyModalProps);
 </script>
 
 {#if resolvedLink.state === 'anchor'}
-	<Slot
-		props={{
-			href: resolvedLink.href,
-			target: resolvedLink.target,
-			rel: resolvedLink.rel,
-			title: token.title,
-			class: streamdown.theme.link.base,
-			children,
-			token
-		}}
-		render={streamdown.snippets.link}
-		component={streamdown.components?.a}
-	>
-		<a
+	{#if shouldIntercept}
+		<button
+			type="button"
+			data-streamdown="link"
 			data-streamdown-link={id}
-			class={streamdown.theme.link.base}
-			href={resolvedLink.href}
-			target={resolvedLink.target}
-			rel={resolvedLink.rel}
+			data-incomplete={resolvedLink.isIncomplete ? 'true' : undefined}
+			class={`${streamdown.theme.link.base} appearance-none border-none bg-transparent p-0 text-left`}
+			onclick={(event) => void handleInterceptedClick(event)}
 		>
 			{@render children()}
-		</a>
-	</Slot>
+		</button>
+		{#if customModal}
+			{@render customModal(modalProps)}
+		{:else}
+			<LinkSafetyModal {...modalProps} />
+		{/if}
+	{:else}
+		<Slot
+			props={{
+				href: resolvedLink.href,
+				target: resolvedLink.target,
+				rel: resolvedLink.rel,
+				title: token.title,
+				class: streamdown.theme.link.base,
+				children,
+				token
+			}}
+			render={streamdown.snippets.link}
+			component={streamdown.components?.a}
+		>
+			<a
+				data-streamdown="link"
+				data-streamdown-link={id}
+				data-incomplete={resolvedLink.isIncomplete ? 'true' : undefined}
+				class={streamdown.theme.link.base}
+				href={resolvedLink.href}
+				target={resolvedLink.target}
+				rel={resolvedLink.rel}
+			>
+				{@render children()}
+			</a>
+		</Slot>
+	{/if}
 {:else}
 	<span
 		data-streamdown-link-blocked={id}

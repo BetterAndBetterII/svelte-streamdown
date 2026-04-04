@@ -75,6 +75,9 @@ describeInBrowser('ported streamdown component overrides', () => {
 					img: ComponentOverrideProbe,
 					table: ComponentOverrideProbe,
 					inlineCode: ComponentOverrideProbe
+				},
+				linkSafety: {
+					enabled: false
 				}
 			});
 

@@ -7,7 +7,10 @@ describeInBrowser('ported streamdown security tel links', () => {
 	testInBrowser('renders tel links', () => {
 		const screen = render(Streamdown, {
 			content: '[call me](tel:01392498505)',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		const link = screen.container.querySelector('a');
@@ -20,7 +23,10 @@ describeInBrowser('ported streamdown security tel links', () => {
 		const screen = render(Streamdown, {
 			content:
 				'[phone](tel:01392498505) [email](mailto:foo@example.com) [website](http://example.com)',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		const links = screen.container.querySelectorAll('a');
@@ -33,7 +39,10 @@ describeInBrowser('ported streamdown security tel links', () => {
 	testInBrowser('renders international tel links', () => {
 		const screen = render(Streamdown, {
 			content: '[call](tel:+44-1392-498505)',
-			static: true
+			static: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.querySelector('a')?.getAttribute('href')).toBe('tel:+44-1392-498505');

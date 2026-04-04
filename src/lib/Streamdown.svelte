@@ -38,6 +38,9 @@
 		'ease-in-out',
 		'linear'
 	]);
+	const defaultLinkSafety = {
+		enabled: true
+	} as const;
 
 	const resolveCompatAnimation = (
 		animated: StreamdownProps<Source>['animated'],
@@ -91,7 +94,7 @@
 		defaultOrigin,
 		allowedLinkPrefixes = ['*'],
 		allowedImagePrefixes = ['*'],
-		linkSafety = { enabled: true },
+		linkSafety = defaultLinkSafety,
 		allowedTags,
 		allowedElements,
 		allowElement,
