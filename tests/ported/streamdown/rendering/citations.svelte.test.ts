@@ -38,10 +38,7 @@ describeInBrowser('inline citation widgets', () => {
 			const links = [...(popover?.querySelectorAll('a[href]') ?? [])].map((link) =>
 				link.getAttribute('href')
 			);
-			expect(links).toEqual([
-				'https://alpha.example.com/report',
-				'https://beta.example.com/post'
-			]);
+			expect(links).toEqual(['https://alpha.example.com/report', 'https://beta.example.com/post']);
 			expect(popover?.textContent).toContain('Alpha Source');
 			expect(popover?.textContent).toContain('Beta Source');
 		});

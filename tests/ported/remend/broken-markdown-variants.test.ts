@@ -33,9 +33,7 @@ describeInNode('ported remend broken markdown variants', () => {
 				'\\*escaped\\* but *real italic*'
 			);
 			// Local inline-citation recovery still closes the first bracket group before the link placeholder.
-			expect(parseIncompleteMarkdownText('[link1 and [link2')).toBe(
-				'[link1] and [link2]'
-			);
+			expect(parseIncompleteMarkdownText('[link1 and [link2')).toBe('[link1] and [link2]');
 			expect(parseIncompleteMarkdownText('[first](url1) and [second')).toBe(
 				'[first](url1) and [second]'
 			);

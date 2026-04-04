@@ -1,33 +1,33 @@
 {
-  "suite": "playwright-parity",
-  "status": "success",
-  "ok": true,
-  "command": "pnpm exec playwright test tests/playwright/parity --reporter=line,html --output=artifacts/nightly/playwright-parity/test-results",
-  "durationMs": 9000,
-  "failureStage": null,
-  "logFile": "artifacts/nightly/playwright-parity/output.log",
-  "artifacts": [
-    {
-      "label": "summary",
-      "path": "artifacts/nightly/playwright-parity/summary.md"
-    },
-    {
-      "label": "status",
-      "path": "artifacts/nightly/playwright-parity/status.json"
-    },
-    {
-      "label": "log",
-      "path": "artifacts/nightly/playwright-parity/output.log"
-    },
-    {
-      "label": "html-report",
-      "path": "artifacts/nightly/playwright-parity/html-report"
-    },
-    {
-      "label": "test-results",
-      "path": "artifacts/nightly/playwright-parity/test-results"
-    }
-  ],
-  "notes": [],
-  "generatedAt": "2026-04-04T09:01:22.781Z"
+	"suite": "playwright-parity",
+	"status": "success",
+	"ok": true,
+	"command": "pnpm exec playwright test tests/playwright/parity --reporter=line,html --output=artifacts/nightly/playwright-parity/test-results",
+	"durationMs": 9000,
+	"failureStage": null,
+	"logFile": "artifacts/nightly/playwright-parity/output.log",
+	"artifacts": [
+		{
+			"label": "summary",
+			"path": "artifacts/nightly/playwright-parity/summary.md"
+		},
+		{
+			"label": "status",
+			"path": "artifacts/nightly/playwright-parity/status.json"
+		},
+		{
+			"label": "log",
+			"path": "artifacts/nightly/playwright-parity/output.log"
+		},
+		{
+			"label": "html-report",
+			"path": "artifacts/nightly/playwright-parity/html-report"
+		},
+		{
+			"label": "test-results",
+			"path": "artifacts/nightly/playwright-parity/test-results"
+		}
+	],
+	"notes": [],
+	"generatedAt": "2026-04-04T09:01:22.781Z"
 }

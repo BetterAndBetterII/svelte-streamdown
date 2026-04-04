@@ -11,7 +11,9 @@ describeInNode('ported remend incomplete HTML tag stripping', () => {
 		expect(parseIncompleteMarkdownText('Hello </custom')).toBe('Hello');
 		expect(parseIncompleteMarkdownText('<div>content</di')).toBe('<div>content');
 		expect(parseIncompleteMarkdownText('Some text here\n\n<casecard')).toBe('Some text here');
-		expect(parseIncompleteMarkdownText('# Heading\n\nParagraph <custom')).toBe('# Heading\n\nParagraph');
+		expect(parseIncompleteMarkdownText('# Heading\n\nParagraph <custom')).toBe(
+			'# Heading\n\nParagraph'
+		);
 		expect(parseIncompleteMarkdownText('<div>Hello</div> <span')).toBe('<div>Hello</div>');
 	});
 

@@ -293,7 +293,7 @@ jobs:
         run: |
           start=$(date +%s)
           set +e
-          pnpm verify:pack >"$SUITE_DIR/verify-pack.json" 2>"$SUITE_DIR/verify-pack.stderr.log"
+          node scripts/verify-pack.mjs >"$SUITE_DIR/verify-pack.json" 2>"$SUITE_DIR/verify-pack.stderr.log"
           exit_code=$?
           end=$(date +%s)
           echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
@@ -307,7 +307,7 @@ jobs:
         run: |
           start=$(date +%s)
           set +e
-          pnpm verify:exports >"$SUITE_DIR/verify-exports.json" 2>"$SUITE_DIR/verify-exports.stderr.log"
+          node scripts/verify-exports.mjs >"$SUITE_DIR/verify-exports.json" 2>"$SUITE_DIR/verify-exports.stderr.log"
           exit_code=$?
           end=$(date +%s)
           echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"
@@ -439,7 +439,7 @@ jobs:
         run: |
           start=$(date +%s)
           set +e
-          pnpm verify:dependency-policy >"$SUITE_DIR/dependency-policy.json" 2>"$SUITE_DIR/dependency-policy.stderr.log"
+          node scripts/verify-dependency-policy.mjs >"$SUITE_DIR/dependency-policy.json" 2>"$SUITE_DIR/dependency-policy.stderr.log"
           exit_code=$?
           end=$(date +%s)
           echo "duration_ms=$(((end - start) * 1000))" >> "$GITHUB_OUTPUT"

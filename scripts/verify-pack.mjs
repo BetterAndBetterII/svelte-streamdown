@@ -97,7 +97,11 @@ function listTarballFiles(tarballPath) {
 
 function readTarballPackageJson(tarballPath) {
 	return JSON.parse(
-		runCommand('tar', ['-xOf', tarballPath, 'package/package.json'], 'tar -xOf package/package.json')
+		runCommand(
+			'tar',
+			['-xOf', tarballPath, 'package/package.json'],
+			'tar -xOf package/package.json'
+		)
 	);
 }
 
@@ -198,7 +202,9 @@ function assertNoForbiddenEntries(packFiles) {
 
 function assertPackContainsPath(packFiles, packagePath, source) {
 	if (!packFiles.has(packagePath)) {
-		throw new Error(`${source} points to ${packagePath}, but that file is missing from the tarball`);
+		throw new Error(
+			`${source} points to ${packagePath}, but that file is missing from the tarball`
+		);
 	}
 }
 

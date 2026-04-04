@@ -54,7 +54,10 @@ test.describe('expanded rendering parity fixtures', () => {
 	}
 });
 
-async function openParityFixture(page: import('@playwright/test').Page, url: string): Promise<void> {
+async function openParityFixture(
+	page: import('@playwright/test').Page,
+	url: string
+): Promise<void> {
 	await page.goto(url, { waitUntil: 'networkidle' });
 	await expect(page.locator(renderedSelector)).toBeVisible();
 }
@@ -105,8 +108,12 @@ async function assertHtmlEntitiesAndCjkParity(referencePage: Page, localPage: Pa
 		),
 		expect(referencePage.locator(renderedSelector)).toContainText('& Entity Link'),
 		expect(localPage.locator(renderedSelector)).toContainText('& Entity Link'),
-		expect(referencePage.locator(renderedSelector)).toContainText('この文は太字になります（括弧付き）。続き'),
-		expect(localPage.locator(renderedSelector)).toContainText('この文は太字になります（括弧付き）。続き'),
+		expect(referencePage.locator(renderedSelector)).toContainText(
+			'この文は太字になります（括弧付き）。続き'
+		),
+		expect(localPage.locator(renderedSelector)).toContainText(
+			'この文は太字になります（括弧付き）。続き'
+		),
 		expect(referencePage.locator(renderedSelector)).toContainText('这是斜体文字（带括号）。后续'),
 		expect(localPage.locator(renderedSelector)).toContainText('这是斜体文字（带括号）。后续'),
 		expect(referencePage.locator(renderedSelector)).toContainText(

@@ -1,251 +1,243 @@
-
-> svelte-streamdown@3.0.1 verify:dependency-policy /home/yuzhong/.openase/workspace/test/cdn/ASE-32/svelte-streamdown
-> node scripts/verify-dependency-policy.mjs
-
 {
-  "policyPath": "config/dependency-policy.json",
-  "audit": {
-    "prod": {
-      "scope": "prod",
-      "threshold": "high",
-      "relevantCount": 1,
-      "approvedCount": 1,
-      "unapprovedCount": 0,
-      "approved": [
-        {
-          "id": "1115805",
-          "module": "lodash-es",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc",
-          "recommendation": "Upgrade to version 4.18.0 or later",
-          "reason": "Transitive through mermaid@11.11.0 in the current lockfile; removing it requires a dependency upgrade outside the P1-05 gate wiring scope.",
-          "reviewBy": "before the first trusted release"
-        }
-      ],
-      "unapproved": []
-    },
-    "dev": {
-      "scope": "dev",
-      "threshold": "high",
-      "relevantCount": 19,
-      "approvedCount": 19,
-      "unapprovedCount": 0,
-      "approved": [
-        {
-          "id": "1109208",
-          "module": "playwright",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-7mvr-c777-76hp",
-          "recommendation": "Upgrade to version 1.55.1 or later",
-          "reason": "Accepted temporarily while the repository baseline still pins Playwright 1.53.x; removal requires a coordinated tooling upgrade.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1112183",
-          "module": "devalue",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-g2pg-6438-jwpf",
-          "recommendation": "Upgrade to version 5.6.2 or later",
-          "reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1112188",
-          "module": "devalue",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-vw5p-8cq8-m7mv",
-          "recommendation": "Upgrade to version 5.6.2 or later",
-          "reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1112190",
-          "module": "@sveltejs/kit",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-j62c-4x62-9r35",
-          "recommendation": "Upgrade to version 2.49.5 or later",
-          "reason": "Accepted temporarily while the repository baseline still pins the current SvelteKit line; removal requires a framework upgrade sweep.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1112456",
-          "module": "wrangler",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-36p8-mvp6-cv38",
-          "recommendation": "Upgrade to version 4.59.1 or later",
-          "reason": "Accepted temporarily while the current Cloudflare toolchain remains pinned for release hardening work.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1112659",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-34x7-hfp2-rc4v",
-          "recommendation": "Upgrade to version 7.5.7 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1113300",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-8qq5-rm4j-mr97",
-          "recommendation": "Upgrade to version 7.5.3 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1113375",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-83g3-92jg-28cx",
-          "recommendation": "Upgrade to version 7.5.8 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1113515",
-          "module": "rollup",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
-          "recommendation": "Upgrade to version 4.59.0 or later",
-          "reason": "Accepted temporarily while the current Vite/Rollup stack remains pinned for parity work.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114200",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96",
-          "recommendation": "Upgrade to version 7.5.10 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114302",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-9ppj-qmqm-q256",
-          "recommendation": "Upgrade to version 7.5.11 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114526",
-          "module": "flatted",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
-          "recommendation": "Upgrade to version 3.4.0 or later",
-          "reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114591",
-          "module": "undici",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-f269-vfmq-vjvj",
-          "recommendation": "Upgrade to version 7.24.0 or later",
-          "reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114637",
-          "module": "undici",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-vrm6-8vpv-qv8q",
-          "recommendation": "Upgrade to version 7.24.0 or later",
-          "reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114639",
-          "module": "undici",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-v9p9-hfj2-hcw8",
-          "recommendation": "Upgrade to version 7.24.0 or later",
-          "reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1114680",
-          "module": "tar",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-r6q2-hw4h-h46w",
-          "recommendation": "Upgrade to version 7.5.4 or later",
-          "reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1115357",
-          "module": "flatted",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh",
-          "recommendation": "Upgrade to version 3.4.2 or later",
-          "reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1115554",
-          "module": "picomatch",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj",
-          "recommendation": "Upgrade to version 4.0.4 or later",
-          "reason": "Transitive via the current Vitest UI graph; removal requires dependency upgrades outside P1-05.",
-          "reviewBy": "before the first trusted release"
-        },
-        {
-          "id": "1115969",
-          "module": "defu",
-          "severity": "high",
-          "url": "https://github.com/advisories/GHSA-737v-mqg7-c878",
-          "recommendation": "Upgrade to version 6.1.5 or later",
-          "reason": "Transitive via unenv@2.0.0-rc.20 in the pinned Wrangler and adapter-cloudflare dev toolchain; removal requires a coordinated Cloudflare dependency upgrade outside the current parity ticket scope.",
-          "reviewBy": "before the first trusted release"
-        }
-      ],
-      "unapproved": []
-    }
-  },
-  "licenses": {
-    "prod": {
-      "scope": "prod",
-      "licenseCounts": {
-        "MIT": 195,
-        "Apache-2.0": 6,
-        "ISC": 33,
-        "BSD-3-Clause": 6,
-        "(MPL-2.0 OR Apache-2.0)": 1,
-        "BSD-2-Clause": 1,
-        "Unknown": 1,
-        "Unlicense": 1
-      },
-      "approvedCount": 2,
-      "unapprovedCount": 0,
-      "approved": [
-        {
-          "name": "entities",
-          "license": "BSD-2-Clause",
-          "versions": [
-            "6.0.1"
-          ],
-          "reason": "Transitive via rehype-raw/parse5 in the current production graph; keep the exception package-specific until broader BSD-2-Clause policy review is completed.",
-          "evidence": "node_modules/.pnpm/entities@6.0.1/node_modules/entities/LICENSE",
-          "reviewBy": "if the entities version changes"
-        },
-        {
-          "name": "khroma",
-          "license": "Unknown",
-          "versions": [
-            "2.1.0"
-          ],
-          "reason": "The published package omits SPDX metadata, but the bundled license file in the installed package is MIT.",
-          "evidence": "node_modules/.pnpm/khroma@2.1.0/node_modules/khroma/license",
-          "reviewBy": "if the khroma version changes"
-        }
-      ],
-      "unapproved": []
-    }
-  },
-  "ok": true,
-  "failures": []
+	"policyPath": "config/dependency-policy.json",
+	"audit": {
+		"prod": {
+			"scope": "prod",
+			"threshold": "high",
+			"relevantCount": 1,
+			"approvedCount": 1,
+			"unapprovedCount": 0,
+			"approved": [
+				{
+					"id": "1115805",
+					"module": "lodash-es",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc",
+					"recommendation": "Upgrade to version 4.18.0 or later",
+					"reason": "Transitive through mermaid@11.11.0 in the current lockfile; removing it requires a dependency upgrade outside the P1-05 gate wiring scope.",
+					"reviewBy": "before the first trusted release"
+				}
+			],
+			"unapproved": []
+		},
+		"dev": {
+			"scope": "dev",
+			"threshold": "high",
+			"relevantCount": 19,
+			"approvedCount": 19,
+			"unapprovedCount": 0,
+			"approved": [
+				{
+					"id": "1109208",
+					"module": "playwright",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-7mvr-c777-76hp",
+					"recommendation": "Upgrade to version 1.55.1 or later",
+					"reason": "Accepted temporarily while the repository baseline still pins Playwright 1.53.x; removal requires a coordinated tooling upgrade.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1112183",
+					"module": "devalue",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-g2pg-6438-jwpf",
+					"recommendation": "Upgrade to version 5.6.2 or later",
+					"reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1112188",
+					"module": "devalue",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-vw5p-8cq8-m7mv",
+					"recommendation": "Upgrade to version 5.6.2 or later",
+					"reason": "Transitive via the current SvelteKit toolchain; removal requires a framework upgrade sweep outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1112190",
+					"module": "@sveltejs/kit",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-j62c-4x62-9r35",
+					"recommendation": "Upgrade to version 2.49.5 or later",
+					"reason": "Accepted temporarily while the repository baseline still pins the current SvelteKit line; removal requires a framework upgrade sweep.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1112456",
+					"module": "wrangler",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-36p8-mvp6-cv38",
+					"recommendation": "Upgrade to version 4.59.1 or later",
+					"reason": "Accepted temporarily while the current Cloudflare toolchain remains pinned for release hardening work.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1112659",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-34x7-hfp2-rc4v",
+					"recommendation": "Upgrade to version 7.5.7 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1113300",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-8qq5-rm4j-mr97",
+					"recommendation": "Upgrade to version 7.5.3 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1113375",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-83g3-92jg-28cx",
+					"recommendation": "Upgrade to version 7.5.8 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1113515",
+					"module": "rollup",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
+					"recommendation": "Upgrade to version 4.59.0 or later",
+					"reason": "Accepted temporarily while the current Vite/Rollup stack remains pinned for parity work.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114200",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96",
+					"recommendation": "Upgrade to version 7.5.10 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114302",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-9ppj-qmqm-q256",
+					"recommendation": "Upgrade to version 7.5.11 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114526",
+					"module": "flatted",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+					"recommendation": "Upgrade to version 3.4.0 or later",
+					"reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114591",
+					"module": "undici",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-f269-vfmq-vjvj",
+					"recommendation": "Upgrade to version 7.24.0 or later",
+					"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114637",
+					"module": "undici",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-vrm6-8vpv-qv8q",
+					"recommendation": "Upgrade to version 7.24.0 or later",
+					"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114639",
+					"module": "undici",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-v9p9-hfj2-hcw8",
+					"recommendation": "Upgrade to version 7.24.0 or later",
+					"reason": "Accepted temporarily while the pinned Cloudflare and SvelteKit toolchain remains unchanged.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1114680",
+					"module": "tar",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-r6q2-hw4h-h46w",
+					"recommendation": "Upgrade to version 7.5.4 or later",
+					"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1115357",
+					"module": "flatted",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh",
+					"recommendation": "Upgrade to version 3.4.2 or later",
+					"reason": "Transitive via current dev tooling; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1115554",
+					"module": "picomatch",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj",
+					"recommendation": "Upgrade to version 4.0.4 or later",
+					"reason": "Transitive via the current Vitest UI graph; removal requires dependency upgrades outside P1-05.",
+					"reviewBy": "before the first trusted release"
+				},
+				{
+					"id": "1115969",
+					"module": "defu",
+					"severity": "high",
+					"url": "https://github.com/advisories/GHSA-737v-mqg7-c878",
+					"recommendation": "Upgrade to version 6.1.5 or later",
+					"reason": "Transitive via unenv@2.0.0-rc.20 in the pinned Wrangler and adapter-cloudflare dev toolchain; removal requires a coordinated Cloudflare dependency upgrade outside the current parity ticket scope.",
+					"reviewBy": "before the first trusted release"
+				}
+			],
+			"unapproved": []
+		}
+	},
+	"licenses": {
+		"prod": {
+			"scope": "prod",
+			"licenseCounts": {
+				"MIT": 195,
+				"Apache-2.0": 6,
+				"ISC": 33,
+				"BSD-3-Clause": 6,
+				"(MPL-2.0 OR Apache-2.0)": 1,
+				"BSD-2-Clause": 1,
+				"Unknown": 1,
+				"Unlicense": 1
+			},
+			"approvedCount": 2,
+			"unapprovedCount": 0,
+			"approved": [
+				{
+					"name": "entities",
+					"license": "BSD-2-Clause",
+					"versions": ["6.0.1"],
+					"reason": "Transitive via rehype-raw/parse5 in the current production graph; keep the exception package-specific until broader BSD-2-Clause policy review is completed.",
+					"evidence": "node_modules/.pnpm/entities@6.0.1/node_modules/entities/LICENSE",
+					"reviewBy": "if the entities version changes"
+				},
+				{
+					"name": "khroma",
+					"license": "Unknown",
+					"versions": ["2.1.0"],
+					"reason": "The published package omits SPDX metadata, but the bundled license file in the installed package is MIT.",
+					"evidence": "node_modules/.pnpm/khroma@2.1.0/node_modules/khroma/license",
+					"reviewBy": "if the khroma version changes"
+				}
+			],
+			"unapproved": []
+		}
+	},
+	"ok": true,
+	"failures": []
 }

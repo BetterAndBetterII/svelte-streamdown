@@ -35,7 +35,9 @@ describeInBrowser('ported streamdown mermaid fullscreen control', () => {
 			expect(screen.container.querySelector('button[title="View fullscreen"]')).toBeTruthy();
 		});
 
-		(screen.container.querySelector('button[title="View fullscreen"]') as HTMLButtonElement).click();
+		(
+			screen.container.querySelector('button[title="View fullscreen"]') as HTMLButtonElement
+		).click();
 
 		await vi.waitFor(() => {
 			const expanded = screen.container.querySelector(

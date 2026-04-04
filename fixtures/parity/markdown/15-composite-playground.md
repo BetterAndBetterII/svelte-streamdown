@@ -4,7 +4,7 @@ This fixture captures a stable subset of the interactive playground showcase for
 
 ## Formatting
 
-Regular paragraph text with **bold**, *italic*, ~~strikethrough~~, and `inline code`.
+Regular paragraph text with **bold**, _italic_, ~~strikethrough~~, and `inline code`.
 
 > Blockquotes can include **nested emphasis** without changing the surrounding flow.
 
@@ -16,10 +16,10 @@ Regular paragraph text with **bold**, *italic*, ~~strikethrough~~, and `inline c
 
 ## Table
 
-| Feature | Status | Notes |
-| :------ | :----: | ----: |
-| Markdown | Ready | CommonMark + GFM |
-| Plugins | Ready | Code, math, mermaid, CJK |
+| Feature  | Status |                    Notes |
+| :------- | :----: | -----------------------: |
+| Markdown | Ready  |         CommonMark + GFM |
+| Plugins  | Ready  | Code, math, mermaid, CJK |
 
 ## Code
 

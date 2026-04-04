@@ -137,7 +137,9 @@ function normalizeHighlightResult(tokens: HighlightToken[][]): HighlightResult {
 	return { tokens };
 }
 
-function extractAdditionalThemes(themes: [ThemeInput, ThemeInput]): Record<string, ThemeRegistration> {
+function extractAdditionalThemes(
+	themes: [ThemeInput, ThemeInput]
+): Record<string, ThemeRegistration> {
 	const registrations = themes.filter(
 		(theme): theme is ThemeRegistration => typeof theme !== 'string'
 	);
@@ -146,7 +148,10 @@ function extractAdditionalThemes(themes: [ThemeInput, ThemeInput]): Record<strin
 }
 
 function resolvePreferredTheme(themes: [ThemeInput, ThemeInput]): string {
-	if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+	if (
+		typeof window !== 'undefined' &&
+		window.matchMedia?.('(prefers-color-scheme: dark)').matches
+	) {
 		return themeName(themes[1]);
 	}
 
@@ -243,12 +248,14 @@ export function getMathPluginOptions(plugin: MathPlugin | undefined): Required<M
 
 	return {
 		errorColor: rehypeOptions.errorColor ?? defaultOptions.errorColor,
-		singleDollarTextMath:
-			remarkOptions.singleDollarTextMath ?? defaultOptions.singleDollarTextMath
+		singleDollarTextMath: remarkOptions.singleDollarTextMath ?? defaultOptions.singleDollarTextMath
 	};
 }
 
-export function applyPluginMarkdownTransforms(markdown: string, plugins: PluginConfig | undefined): string {
+export function applyPluginMarkdownTransforms(
+	markdown: string,
+	plugins: PluginConfig | undefined
+): string {
 	if (!plugins?.cjk) {
 		return markdown;
 	}
@@ -262,7 +269,11 @@ export function createCodePlugin(options: CodePluginOptions = {}): CodeHighlight
 	const themes = options.themes ?? ['github-light', 'github-dark'];
 	const languages = options.languages ?? bundledLanguagesInfo;
 	const supported = createLanguageSet(languages);
-	const highlighter = HighlighterManager.create(languages, extractAdditionalThemes(themes), options.languages);
+	const highlighter = HighlighterManager.create(
+		languages,
+		extractAdditionalThemes(themes),
+		options.languages
+	);
 
 	return {
 		name: 'shiki',
@@ -299,11 +310,11 @@ export function createMathPlugin(options: MathPluginOptions = {}): MathPlugin {
 	return {
 		name: 'katex',
 		type: 'math',
-		remarkPlugin: [
+		remarkPlugin: [noopPluggable, { singleDollarTextMath: options.singleDollarTextMath ?? false }],
+		rehypePlugin: [
 			noopPluggable,
-			{ singleDollarTextMath: options.singleDollarTextMath ?? false }
+			{ errorColor: options.errorColor ?? 'var(--color-muted-foreground)' }
 		],
-		rehypePlugin: [noopPluggable, { errorColor: options.errorColor ?? 'var(--color-muted-foreground)' }],
 		getStyles() {
 			return 'katex/dist/katex.min.css';
 		}

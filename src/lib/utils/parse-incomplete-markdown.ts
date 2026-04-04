@@ -1467,8 +1467,7 @@ const handleIncompleteTextLink = (text: string, index: number): string | null =>
 	if (afterClosing.trim().length === 0) {
 		const linkText = text.slice(index + 1, closingIndex);
 		const beforeLink = text.slice(0, openIndex);
-		const shouldRecoverAsLink =
-			isImage || linkText.includes('[') || /[*_~`]/.test(linkText);
+		const shouldRecoverAsLink = isImage || linkText.includes('[') || /[*_~`]/.test(linkText);
 
 		if (!shouldRecoverAsLink) {
 			return null;

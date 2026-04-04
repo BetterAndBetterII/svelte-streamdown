@@ -17,7 +17,9 @@ describeInNode('ported remend comparison operators', () => {
 		expect(parseIncompleteMarkdownText('> Some blockquote')).toBe('> Some blockquote');
 		expect(parseIncompleteMarkdownText('> 25 is a number')).toBe('> 25 is a number');
 		expect(parseIncompleteMarkdownText('- > Some quoted text')).toBe('- > Some quoted text');
-		expect(parseIncompleteMarkdownText('- > Read more about this')).toBe('- > Read more about this');
+		expect(parseIncompleteMarkdownText('- > Read more about this')).toBe(
+			'- > Read more about this'
+		);
 		expect(parseIncompleteMarkdownText('>25')).toBe('>25');
 	});
 

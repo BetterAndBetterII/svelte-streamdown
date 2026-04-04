@@ -1,26 +1,26 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-04-04T09:02:02.792Z",
-  "subject": {
-    "name": "svelte-streamdown-3.0.1.tgz",
-    "sha256": "1d8fd85f6806bca01955cf2d9f512babe2a0600a86db141092500c69e393b767"
-  },
-  "githubAttestation": {
-    "supported": false,
-    "repository": "BetterAndBetterII/svelte-streamdown",
-    "signerWorkflow": null,
-    "verifyCommand": null,
-    "attestationUrl": null
-  },
-  "npmProvenance": {
-    "expectedWhenTrustedPublishing": false,
-    "publishCommand": "npm publish ./artifacts/release/svelte-streamdown-3.0.1.tgz",
-    "requirements": {
-      "publicRepository": true,
-      "publicPackage": true,
-      "githubHostedRunner": true,
-      "trustedPublisherWorkflow": "release.yml"
-    },
-    "published": false
-  }
+	"schemaVersion": 1,
+	"generatedAt": "2026-04-04T09:02:02.792Z",
+	"subject": {
+		"name": "svelte-streamdown-3.0.1.tgz",
+		"sha256": "1d8fd85f6806bca01955cf2d9f512babe2a0600a86db141092500c69e393b767"
+	},
+	"githubAttestation": {
+		"supported": false,
+		"repository": "BetterAndBetterII/svelte-streamdown",
+		"signerWorkflow": null,
+		"verifyCommand": null,
+		"attestationUrl": null
+	},
+	"npmProvenance": {
+		"expectedWhenTrustedPublishing": false,
+		"publishCommand": "npm publish ./artifacts/release/svelte-streamdown-3.0.1.tgz",
+		"requirements": {
+			"publicRepository": true,
+			"publicPackage": true,
+			"githubHostedRunner": true,
+			"trustedPublisherWorkflow": "release.yml"
+		},
+		"published": false
+	}
 }

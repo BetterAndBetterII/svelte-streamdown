@@ -7,7 +7,9 @@
 	import { defaultMarkdown } from './default-markdown.js';
 	import VegaLiteRenderer from './VegaLiteRenderer.svelte';
 
-	const renderers: CustomRenderer[] = [{ language: ['vega-lite', 'vega'], component: VegaLiteRenderer }];
+	const renderers: CustomRenderer[] = [
+		{ language: ['vega-lite', 'vega'], component: VegaLiteRenderer }
+	];
 	const animationOptions = ['fadeIn', 'blurIn', 'slideUp'] as const;
 	const easingOptions = ['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear'] as const;
 	const sepOptions = ['word', 'char'] as const;
@@ -97,7 +99,7 @@
 
 <div class="flex h-[100dvh] flex-col overflow-hidden bg-background">
 	<header class="relative flex shrink-0 items-center justify-between border-b border-border p-2">
-		<h1 class="px-2 font-semibold text-lg tracking-tight">Streamdown Playground</h1>
+		<h1 class="px-2 text-lg font-semibold tracking-tight">Streamdown Playground</h1>
 
 		<div class="flex items-center gap-2">
 			<select
@@ -145,16 +147,12 @@
 				class="absolute top-[calc(100%-0.25rem)] right-2 z-20 grid w-80 gap-4 rounded-xl border border-border bg-popover p-4 shadow-xl"
 			>
 				<div class="grid gap-3">
-					<p class="font-medium text-sm">Rendering</p>
+					<p class="text-sm font-medium">Rendering</p>
 
-						<label class="flex items-center justify-between gap-3">
-							<span class="text-sm text-muted-foreground">Animated</span>
-							<input
-								class="h-4 w-4 accent-foreground"
-								type="checkbox"
-								bind:checked={animated}
-							/>
-						</label>
+					<label class="flex items-center justify-between gap-3">
+						<span class="text-sm text-muted-foreground">Animated</span>
+						<input class="h-4 w-4 accent-foreground" type="checkbox" bind:checked={animated} />
+					</label>
 
 					{#if animated}
 						<label class="flex items-center justify-between gap-3">
@@ -207,7 +205,10 @@
 
 					<label class="flex items-center justify-between gap-3">
 						<span class="text-sm text-muted-foreground">Caret</span>
-						<select class="h-8 rounded-md border border-input bg-background px-2 text-sm" bind:value={caret}>
+						<select
+							class="h-8 rounded-md border border-input bg-background px-2 text-sm"
+							bind:value={caret}
+						>
 							<option value="block">Block ▋</option>
 							<option value="circle">Circle ●</option>
 							<option value="none">None</option>
@@ -216,7 +217,7 @@
 				</div>
 
 				<div class="grid gap-3">
-					<p class="font-medium text-sm">Streaming</p>
+					<p class="text-sm font-medium">Streaming</p>
 					<label class="flex items-center justify-between gap-3">
 						<span class="text-sm text-muted-foreground">Speed (ms)</span>
 						<input
@@ -233,9 +234,11 @@
 	</header>
 
 	<div class="flex min-h-0 flex-1 flex-col md:flex-row">
-		<section class="flex min-h-0 flex-1 flex-col border-b border-border md:w-1/2 md:border-r md:border-b-0">
+		<section
+			class="flex min-h-0 flex-1 flex-col border-b border-border md:w-1/2 md:border-r md:border-b-0"
+		>
 			<div class="flex shrink-0 items-center border-b border-border bg-muted/50 px-4 py-2">
-				<span class="font-medium text-xs uppercase tracking-[0.18em] text-muted-foreground">
+				<span class="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
 					Markdown Input
 				</span>
 			</div>
@@ -252,7 +255,7 @@
 
 		<section class="flex min-h-0 flex-1 flex-col md:w-1/2">
 			<div class="flex shrink-0 items-center border-b border-border bg-muted/50 px-4 py-2">
-				<span class="font-medium text-xs uppercase tracking-[0.18em] text-muted-foreground">
+				<span class="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
 					Streamdown Output
 				</span>
 			</div>
@@ -261,7 +264,7 @@
 				<div class="mx-auto w-full max-w-4xl">
 					<Streamdown
 						content={currentContent()}
-						mode={mode}
+						{mode}
 						isAnimating={isStreaming}
 						animated={animatedOptions}
 						caret={caret === 'none' ? undefined : caret}

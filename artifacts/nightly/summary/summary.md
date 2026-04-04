@@ -3,12 +3,12 @@
 - Overall status: success
 - Generated at: 2026-04-04T09:01:43.997Z
 
-| Suite | Status | Duration | Failure stage |
-| --- | --- | --- | --- |
-| ported-tests | success | 17.0s | n/a |
-| playwright-parity | success | 9.0s | n/a |
-| pack-smoke | success | 16.0s | n/a |
-| dependency-audit | success | 1.0s | n/a |
+| Suite             | Status  | Duration | Failure stage |
+| ----------------- | ------- | -------- | ------------- |
+| ported-tests      | success | 17.0s    | n/a           |
+| playwright-parity | success | 9.0s     | n/a           |
+| pack-smoke        | success | 16.0s    | n/a           |
+| dependency-audit  | success | 1.0s     | n/a           |
 
 ## Suite Artifacts
 
@@ -50,4 +50,3 @@
 - status: `artifacts/nightly/dependency-audit/status.json`
 - report: `artifacts/nightly/dependency-audit/dependency-policy.json`
 - stderr: `artifacts/nightly/dependency-audit/dependency-policy.stderr.log`
-

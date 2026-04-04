@@ -1,9 +1,9 @@
 ---
 tracker:
   kind: github_project
-  project_owner: "BetterAndBetterII"
+  project_owner: 'BetterAndBetterII'
   project_number: 23
-  project_field_status: "Status"
+  project_field_status: 'Status'
   active_states:
     - Todo
     - In Progress
@@ -22,7 +22,7 @@ polling:
 server:
   port: 40024
 workspace:
-  root: "/home/yuzhong/agent-workspace/svelte-streamdown/workspaces"
+  root: '/home/yuzhong/agent-workspace/svelte-streamdown/workspaces'
 hooks:
   after_create: |
     git clone --depth 1 https://github.com/BetterAndBetterII/svelte-streamdown.git .
@@ -66,7 +66,7 @@ codex:
 - 这是第 #{{ attempt }} 次重试，因为工单仍处于活跃状态。
 - 直接基于当前工作区继续，而不是从零开始。
 - 不要重复已经完成的排查、移植、验证或对比，除非新的反馈明确要求。
-{% endif %}
+  {% endif %}
 
 仓库上下文：
 
@@ -194,25 +194,33 @@ URL: {{ issue.url }}
    - 如果改动涉及 parity，至少跑对应的 contract 或 fixture
    - 如果改动涉及发布，至少跑相关 release gate
 10. 对于 `In Progress` / `Rework` 路径，完成实现后：
-   - 更新工作台评论
-   - 提交并推送分支
-   - 如果当前不存在 PR，则创建 PR；如果已存在 PR，则更新其描述
-   - 将工单推进到 `In Review`
+
+- 更新工作台评论
+- 提交并推送分支
+- 如果当前不存在 PR，则创建 PR；如果已存在 PR，则更新其描述
+- 将工单推进到 `In Review`
+
 11. 对于 `In Review` 路径，重点不是继续写代码，而是审核当前证据：
-   - diff 是否聚焦
-   - reference parity 证据是否充分
-   - 测试是否真的覆盖改动点
-   - `PLAN.md` 对应项是否被正确推进
-   - 文档是否与实现一致
-   - 是否还有未解决 review 评论
+
+- diff 是否聚焦
+- reference parity 证据是否充分
+- 测试是否真的覆盖改动点
+- `PLAN.md` 对应项是否被正确推进
+- 文档是否与实现一致
+- 是否还有未解决 review 评论
+
 12. 对于 `In Review` 路径，审核结论必须二选一：
-   - 无阻塞问题：给出 approve / 明确通过结论，并推进到 `Merging`
-   - 有阻塞问题：提交 `change request`，明确列出必须处理的问题，并推进到 `Rework`
+
+- 无阻塞问题：给出 approve / 明确通过结论，并推进到 `Merging`
+- 有阻塞问题：提交 `change request`，明确列出必须处理的问题，并推进到 `Rework`
+
 13. 对于 `Merging` 路径：
-   - 同步最新默认分支
-   - 处理冲突
-   - 重跑受影响验证
-   - 完成合并或仓库要求的落地动作
+
+- 同步最新默认分支
+- 处理冲突
+- 重跑受影响验证
+- 完成合并或仓库要求的落地动作
+
 14. 合并完成后，先确认主干落地结果可追溯到当前 issue / PR，然后关闭对应 GitHub issue。
 15. 只有在 issue 已关闭后，才更新工作台评论并将工单推进到 `Done`。
 

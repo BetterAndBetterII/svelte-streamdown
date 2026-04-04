@@ -245,9 +245,7 @@ const filterTokens = (
 
 		const tagName = getTokenTagName(token);
 		const elementProperties = getTokenProperties(token);
-		const currentElement = tagName
-			? createMarkdownElement(tagName, elementProperties)
-			: undefined;
+		const currentElement = tagName ? createMarkdownElement(tagName, elementProperties) : undefined;
 		const hasChildTokens = Array.isArray((token as { tokens?: StreamdownToken[] }).tokens);
 		const filteredChildren = hasChildTokens
 			? filterTokens(
@@ -260,11 +258,7 @@ const filterTokens = (
 			? ({ ...token, tokens: filteredChildren?.tokens ?? [] } as StreamdownToken)
 			: token;
 		const nextElement = tagName
-			? createMarkdownElement(
-					tagName,
-					getTokenProperties(nextToken),
-					filteredChildren?.elements
-				)
+			? createMarkdownElement(tagName, getTokenProperties(nextToken), filteredChildren?.elements)
 			: undefined;
 
 		prepared.push({
@@ -289,10 +283,7 @@ const filterTokens = (
 			continue;
 		}
 
-		if (
-			entry.element &&
-			shouldRemoveElement(entry.element, index, resolvedParent, options)
-		) {
+		if (entry.element && shouldRemoveElement(entry.element, index, resolvedParent, options)) {
 			if (options.unwrapDisallowed && entry.filteredChildren) {
 				filtered.elements.push(...entry.filteredChildren.elements);
 				filtered.tokens.push(...entry.filteredChildren.tokens);

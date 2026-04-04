@@ -88,10 +88,9 @@
 		modeState === 'download' ? ['Markdown', 'CSV'] : ['Markdown', 'CSV', 'TSV']
 	);
 	const buttonModes = $derived(
-		[
-			showDownload ? 'download' : null,
-			showCopy ? 'copy' : null
-		].filter((mode): mode is 'download' | 'copy' => mode !== null)
+		[showDownload ? 'download' : null, showCopy ? 'copy' : null].filter(
+			(mode): mode is 'download' | 'copy' => mode !== null
+		)
 	);
 </script>
 
@@ -102,11 +101,11 @@
 		transition:scale|global={{ start: 0.95, duration: 100 }}
 		{@attach clickOutside.attachment}
 		{@attach popover.popoverAttachment}
-	open
-	style:width="fit-content !important"
-	style:min-width="fit-content !important"
-	class={streamdown.theme.components.popover}
->
+		open
+		style:width="fit-content !important"
+		style:min-width="fit-content !important"
+		class={streamdown.theme.components.popover}
+	>
 		{#each menuOptions as type}
 			{@const label =
 				modeState === 'download'
@@ -136,42 +135,45 @@
 {/if}
 
 {#if buttonModes.length > 0}
-	<div data-streamdown-table-download class=" right-0 ml-auto flex items-center justify-end gap-2 p-1">
+	<div
+		data-streamdown-table-download
+		class=" right-0 ml-auto flex items-center justify-end gap-2 p-1"
+	>
 		{#each buttonModes as mode (mode)}
-		<button
-			class={streamdown.theme.components.button}
-			onclick={async (e: MouseEvent) => {
-				if (modeState === mode && popover.isOpen) {
-					popover.isOpen = false;
-					return;
-				}
-				if (popover.isOpen && modeState !== mode) {
-					popover.isOpen = false;
-					const wait = new Promise((resolve) => {
-						setTimeout(resolve, 80);
-					});
-					await wait;
-				}
-				popover.reference = e.target as HTMLButtonElement;
-				popover.isOpen = true;
-				modeState = mode as 'download' | 'copy';
-			}}
-			{@attach clickOutside.attachment}
-			title={mode === 'download'
-				? streamdown.translations.downloadTable
-				: streamdown.translations.copyTable}
-			aria-label={mode === 'download'
-				? streamdown.translations.downloadTable
-				: streamdown.translations.copyTable}
-		>
-			{#if mode === 'download'}
-				{@render (streamdown.icons?.download || downloadIcon)()}
-			{:else if copy.isCopied}
-				{@render (streamdown.icons?.check || checkIcon)()}
-			{:else}
-				{@render (streamdown.icons?.copy || copyIcon)()}
-			{/if}
-		</button>
+			<button
+				class={streamdown.theme.components.button}
+				onclick={async (e: MouseEvent) => {
+					if (modeState === mode && popover.isOpen) {
+						popover.isOpen = false;
+						return;
+					}
+					if (popover.isOpen && modeState !== mode) {
+						popover.isOpen = false;
+						const wait = new Promise((resolve) => {
+							setTimeout(resolve, 80);
+						});
+						await wait;
+					}
+					popover.reference = e.target as HTMLButtonElement;
+					popover.isOpen = true;
+					modeState = mode as 'download' | 'copy';
+				}}
+				{@attach clickOutside.attachment}
+				title={mode === 'download'
+					? streamdown.translations.downloadTable
+					: streamdown.translations.copyTable}
+				aria-label={mode === 'download'
+					? streamdown.translations.downloadTable
+					: streamdown.translations.copyTable}
+			>
+				{#if mode === 'download'}
+					{@render (streamdown.icons?.download || downloadIcon)()}
+				{:else if copy.isCopied}
+					{@render (streamdown.icons?.check || checkIcon)()}
+				{:else}
+					{@render (streamdown.icons?.copy || copyIcon)()}
+				{/if}
+			</button>
 		{/each}
 	</div>
 {/if}
