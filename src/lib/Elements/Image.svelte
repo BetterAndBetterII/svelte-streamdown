@@ -57,6 +57,7 @@
 
 	let isLoaded = $state(false);
 	let hasError = $state(false);
+	let imageElement = $state<HTMLImageElement | null>(null);
 
 	function getImageSource(): string | null {
 		return imageSource;
@@ -102,6 +103,24 @@
 		hasError = true;
 		isLoaded = false;
 	}
+
+	$effect(() => {
+		const source = getImageSource();
+		if (!imageElement || !source) {
+			return;
+		}
+
+		if (!imageElement.complete) {
+			return;
+		}
+
+		if (imageElement.naturalWidth > 0) {
+			handleLoad();
+			return;
+		}
+
+		handleError();
+	});
 </script>
 
 {#if token.href !== 'streamdown:incomplete-image'}
@@ -141,6 +160,7 @@
 						component={streamdown.components?.img}
 					>
 						<img
+							bind:this={imageElement}
 							class={streamdown.theme.image.image}
 							src={imageSource}
 							alt={token.text}

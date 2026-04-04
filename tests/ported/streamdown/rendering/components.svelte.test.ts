@@ -12,6 +12,45 @@ const StreamdownWithFutureProps = Streamdown as unknown as typeof Streamdown & {
 
 describeInBrowser('ported streamdown component overrides', () => {
 	testInBrowser(
+		'renders the default component map for headings, lists, links, blockquotes, and code',
+		() => {
+			const screen = render(Streamdown, {
+				content: [
+					'# Heading 1',
+					'## Heading 2',
+					'### Heading 3',
+					'',
+					'- Bullet item',
+					'1. Ordered item',
+					'',
+					'Paragraph with [Link](https://example.com) and `inline`.',
+					'',
+					'> Quoted text',
+					'',
+					'```js',
+					'console.log("hello");',
+					'```'
+				].join('\n'),
+				mode: 'static'
+			});
+
+			expect(screen.container.querySelector('h1')?.className).toContain('text-3xl');
+			expect(screen.container.querySelector('h2')?.className).toContain('text-2xl');
+			expect(screen.container.querySelector('h3')?.className).toContain('text-xl');
+			expect(screen.container.querySelector('ul')?.className).toContain('list-disc');
+			expect(screen.container.querySelector('ol')?.className).toContain('list-inside');
+			expect(screen.container.querySelector('li')?.className).toContain('py-1');
+			expect(screen.container.querySelector('a')?.className).toContain('wrap-anywhere');
+			expect(screen.container.querySelector('a')?.getAttribute('target')).toBe('_blank');
+			expect(screen.container.querySelector('blockquote')?.className).toContain('border-l-4');
+			expect(screen.container.querySelector('[data-streamdown-codespan]')?.className).toContain(
+				'font-mono'
+			);
+			expect(screen.container.querySelector('[data-streamdown="code-block"]')).toBeTruthy();
+		}
+	);
+
+	testInBrowser(
 		'supports reference-style components overrides for headings, paragraphs, links, images, tables, and inline code',
 		() => {
 			const screen = render(StreamdownWithFutureProps, {

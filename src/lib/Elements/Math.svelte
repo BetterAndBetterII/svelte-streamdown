@@ -17,6 +17,13 @@
 	const streamdown = useStreamdown();
 	const mathPluginOptions = $derived(getMathPluginOptions(streamdown.plugins?.math));
 	let katexInstance = $state<typeof import('katex') | null>(null);
+	const escapeHtml = (value: string): string =>
+		value
+			.replaceAll('&', '&amp;')
+			.replaceAll('<', '&lt;')
+			.replaceAll('>', '&gt;')
+			.replaceAll('"', '&quot;')
+			.replaceAll("'", '&#39;');
 
 	onMount(() => {
 		import('katex').then((mod) => {
@@ -43,7 +50,7 @@
 			return katexInstance.renderToString(code, config);
 		} catch (error) {
 			return untrack(() => {
-				return inner?.innerHTML || '';
+				return inner?.innerHTML || escapeHtml(code);
 			});
 		}
 	});

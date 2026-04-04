@@ -52,10 +52,15 @@
 		token.type === 'heading' ? streamdown.components?.[headingThemeKey] : undefined
 	);
 	const ParagraphComponent = $derived(
-		token.type === 'paragraph' ? streamdown.components?.p : undefined
+		token.type === 'paragraph' && !(token.tokens?.length === 1 && token.tokens[0]?.type === 'image')
+			? streamdown.components?.p
+			: undefined
 	);
 	const InlineCodeComponent = $derived(
 		token.type === 'codespan' ? streamdown.components?.inlineCode : undefined
+	);
+	const shouldUnwrapStandaloneImageParagraph = $derived(
+		token.type === 'paragraph' && token.tokens?.length === 1 && token.tokens[0]?.type === 'image'
 	);
 
 	// Only apply animation on block level elements. Leaves text elements to be animated by their text children.
@@ -101,15 +106,20 @@
 		{/if}
 	</Slot>
 {:else if token.type === 'paragraph'}
-	<Slot
-		props={{ children, token, class: streamdown.theme.paragraph.base, style }}
-		render={streamdown.snippets.paragraph}
-		component={ParagraphComponent}
-	>
-		<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>
-			{@render children()}
-		</p>
-	</Slot>
+	{#if shouldUnwrapStandaloneImageParagraph}
+		<!-- Keep standalone images out of paragraph wrappers to avoid invalid hydration markup. -->
+		{@render children()}
+	{:else}
+		<Slot
+			props={{ children, token, class: streamdown.theme.paragraph.base, style }}
+			render={streamdown.snippets.paragraph}
+			component={ParagraphComponent}
+		>
+			<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>
+				{@render children()}
+			</p>
+		</Slot>
+	{/if}
 {:else if token.type === 'blockquote'}
 	<Slot props={{ children, token }} render={streamdown.snippets.blockquote}>
 		<blockquote data-streamdown-blockquote={id} {style} class={streamdown.theme.blockquote.base}>
