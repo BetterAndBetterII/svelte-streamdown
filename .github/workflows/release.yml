@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       publish:
@@ -18,9 +21,8 @@ permissions:
   artifact-metadata: write
 
 jobs:
-  release:
-    name: release
-    if: github.ref == 'refs/heads/master'
+  prepare-release:
+    name: prepare-release
     runs-on: ubuntu-latest
 
     steps:
@@ -78,40 +80,64 @@ jobs:
         with:
           subject-path: artifacts/release/*.tgz
 
-      - name: Record attestation and publish status
+      - name: Persist attestation metadata in the release bundle
         env:
           ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
           BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
-          SHOULD_PUBLISH: ${{ inputs.publish }}
         run: |
           node --input-type=module <<'EOF'
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const filePath = 'artifacts/release/provenance-metadata.json';
-          const metadata = JSON.parse(readFileSync(filePath, 'utf8'));
+          import { basename } from 'node:path';
+          import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+          const provenancePath = 'artifacts/release/provenance-metadata.json';
+          const metadata = JSON.parse(readFileSync(provenancePath, 'utf8'));
           metadata.githubAttestation.attestationUrl = process.env.ATTESTATION_URL || null;
-          metadata.githubAttestation.bundlePath = process.env.BUNDLE_PATH || null;
-          metadata.npmProvenance.publishRequested = process.env.SHOULD_PUBLISH === 'true';
-          writeFileSync(filePath, `${JSON.stringify(metadata, null, 2)}\n`);
+          if (process.env.BUNDLE_PATH) {
+            const copiedBundlePath = `artifacts/release/${basename(process.env.BUNDLE_PATH)}`;
+            copyFileSync(process.env.BUNDLE_PATH, copiedBundlePath);
+            metadata.githubAttestation.bundlePath = `./${copiedBundlePath}`;
+          } else {
+            metadata.githubAttestation.bundlePath = null;
+          }
+          writeFileSync(provenancePath, `${JSON.stringify(metadata, null, 2)}\n`);
           EOF
+
+      - name: Upload release metadata bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata-${{ github.sha }}
+          if-no-files-found: error
+          path: artifacts/release
+
+  publish-with-provenance:
+    name: publish-with-provenance
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.prepare-release.result == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      - name: Download release metadata bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: release-metadata-${{ github.sha }}
+          path: artifacts/release
 
       - name: Publish package to npm
-        if: ${{ inputs.publish }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' }}
         run: npm publish artifacts/release/*.tgz
 
-      - name: Update provenance metadata after publish
-        if: ${{ inputs.publish }}
-        run: |
-          node --input-type=module <<'EOF'
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const filePath = 'artifacts/release/provenance-metadata.json';
-          const metadata = JSON.parse(readFileSync(filePath, 'utf8'));
-          metadata.npmProvenance.published = true;
-          metadata.npmProvenance.publishMethod = 'trusted-publishing';
-          writeFileSync(filePath, `${JSON.stringify(metadata, null, 2)}\n`);
-          EOF
-
       - name: Tag published release commit
-        if: ${{ inputs.publish }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' }}
         run: |
           VERSION="$(node --input-type=module <<'EOF'
           import { readFileSync } from 'node:fs';
@@ -126,11 +152,69 @@ jobs:
           git tag "$VERSION" "$GITHUB_SHA"
           git push origin "$VERSION"
 
-      - name: Upload release metadata bundle
+      - name: Write publish-with-provenance evidence
+        env:
+          PUBLISH_REQUESTED: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
+          PUBLISH_ALLOWED: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+          PUBLISH_PERFORMED: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' }}
+        run: |
+          node scripts/release-workflow-evidence.mjs publish \
+            --metadata-dir artifacts/release \
+            --publish-requested "$PUBLISH_REQUESTED" \
+            --publish-allowed "$PUBLISH_ALLOWED" \
+            --publish-performed "$PUBLISH_PERFORMED"
+
+      - name: Upload publish-with-provenance evidence
         uses: actions/upload-artifact@v4
         with:
-          name: release-metadata-${{ github.sha }}
+          name: release-publish-${{ github.sha }}
           if-no-files-found: error
-          path: |
-            artifacts/release
-            ${{ steps.attest.outputs.bundle-path }}
+          path: artifacts/release
+
+  post-publish-verify:
+    name: post-publish-verify
+    needs:
+      - prepare-release
+      - publish-with-provenance
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.prepare-release.result == 'success' && needs.publish-with-provenance.result == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags origin
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      - name: Download publish-with-provenance bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: release-publish-${{ github.sha }}
+          path: artifacts/release
+
+      - name: Write post-publish verification evidence
+        env:
+          PUBLISH_REQUESTED: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
+          PUBLISH_ALLOWED: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+          PUBLISH_PERFORMED: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && github.ref == 'refs/heads/master' }}
+        run: |
+          node scripts/release-workflow-evidence.mjs verify \
+            --metadata-dir artifacts/release \
+            --publish-requested "$PUBLISH_REQUESTED" \
+            --publish-allowed "$PUBLISH_ALLOWED" \
+            --publish-performed "$PUBLISH_PERFORMED"
+
+      - name: Upload final release evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence-${{ github.sha }}
+          if-no-files-found: error
+          path: artifacts/release

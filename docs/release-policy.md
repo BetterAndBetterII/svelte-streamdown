@@ -34,12 +34,18 @@ If any item above is false, the release is not trusted and must not be presented
 
 As of `2026-04-04`, this repository is still not authorized for a trusted release.
 
-The blockers are explicit:
+The remaining blocker is explicit:
 
 - the reviewed dependency decision for advisory `1115805` (`lodash-es` via `mermaid@11.11.0`) still marks that production `high` advisory as blocking until the shipped graph upgrades past `lodash-es < 4.18.0`
-- the npm package still lacks completed repo-hosted `publish-with-provenance` and `post-publish-verify` evidence for the reviewed commit
 
-Until those gates exist and are passing in CI:
+Repo-hosted Release workflow evidence is no longer missing:
+
+- Release run `23981764154` completed successfully for reviewed commit `753cf91573dcfc2a5187238e8067cf5c7f6f0f83`
+- that run uploaded `release-metadata-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`, `release-publish-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`, and `release-evidence-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`
+- the uploaded bundle includes repo-hosted `publish-with-provenance` and `post-publish-verify` evidence for the reviewed commit
+- because that run was a reviewed dry-run evidence pass on a non-`master` ref, actual npm publish and tag creation were intentionally skipped
+
+Until the remaining blocking advisory is resolved:
 
 - no maintainer may cut a release from a local workstation
 - no maintainer may treat `npm publish` as an acceptable substitute for CI publishing
@@ -61,6 +67,13 @@ Trusted releases may be cut only by:
 
 Authority to merge code is not, by itself, authority to publish a release.
 
+Dry-run release evidence runs may execute on reviewed non-`master` refs with `publish=false` so the repository always has repo-hosted release metadata, provenance, and post-publish-verification records for the reviewed commit.
+
+Those dry-run runs do not authorize a release:
+
+- actual publish remains limited to `workflow_dispatch` on `master`
+- actual tag creation remains limited to successful publish runs on `master`
+
 ## Required Release Inputs
 
 Before a release starts, the release commit must include:
@@ -77,20 +90,20 @@ The release commit must be tagged as `v<package-version>` after publish verifica
 
 Every trusted release must be blocked on the exact jobs below.
 
-| Required job               | Purpose                                                                                        | Minimum command or evidence                                                     | Plan mapping  |
-| -------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------- |
-| `lint-and-format`          | Reject formatting drift before packaging                                                       | `npm run lint`                                                                  | baseline gate |
-| `typecheck`                | Reject Svelte/TypeScript contract regressions                                                  | `npm run check`                                                                 | baseline gate |
-| `unit-tests`               | Reject behavioral regressions covered by the current test suite                                | `npm test`                                                                      | baseline gate |
-| `build-package`            | Ensure the package builds from source on the release runner                                    | `npm run build`                                                                 | baseline gate |
-| `verify-toolchain`         | Ensure CI and local release docs use the same pinned Node and package-manager versions         | `pnpm verify:toolchain` plus `.nvmrc`, `packageManager`, `volta`, and CI config | `P1-01`       |
-| `verify-clean-build`       | Prove a clean checkout builds deterministically and does not depend on unstaged files          | clean install, build, and generated-file diff check                             | `P1-02`       |
-| `verify-pack`              | Prove the tarball contains only policy-approved files                                          | `scripts/verify-pack.mjs` plus `npm pack` inspection                            | `P1-03`       |
-| `verify-exports`           | Prove every declared export resolves from the packed tarball                                   | `scripts/verify-exports.mjs` plus temp-project smoke import                     | `P1-04`       |
-| `verify-dependency-policy` | Prove high-severity dependency advisories and production-license drift are explicitly reviewed | `scripts/verify-dependency-policy.mjs` plus `pnpm audit` / `pnpm licenses list` | `P1-05`       |
-| `verify-release-metadata`  | Prove the release workflow emits traceable tarball metadata before publish                     | `scripts/verify-release-metadata.mjs` plus `artifacts/release/` contract        | `P1-06`       |
-| `publish-with-provenance`  | Publish from CI with npm provenance enabled and preserve the release commit SHA                | release workflow logs plus npm provenance record                                | release gate  |
-| `post-publish-verify`      | Verify the registry artifact matches the reviewed commit and intended version                  | install published package, inspect metadata, verify provenance, confirm tag     | release gate  |
+| Required job               | Purpose                                                                                        | Minimum command or evidence                                                       | Plan mapping  |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------- |
+| `lint-and-format`          | Reject formatting drift before packaging                                                       | `npm run lint`                                                                    | baseline gate |
+| `typecheck`                | Reject Svelte/TypeScript contract regressions                                                  | `npm run check`                                                                   | baseline gate |
+| `unit-tests`               | Reject behavioral regressions covered by the current test suite                                | `npm test`                                                                        | baseline gate |
+| `build-package`            | Ensure the package builds from source on the release runner                                    | `npm run build`                                                                   | baseline gate |
+| `verify-toolchain`         | Ensure CI and local release docs use the same pinned Node and package-manager versions         | `pnpm verify:toolchain` plus `.nvmrc`, `packageManager`, `volta`, and CI config   | `P1-01`       |
+| `verify-clean-build`       | Prove a clean checkout builds deterministically and does not depend on unstaged files          | clean install, build, and generated-file diff check                               | `P1-02`       |
+| `verify-pack`              | Prove the tarball contains only policy-approved files                                          | `scripts/verify-pack.mjs` plus `npm pack` inspection                              | `P1-03`       |
+| `verify-exports`           | Prove every declared export resolves from the packed tarball                                   | `scripts/verify-exports.mjs` plus temp-project smoke import                       | `P1-04`       |
+| `verify-dependency-policy` | Prove high-severity dependency advisories and production-license drift are explicitly reviewed | `scripts/verify-dependency-policy.mjs` plus `pnpm audit` / `pnpm licenses list`   | `P1-05`       |
+| `verify-release-metadata`  | Prove the release workflow emits traceable tarball metadata before publish                     | `scripts/verify-release-metadata.mjs` plus `artifacts/release/` contract          | `P1-06`       |
+| `publish-with-provenance`  | Record whether the reviewed run published from CI with npm provenance enabled                  | `publish-with-provenance.json`; published runs also require npm provenance record | release gate  |
+| `post-publish-verify`      | Record whether registry verification ran and verify published runs against the reviewed commit | `post-publish-verify.json`; published runs also require registry and tag checks   | release gate  |
 
 Rules:
 
@@ -119,6 +132,7 @@ The release checklist is mandatory and must be satisfied in order.
 - Review dependency audit and license inventory evidence from `verify-dependency-policy`.
 - Review the current production-exception decisions in `docs/dependency-policy.md` and `artifacts/nightly/dependency-audit/reviewed-production-exceptions.md`.
 - Review `artifacts/release/` metadata and attestation evidence from `verify-release-metadata`.
+- Review `publish-with-provenance.json` and `post-publish-verify.json` from the same Release run.
 - Confirm the release runner uses the pinned toolchain required by `P1-01`.
 
 ### 3. Publish

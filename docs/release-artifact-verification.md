@@ -16,6 +16,8 @@ The release workflow writes the following files into `artifacts/release/` before
 - `build-metadata.json`
 - `artifact-metadata.json`
 - `provenance-metadata.json`
+- `publish-with-provenance.json`
+- `post-publish-verify.json`
 - `<package-name>-<package-version>.tgz`
 - `<package-name>-<package-version>.tgz.sha256`
 
@@ -57,6 +59,25 @@ Must record:
 - the attestation URL and bundle path after the workflow emits them
 - whether npm publish was requested and whether publish completed
 
+### `publish-with-provenance.json`
+
+Must record:
+
+- the reviewed commit SHA and release run URL
+- whether publish was requested for this run
+- whether publish was allowed for this ref
+- whether trusted publishing actually executed or was skipped
+- the npm package URL and tag name when publish completed
+
+### `post-publish-verify.json`
+
+Must record:
+
+- the reviewed commit SHA and release run URL
+- whether post-publish verification executed or was skipped
+- the skip reason for dry-run evidence runs
+- the registry and git tag checks when publish completed
+
 ## Verification Flow
 
 ### 1. Review the release run
@@ -77,15 +98,28 @@ Must record:
 - Confirm the verified subject digest matches `provenance-metadata.json.subject.sha256`.
 - Confirm the attestation signer workflow is `.github/workflows/release.yml`.
 
-### 4. Verify publish provenance when the workflow published
+### 4. Verify publish and post-publish evidence
+
+Every repo-hosted Release run must emit both `publish-with-provenance.json` and `post-publish-verify.json`.
+
+When the workflow ran as dry-run release evidence (`publish=false` or a non-`master` ref), reviewers must confirm:
+
+- `publish-with-provenance.json.result` is `skipped`
+- `post-publish-verify.json.result` is `skipped`
+- both files point at the same reviewed commit and run URL as `build-metadata.json`
+- the skip reason explains why the run stopped before publish
+
+When the workflow published:
 
 When `workflow_dispatch` runs with `publish=true`, the workflow publishes the already-hashed tarball through npm trusted publishing.
 
 Reviewers must confirm:
 
 - `provenance-metadata.json.npmProvenance.published` is `true`
+- `publish-with-provenance.json.result` is `published`
 - the published package version matches `artifact-metadata.json.package.version`
 - the npm package page shows provenance for the GitHub Actions release run
+- `post-publish-verify.json.result` is `passed`
 
 ### 5. Verify commit and tag alignment
 

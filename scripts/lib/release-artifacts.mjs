@@ -87,7 +87,9 @@ function clearReleaseArtifactOutputs(outputDirectory) {
 			entry.endsWith('.sha256') ||
 			entry === 'build-metadata.json' ||
 			entry === 'artifact-metadata.json' ||
-			entry === 'provenance-metadata.json'
+			entry === 'provenance-metadata.json' ||
+			entry === 'publish-with-provenance.json' ||
+			entry === 'post-publish-verify.json'
 		) {
 			rmSync(join(outputDirectory, entry), {
 				force: true
@@ -292,7 +294,8 @@ function createProvenanceMetadata(buildMetadata, artifactMetadata, env, outputDi
 				inGitHubActions && repository !== 'unknown'
 					? `gh attestation verify ${tarballCommandPath} --repo ${repository}`
 					: null,
-			attestationUrl: null
+			attestationUrl: null,
+			bundlePath: null
 		},
 		npmProvenance: {
 			expectedWhenTrustedPublishing: inGitHubActions,
@@ -303,7 +306,13 @@ function createProvenanceMetadata(buildMetadata, artifactMetadata, env, outputDi
 				githubHostedRunner: true,
 				trustedPublisherWorkflow: 'release.yml'
 			},
-			published: false
+			publishRequested: false,
+			publishAllowed: inGitHubActions,
+			publishSkippedReason: null,
+			published: false,
+			publishMethod: null,
+			packageUrl: null,
+			tagName: null
 		}
 	};
 }
