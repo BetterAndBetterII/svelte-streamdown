@@ -31,7 +31,10 @@ describeInBrowser('ported streamdown component overrides', () => {
 					'console.log("hello");',
 					'```'
 				].join('\n'),
-				mode: 'static'
+				mode: 'static',
+				linkSafety: {
+					enabled: false
+				}
 			});
 
 			expect(screen.container.querySelector('h1')?.className).toContain('text-3xl');
