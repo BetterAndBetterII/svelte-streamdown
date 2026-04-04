@@ -1,29 +1,29 @@
 {
-	"schemaVersion": 1,
-	"generatedAt": "2026-04-04T09:02:02.587Z",
-	"package": {
-		"name": "svelte-streamdown",
-		"version": "3.0.1"
-	},
-	"source": {
-		"repository": "BetterAndBetterII/svelte-streamdown",
-		"commitSha": "21747b7710869c5ad95bc991a10c5acb8a3c641b",
-		"ref": null,
-		"refName": null,
-		"eventName": null,
-		"workflow": null,
-		"workflowRef": null,
-		"job": null,
-		"runId": null,
-		"runAttempt": null,
-		"runUrl": null,
-		"actor": null
-	},
-	"build": {
-		"ciProvider": "local",
-		"nodeVersion": "v22.22.1",
-		"pnpmVersion": "10.32.1",
-		"platform": "linux",
-		"arch": "x64"
-	}
+  "schemaVersion": 1,
+  "generatedAt": "2026-04-04T15:09:56.209Z",
+  "package": {
+    "name": "svelte-streamdown",
+    "version": "3.0.1"
+  },
+  "source": {
+    "repository": "BetterAndBetterII/svelte-streamdown",
+    "commitSha": "0a6143a5ee9646708ca9254749f1f02c10852587",
+    "ref": null,
+    "refName": null,
+    "eventName": null,
+    "workflow": null,
+    "workflowRef": null,
+    "job": null,
+    "runId": null,
+    "runAttempt": null,
+    "runUrl": null,
+    "actor": null
+  },
+  "build": {
+    "ciProvider": "local",
+    "nodeVersion": "v22.22.1",
+    "pnpmVersion": "10.32.1",
+    "platform": "linux",
+    "arch": "x64"
+  }
 }
