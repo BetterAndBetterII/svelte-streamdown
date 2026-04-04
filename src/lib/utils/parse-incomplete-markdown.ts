@@ -173,9 +173,20 @@ export class IncompleteMarkdownParser {
 
 					for (let i = 0; i < lines.length; i++) {
 						const line = lines[i];
+						const trimmedLine = line.trim();
+						const startsBacktickFence = trimmedLine.startsWith('```');
+						const startsTildeFence = trimmedLine.startsWith('~~~');
+						const hasInlineBacktickFence =
+							startsBacktickFence &&
+							(trimmedLine.slice(3).includes('```') ||
+								(trimmedLine.endsWith('``') && !trimmedLine.endsWith('```')));
+						const hasInlineTildeFence = startsTildeFence && trimmedLine.slice(3).includes('~~~');
 
 						// Check for block boundaries
-						if (line.trim().startsWith('```') || line.trim().startsWith('~~~')) {
+						if (
+							(startsBacktickFence && !hasInlineBacktickFence) ||
+							(startsTildeFence && !hasInlineTildeFence)
+						) {
 							inCodeBlock = !inCodeBlock;
 						}
 						if (line.trim() === '$$') {
@@ -308,33 +319,50 @@ export class IncompleteMarkdownParser {
 				skipInBlockTypes: ['code', 'math'],
 				pattern: /`/,
 				handler: ({ line }) => {
-					// Inline countSingleBackticks logic
-					let singleBacktickCount = 0;
-					for (let i = 0; i < line.length; i++) {
-						if (line[i] === '`') {
-							const isTripleStart = line.substring(i, i + 3) === '```';
-							const isTripleMiddle = i > 0 && line.substring(i - 1, i + 2) === '```';
-							const isTripleEnd = i > 1 && line.substring(i - 2, i + 1) === '```';
-							const isPartOfTriple = isTripleStart || isTripleMiddle || isTripleEnd;
-							if (!isPartOfTriple) {
-								singleBacktickCount++;
-							}
-						}
-					}
-
-					// Inline hasCompleteCodeBlock logic
-					const tripleBackticks = (line.match(/```/g) || []).length;
-					const hasCompleteBlock =
-						tripleBackticks > 0 && tripleBackticks % 2 === 0 && line.includes('\n');
-
-					if (singleBacktickCount % 2 === 1 && !hasCompleteBlock) {
-						const inlineCodeMatch = line.match(/(`)([^`]*?)$/);
-						const contentAfterMarker = inlineCodeMatch?.[2];
-						if (contentAfterMarker && !whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+					const inlineTripleBacktickMatch = line.match(/^```[^`\n]*```?$/);
+					if (inlineTripleBacktickMatch && !line.includes('\n')) {
+						if (line.endsWith('``') && !line.endsWith('```')) {
 							return `${line}\``;
 						}
+
+						return line;
 					}
-					return line;
+
+					const inlineCodeMatch = line.match(/(`)([^`]*?)$/);
+					if (!inlineCodeMatch) {
+						return line;
+					}
+
+					const tripleBackticks = (line.match(/```/g) || []).length;
+					if (tripleBackticks % 2 === 1) {
+						return line;
+					}
+
+					const contentAfterMarker = inlineCodeMatch[2];
+					if (!contentAfterMarker || whitespaceOrMarkersPattern.test(contentAfterMarker)) {
+						return line;
+					}
+
+					let singleBacktickCount = 0;
+					for (let i = 0; i < line.length; i++) {
+						if (line[i] === '\\' && i + 1 < line.length && line[i + 1] === '`') {
+							i += 1;
+							continue;
+						}
+
+						if (line[i] !== '`') {
+							continue;
+						}
+
+						const isTripleStart = line.substring(i, i + 3) === '```';
+						const isTripleMiddle = i > 0 && line.substring(i - 1, i + 2) === '```';
+						const isTripleEnd = i > 1 && line.substring(i - 2, i + 1) === '```';
+						if (!isTripleStart && !isTripleMiddle && !isTripleEnd) {
+							singleBacktickCount += 1;
+						}
+					}
+
+					return singleBacktickCount % 2 === 1 ? `${line}\`` : line;
 				}
 			},
 			{

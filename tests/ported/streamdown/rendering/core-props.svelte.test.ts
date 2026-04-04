@@ -1,5 +1,5 @@
 import { render } from 'vitest-browser-svelte';
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 import Streamdown from '../../../../src/lib/Streamdown.svelte';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
@@ -31,6 +31,18 @@ describeInBrowser('ported streamdown core props', () => {
 		});
 
 		expect(screen.container.querySelector('strong')).toBeNull();
+	});
+
+	testInBrowser('parseMarkdownIntoBlocksFn overrides the streaming block splitter', () => {
+		const parseMarkdownIntoBlocksFn = vi.fn((markdown: string) => markdown.split('\n'));
+		const screen = render(Streamdown, {
+			content: 'First line\nSecond line',
+			mode: 'streaming',
+			parseMarkdownIntoBlocksFn
+		});
+
+		expect(parseMarkdownIntoBlocksFn).toHaveBeenCalledWith('First line\nSecond line');
+		expect(screen.container.querySelectorAll('[data-streamdown-paragraph]')).toHaveLength(2);
 	});
 
 	testInBrowser('dir="auto" detects RTL text in static mode', () => {

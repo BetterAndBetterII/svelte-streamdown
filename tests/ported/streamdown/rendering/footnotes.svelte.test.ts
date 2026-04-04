@@ -54,4 +54,22 @@ describeInBrowser('ported streamdown footnote rendering', () => {
 		expect(section?.textContent).toContain('Second line.');
 		expect(section?.textContent).not.toContain('Placeholder');
 	});
+
+	testInBrowser('shows footnotes only after streamed definition content arrives', async () => {
+		const screen = render(Streamdown, {
+			content: ['Text with footnote[^1].', '', '[^1]:'].join('\n'),
+			mode: 'streaming'
+		});
+
+		expect(screen.container.querySelector('section[data-footnotes]')).toBeNull();
+
+		await screen.rerender({
+			content: ['Text with footnote[^1].', '', '[^1]: This is the content.'].join('\n'),
+			mode: 'streaming'
+		});
+
+		const section = screen.container.querySelector('section[data-footnotes]');
+		expect(section).toBeTruthy();
+		expect(section?.textContent).toContain('This is the content.');
+	});
 });
