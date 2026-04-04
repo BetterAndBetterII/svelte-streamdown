@@ -48,6 +48,12 @@
 				"importedName": "AllowedTags"
 			},
 			{
+				"name": "AllowElement",
+				"kind": "type",
+				"source": "./markdown.js",
+				"importedName": "AllowElement"
+			},
+			{
 				"name": "CjkPlugin",
 				"kind": "type",
 				"source": "./plugins.js",
@@ -168,6 +174,12 @@
 				"importedName": "ThemeInput"
 			},
 			{
+				"name": "UrlTransform",
+				"kind": "type",
+				"source": "./markdown.js",
+				"importedName": "UrlTransform"
+			},
+			{
 				"name": "bundledLanguagesInfo",
 				"kind": "value",
 				"source": "./utils/bundledLanguages.js",
@@ -220,6 +232,12 @@
 				"kind": "value",
 				"source": "./translations.js",
 				"importedName": "defaultTranslations"
+			},
+			{
+				"name": "defaultUrlTransform",
+				"kind": "value",
+				"source": "./markdown.js",
+				"importedName": "defaultUrlTransform"
 			},
 			{
 				"name": "extractTableDataFromElement",
@@ -347,6 +365,13 @@
 			"default": null
 		},
 		{
+			"name": "allowedElements",
+			"optional": true,
+			"type": "readonly string[]",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "allowedImagePrefixes",
 			"optional": true,
 			"type": "string[]",
@@ -364,6 +389,13 @@
 			"name": "allowedTags",
 			"optional": true,
 			"type": "AllowedTags",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "allowElement",
+			"optional": true,
+			"type": "AllowElement",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -511,6 +543,13 @@
 			"name": "dir",
 			"optional": true,
 			"type": "\"auto\"|\"ltr\"|\"rtl\"",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "disallowedElements",
+			"optional": true,
+			"type": "readonly string[]",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},
@@ -802,6 +841,13 @@
 			"default": null
 		},
 		{
+			"name": "skipHtml",
+			"optional": true,
+			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "sources",
 			"optional": true,
 			"type": "{[key:string]:Source;}",
@@ -910,6 +956,20 @@
 			"name": "ul",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:ListToken;}]>",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "unwrapDisallowed",
+			"optional": true,
+			"type": "boolean",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
+			"name": "urlTransform",
+			"optional": true,
+			"type": "UrlTransform",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		}

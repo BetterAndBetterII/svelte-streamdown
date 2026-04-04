@@ -7,6 +7,11 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import type { Tokens } from 'marked';
 import { unified } from 'unified';
+import {
+	applyMarkdownUrlTransform,
+	createMarkdownElement,
+	type UrlTransform
+} from '../markdown.js';
 import type { AllowedTags } from './types.js';
 
 type HtmlRenderOverride = boolean | ((token: Tokens.HTML | Tokens.Tag) => string) | undefined;
@@ -16,6 +21,8 @@ type SecurityRenderOptions = {
 	allowedLinkPrefixes?: string[];
 	allowedTags?: AllowedTags;
 	defaultOrigin?: string;
+	skipHtml?: boolean;
+	urlTransform?: UrlTransform;
 };
 
 const HTML_BLOCK_START_PATTERN = /^[ \t]*<[\w!/?-]/;
@@ -32,6 +39,61 @@ const defaultSanitizeSchema = {
 		code: [...(defaultSchema.attributes?.code ?? []), 'metastring']
 	}
 };
+
+type RehypeNode = {
+	children?: RehypeNode[];
+	properties?: Record<string, unknown>;
+	tagName?: string;
+	type?: string;
+};
+
+const URL_ATTRIBUTE_KEYS = new Set(['href', 'src']);
+
+const visitRehypeTree = (node: RehypeNode, visitor: (node: RehypeNode) => void): void => {
+	visitor(node);
+
+	if (Array.isArray(node.children)) {
+		for (const child of node.children) {
+			visitRehypeTree(child, visitor);
+		}
+	}
+};
+
+function rehypeTransformUrls({ urlTransform }: { urlTransform?: UrlTransform } = {}) {
+	return (tree: RehypeNode) => {
+		if (!urlTransform) {
+			return;
+		}
+
+		visitRehypeTree(tree, (node) => {
+			if (node.type !== 'element' || typeof node.tagName !== 'string' || !node.properties) {
+				return;
+			}
+
+			const element = createMarkdownElement(node.tagName, node.properties);
+
+			for (const [key, value] of Object.entries(node.properties)) {
+				if (!URL_ATTRIBUTE_KEYS.has(key) || value == null || Array.isArray(value)) {
+					continue;
+				}
+
+				const transformedValue = applyMarkdownUrlTransform(
+					String(value),
+					key,
+					element,
+					urlTransform
+				);
+
+				if (transformedValue == null) {
+					delete node.properties[key];
+					continue;
+				}
+
+				node.properties[key] = transformedValue;
+			}
+		});
+	};
+}
 
 const escapeHtml = (value: string): string =>
 	value
@@ -76,7 +138,8 @@ export function renderMarkdownFragment(
 		allowedImagePrefixes = ['*'],
 		allowedLinkPrefixes = ['*'],
 		allowedTags,
-		defaultOrigin
+		defaultOrigin,
+		urlTransform
 	}: SecurityRenderOptions = {}
 ): string {
 	try {
@@ -87,6 +150,7 @@ export function renderMarkdownFragment(
 				.use(remarkRehype, { allowDangerousHtml: true })
 				.use(rehypeRaw)
 				.use(rehypeSanitize, createSanitizeSchema(allowedTags))
+				.use(rehypeTransformUrls, { urlTransform })
 				.use(harden, {
 					allowedImagePrefixes,
 					allowedLinkPrefixes,
@@ -106,6 +170,10 @@ export function renderHtmlToken(
 	token: Tokens.HTML | Tokens.Tag,
 	{ renderHtml, ...options }: SecurityRenderOptions & { renderHtml?: HtmlRenderOverride } = {}
 ): string {
+	if (options.skipHtml) {
+		return '';
+	}
+
 	const source = typeof renderHtml === 'function' ? renderHtml(token) : token.raw;
 
 	if (renderHtml === false) {

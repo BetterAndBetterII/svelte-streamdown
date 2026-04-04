@@ -3,6 +3,7 @@
 	import AnimatedText from './AnimatedText.svelte';
 	import Element from './Elements/Element.svelte';
 	import { useStreamdown } from './context.svelte.js';
+	import { filterMarkdownTokens } from './markdown.js';
 	import { lex, type StreamdownToken } from './marked/index.js';
 	import { applyPluginMarkdownTransforms } from './plugins.js';
 	import { renderMarkdownFragment } from './security/html.js';
@@ -35,14 +36,28 @@
 			streamdown.plugins
 		)
 	);
-	const isIncompleteCodeFence = $derived(streamdown.isAnimating && !isStatic && hasIncompleteCodeFence(block));
-	const tokens = $derived(providedTokens ?? lex(markdown, streamdown.extensions));
+	const isIncompleteCodeFence = $derived(
+		streamdown.isAnimating && !isStatic && hasIncompleteCodeFence(block)
+	);
+	const tokens = $derived(
+		filterMarkdownTokens(providedTokens ?? lex(markdown, streamdown.extensions), {
+			allowedElements: streamdown.allowedElements,
+			allowElement: streamdown.allowElement,
+			disallowedElements: streamdown.disallowedElements,
+			skipHtml: streamdown.skipHtml,
+			unwrapDisallowed: streamdown.unwrapDisallowed
+		})
+	);
 	const insidePopover = getContext('POPOVER');
 	const allowedTagNames = $derived(
 		streamdown.allowedTags ? Object.keys(streamdown.allowedTags) : []
 	);
 
 	const shouldRenderSecurityHtmlBlock = $derived.by(() => {
+		if (streamdown.skipHtml) {
+			return false;
+		}
+
 		const trimmed = markdown.trimStart();
 		if (trimmed.startsWith('<')) {
 			return true;
@@ -71,7 +86,8 @@
 			allowedImagePrefixes: streamdown.allowedImagePrefixes,
 			allowedLinkPrefixes: streamdown.allowedLinkPrefixes,
 			allowedTags: streamdown.allowedTags,
-			defaultOrigin: streamdown.defaultOrigin
+			defaultOrigin: streamdown.defaultOrigin,
+			urlTransform: streamdown.urlTransform
 		});
 	});
 

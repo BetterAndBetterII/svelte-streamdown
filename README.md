@@ -97,6 +97,8 @@ Raw HTML is processed through Streamdown's security layer. You can allow specifi
 />
 ```
 
+Use `allowedElements`, `disallowedElements`, or `allowElement` to filter parsed markdown nodes before render. Set `unwrapDisallowed` to keep a filtered node's children in place, `skipHtml` to drop raw HTML tokens entirely, and `urlTransform` to rewrite or remove rendered `href` / `src` values.
+
 ## Custom Rendering
 
 ### Snippets
@@ -222,9 +224,15 @@ The public `StreamdownProps` type is exported from the package.
 | `allowedImagePrefixes`      | `string[]`                                                                                                                                         | Image allowlist.                                                                |
 | `linkSafety`                | `LinkSafetyConfig`                                                                                                                                 | Link confirmation hooks and modal renderer.                                     |
 | `allowedTags`               | `AllowedTags`                                                                                                                                      | Raw HTML tag allowlist.                                                         |
+| `allowedElements`           | `string[]`                                                                                                                                         | Markdown element allowlist, using normalized tag names such as `p` or `h2`.    |
+| `allowElement`              | `AllowElement`                                                                                                                                     | Callback for per-element markdown filtering decisions.                          |
+| `disallowedElements`        | `string[]`                                                                                                                                         | Markdown element denylist, using normalized tag names such as `strong` or `li`. |
 | `literalTagContent`         | `string[]`                                                                                                                                         | Tags whose inner content should be treated literally.                           |
 | `normalizeHtmlIndentation`  | `boolean`                                                                                                                                          | Normalizes indentation before HTML handling.                                    |
 | `renderHtml`                | `boolean \| ((token: Tokens.HTML \| Tokens.Tag) => string)`                                                                                        | Controls raw HTML rendering.                                                    |
+| `skipHtml`                  | `boolean`                                                                                                                                          | Drops raw HTML tokens before render.                                            |
+| `unwrapDisallowed`          | `boolean`                                                                                                                                          | Keeps a filtered markdown node's children instead of dropping the full subtree. |
+| `urlTransform`              | `UrlTransform`                                                                                                                                     | Rewrites or removes rendered URL attributes before link/image hardening.        |
 | `sources`                   | `Record<string, any>`                                                                                                                              | Citation source data.                                                           |
 | `inlineCitationsMode`       | `'list' \| 'carousel'`                                                                                                                             | Citation popover layout.                                                        |
 | `plugins`                   | `PluginConfig`                                                                                                                                     | Enables math, Mermaid, CJK, custom renderers, or a custom highlighter contract. |
