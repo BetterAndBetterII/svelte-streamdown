@@ -6,6 +6,7 @@
 	import { useClickOutside } from '$lib/utils/useClickOutside.svelte.js';
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 	import { save } from '$lib/utils/save.js';
+	import { getMermaidSvgMarkup, svgToPngBlob } from '$lib/utils/mermaid.js';
 
 	let {
 		id,
@@ -39,62 +40,8 @@
 		}
 	});
 
-	const getSvgElement = (): SVGSVGElement | null => {
-		const container = document.querySelector(`[data-streamdown-mermaid="${id}"]`);
-		if (!container) return null;
-
-		return container.querySelector('[data-mermaid-svg] svg');
-	};
-
-	const serializeSvg = (svg: SVGSVGElement): string => {
-		const clonedSvg = svg.cloneNode(true) as SVGSVGElement;
-		clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-		clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-		return new XMLSerializer().serializeToString(clonedSvg);
-	};
-
 	const getSvgMarkup = async (): Promise<string | null> => {
-		if (renderSvg) {
-			return renderSvg();
-		}
-
-		const svg = getSvgElement();
-		return svg ? serializeSvg(svg) : null;
-	};
-
-	const svgToPngBlob = async (svgString: string): Promise<Blob> => {
-		const encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
-
-		const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-			const img = new Image();
-			img.crossOrigin = 'anonymous';
-			img.onload = () => resolve(img);
-			img.onerror = () => reject(new Error('Failed to load SVG image'));
-			img.src = encoded;
-		});
-
-		const canvas = document.createElement('canvas');
-		const scale = 5;
-		canvas.width = image.width * scale;
-		canvas.height = image.height * scale;
-
-		const ctx = canvas.getContext('2d');
-		if (!ctx) {
-			throw new Error('Failed to create 2D canvas context for PNG export');
-		}
-
-		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-		return new Promise<Blob>((resolve, reject) => {
-			canvas.toBlob((blob) => {
-				if (!blob) {
-					reject(new Error('Failed to create PNG blob'));
-					return;
-				}
-
-				resolve(blob);
-			}, 'image/png');
-		});
+		return getMermaidSvgMarkup({ id, renderSvg });
 	};
 
 	const downloadSvg = async () => {
