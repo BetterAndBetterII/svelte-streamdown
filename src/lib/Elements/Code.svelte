@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { useStreamdown } from '$lib/context.svelte.js';
-	import {
-		extractCodeFenceLanguage,
-		getThemeName,
-		type HighlightToken
-	} from '$lib/plugins.js';
+	import { extractCodeFenceLanguage, getThemeName, type HighlightToken } from '$lib/plugins.js';
+	import { STREAMDOWN_BLOCK_CONTEXT } from '$lib/incomplete-code.js';
 	import { save } from '$lib/utils/save.js';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
 	import { HighlighterManager, languageExtensionMap } from '$lib/utils/hightlighter.svelte.js';
@@ -27,7 +24,7 @@
 	} = $props();
 
 	const streamdown = useStreamdown();
-	const block = getContext<{ isIncompleteCodeFence: boolean }>('STREAMDOWN_BLOCK');
+	const block = getContext<{ isIncompleteCodeFence: boolean }>(STREAMDOWN_BLOCK_CONTEXT);
 	const highlighter = HighlighterManager.create(
 		bundledLanguagesInfo,
 		streamdown.shikiThemes,
@@ -35,14 +32,15 @@
 	);
 	const codePlugin = $derived(streamdown.plugins?.code ?? null);
 	const fence = $derived(parseCodeFenceInfo(token.lang));
-	const language = $derived(extractCodeFenceLanguage(token) || fence.language || token.lang || 'text');
+	const language = $derived(
+		extractCodeFenceLanguage(token) || fence.language || token.lang || 'text'
+	);
 	const pluginThemes = $derived(codePlugin?.getThemes() ?? null);
 	const activeTheme = $derived(
 		pluginThemes
-			? (typeof window !== 'undefined' &&
-				window.matchMedia?.('(prefers-color-scheme: dark)').matches
-					? getThemeName(pluginThemes[1])
-					: getThemeName(pluginThemes[0]))
+			? typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
+				? getThemeName(pluginThemes[1])
+				: getThemeName(pluginThemes[0])
 			: streamdown.shikiTheme
 	);
 	const showLineNumbers = $derived(streamdown.lineNumbers && fence.showLineNumbers);
@@ -196,7 +194,7 @@
 		<span
 			class={`sd-code-line ${streamdown.theme.code.line} ${
 				showLineNumbers
-					? 'before:content-[counter(line)] before:inline-block before:[counter-increment:line] before:w-6 before:mr-4 before:text-[13px] before:text-right before:text-muted-foreground/50 before:font-mono before:select-none'
+					? 'before:mr-4 before:inline-block before:w-6 before:text-right before:font-mono before:text-[13px] before:text-muted-foreground/50 before:content-[counter(line)] before:select-none before:[counter-increment:line]'
 					: ''
 			}`}
 		>
@@ -218,7 +216,7 @@
 		<span
 			class={`sd-code-line ${streamdown.theme.code.skeleton} ${
 				showLineNumbers
-					? 'before:content-[counter(line)] before:inline-block before:[counter-increment:line] before:w-6 before:mr-4 before:text-[13px] before:text-right before:text-muted-foreground/50 before:font-mono before:select-none'
+					? 'before:mr-4 before:inline-block before:w-6 before:text-right before:font-mono before:text-[13px] before:text-muted-foreground/50 before:content-[counter(line)] before:select-none before:[counter-increment:line]'
 					: ''
 			}`}
 		>

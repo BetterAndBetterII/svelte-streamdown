@@ -267,6 +267,38 @@ describe('tokenization', () => {
 		});
 	});
 
+	test('should preserve trailing single dollars and variable-like identifiers as literal text', () => {
+		const trailingDollarTokens = lex('The cost is $');
+		const trailingDollarParagraph = getFirstTokenByType(trailingDollarTokens, 'paragraph');
+		const trailingDollarMathTokens = (trailingDollarParagraph.tokens || []).filter(
+			(t: { type: string }) => t.type === 'math'
+		);
+
+		expect(trailingDollarMathTokens.length).toBe(0);
+		expect(trailingDollarParagraph.text).toBe('The cost is $');
+
+		const variableTokens = lex('Use $variable in the code');
+		const variableParagraph = getFirstTokenByType(variableTokens, 'paragraph');
+		const variableMathTokens = (variableParagraph.tokens || []).filter(
+			(t: { type: string }) => t.type === 'math'
+		);
+
+		expect(variableMathTokens.length).toBe(0);
+		expect(variableParagraph.text).toContain('$variable');
+	});
+
+	test('should preserve multiple dollar amounts in the same sentence as literal text', () => {
+		const tokens = lex('The price is $50 and the discount is $10 off');
+		const paragraphToken = getFirstTokenByType(tokens, 'paragraph');
+		const mathTokens = (paragraphToken.tokens || []).filter(
+			(t: { type: string }) => t.type === 'math'
+		);
+
+		expect(mathTokens.length).toBe(0);
+		expect(paragraphToken.text).toContain('$50');
+		expect(paragraphToken.text).toContain('$10');
+	});
+
 	test('should parse explicit double dollar math even with numbers', () => {
 		const testCases = [
 			{ input: '$$199199$$', expected: '199199' },

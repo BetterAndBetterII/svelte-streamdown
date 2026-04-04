@@ -240,6 +240,18 @@
 				"importedName": "getThemeName"
 			},
 			{
+				"name": "hasIncompleteCodeFence",
+				"kind": "value",
+				"source": "./incomplete-code.js",
+				"importedName": "hasIncompleteCodeFence"
+			},
+			{
+				"name": "hasTable",
+				"kind": "value",
+				"source": "./incomplete-code.js",
+				"importedName": "hasTable"
+			},
+			{
 				"name": "IncompleteMarkdownParser",
 				"kind": "value",
 				"source": "./utils/parse-incomplete-markdown.js",
@@ -328,6 +340,12 @@
 				"kind": "value",
 				"source": "./theme.js",
 				"importedName": "theme"
+			},
+			{
+				"name": "useIsCodeFenceIncomplete",
+				"kind": "value",
+				"source": "./incomplete-code.js",
+				"importedName": "useIsCodeFenceIncomplete"
 			},
 			{
 				"name": "useStreamdown",

@@ -26,4 +26,32 @@ describe('streaming block segmentation parity', () => {
 		expect(blocks[0]).toContain('$$\na =\n2\n$$');
 		expect(blocks[1].trim()).toBe('After');
 	});
+
+	test('does not treat double dollars inside fenced code blocks as math delimiters', () => {
+		const markdown = [
+			'```bash',
+			'# Process tree',
+			'pstree -p $$',
+			'echo $$',
+			'```',
+			'',
+			'Some text after.'
+		].join('\n');
+		const blocks = parseBlocks(markdown);
+
+		expect(blocks).toHaveLength(2);
+		expect(blocks[0]).toContain('pstree -p $$');
+		expect(blocks[0]).toContain('echo $$');
+		expect(blocks.find((block) => block.trim() === '$$')).toBeUndefined();
+		expect(blocks[1].trim()).toBe('Some text after.');
+	});
+
+	test('keeps a fenced code block separate from a following math block', () => {
+		const markdown = ['```bash', 'echo $$', '```', '', '$$', 'math here', '$$'].join('\n');
+		const blocks = parseBlocks(markdown);
+
+		expect(blocks).toHaveLength(2);
+		expect(blocks[0]).toContain('echo $$');
+		expect(blocks[1].trim()).toBe('$$\nmath here\n$$');
+	});
 });

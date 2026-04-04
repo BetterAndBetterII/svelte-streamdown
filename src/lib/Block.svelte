@@ -7,8 +7,8 @@
 	import { applyPluginMarkdownTransforms } from './plugins.js';
 	import { renderMarkdownFragment } from './security/html.js';
 	import { detectTextDirection } from './utils/detectDirection.js';
+	import { hasIncompleteCodeFence, STREAMDOWN_BLOCK_CONTEXT } from './incomplete-code.js';
 	import { parseIncompleteMarkdown as completeIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
-	import { hasIncompleteCodeFence } from './utils/code-block.js';
 
 	let {
 		block,
@@ -35,7 +35,9 @@
 			streamdown.plugins
 		)
 	);
-	const isIncompleteCodeFence = $derived(streamdown.isAnimating && !isStatic && hasIncompleteCodeFence(block));
+	const isIncompleteCodeFence = $derived(
+		streamdown.isAnimating && !isStatic && hasIncompleteCodeFence(block)
+	);
 	const tokens = $derived(providedTokens ?? lex(markdown, streamdown.extensions));
 	const insidePopover = getContext('POPOVER');
 	const allowedTagNames = $derived(
@@ -123,7 +125,7 @@
 		return token.type === 'text' ? decodeHtmlEntities(token.text) : token.text;
 	};
 
-	setContext('STREAMDOWN_BLOCK', {
+	setContext(STREAMDOWN_BLOCK_CONTEXT, {
 		get isIncompleteCodeFence() {
 			return isIncompleteCodeFence;
 		}
