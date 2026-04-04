@@ -242,6 +242,12 @@ In short:
 - DOM parity answers “did we render the same semantics?”
 - screenshot parity answers “does the user still see a meaningful visual difference after DOM parity is already clean?”
 
+## Approved Screenshot Waivers
+
+- `waiver-01`: `tests/playwright/parity/visual.spec.ts` fixtures `05-unordered-list.md`, `07-heading-and-emphasis.md`, and `08-blockquote-plain.md` may use elevated screenshot-diff budgets in the nightly GitHub-hosted runner.
+- Rationale: the fixture content is typography-only, normalized DOM parity already matches, interaction parity is not involved, and the uploaded GitHub-hosted diffs show stable text antialiasing/subpixel drift rather than missing content, clipping, overflow, or wrong controls.
+- Boundaries: this waiver does not bypass DOM parity, does not apply to any other fixture, and does not waive screenshot dimension mismatches or larger visual regressions beyond the fixture-specific budgets captured in `tests/playwright/parity/visual.spec.ts`.
+
 ## Evidence Mapping For Follow-On Suites
 
 This contract is the approval rubric for these later `PLAN.md` items:
