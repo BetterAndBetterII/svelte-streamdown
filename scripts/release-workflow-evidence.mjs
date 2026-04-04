@@ -44,6 +44,10 @@ function writeJson(path, value) {
 	writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function formatErrorMessage(error) {
+	return error instanceof Error ? error.message : String(error);
+}
+
 function runCommand(command, args, label) {
 	const result = spawnSync(command, args, {
 		encoding: 'utf8',
@@ -261,11 +265,20 @@ function writePublishEvidence(options) {
 	});
 }
 
-function buildVerificationCheck(name, expected, actual) {
+function buildVerificationCheck(expected, actual) {
 	return {
 		expected,
 		actual,
 		passed: expected === actual
+	};
+}
+
+function buildFailedVerificationCheck(expected, error, actual = null) {
+	return {
+		expected,
+		actual,
+		passed: false,
+		error
 	};
 }
 
@@ -296,53 +309,139 @@ function writeVerifyEvidence(options) {
 	}
 
 	const packageSpec = `${sharedEvidence.package.name}@${sharedEvidence.package.version}`;
-	const registryMetadata = JSON.parse(
-		runCommand(
-			'npm',
-			['view', packageSpec, 'version', 'dist.integrity', 'dist.tarball', 'gitHead', '--json'],
-			'npm view'
-		)
-	);
-	const registryTarballUrl = parseRequiredNonEmptyString(
-		registryMetadata.dist?.tarball,
-		'registry tarball url'
-	);
 	const downloadDirectory = mkdtempSync(join(tmpdir(), 'svelte-streamdown-release-verify-'));
 	const downloadedTarballPath = join(downloadDirectory, basename(metadata.tarballPath));
 
 	try {
-		runCommand(
-			'curl',
-			['-LsSf', registryTarballUrl, '--output', downloadedTarballPath],
-			'curl registry tarball'
-		);
+		let registryMetadata;
 
-		const registryHashes = computeHashes(downloadedTarballPath);
-		const tagCommit = runCommand(
-			'git',
-			['rev-parse', sharedEvidence.package.tagName],
-			'git rev-parse tag'
-		);
+		try {
+			registryMetadata = JSON.parse(
+				runCommand(
+					'npm',
+					['view', packageSpec, 'version', 'dist.integrity', 'dist.tarball', 'gitHead', '--json'],
+					'npm view'
+				)
+			);
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			const checks = {
+				version: buildFailedVerificationCheck(sharedEvidence.package.version, errorMessage),
+				integrity: buildFailedVerificationCheck(
+					metadata.artifactMetadata.tarball.integrity,
+					errorMessage
+				),
+				sha256: buildFailedVerificationCheck(
+					metadata.artifactMetadata.tarball.sha256,
+					errorMessage
+				),
+				sha512: buildFailedVerificationCheck(
+					metadata.artifactMetadata.tarball.sha512,
+					errorMessage
+				),
+				gitHead: buildFailedVerificationCheck(sharedEvidence.source.commitSha, errorMessage),
+				tagCommit: buildFailedVerificationCheck(sharedEvidence.source.commitSha, errorMessage)
+			};
+
+			writeJson(options.outputPath, {
+				schemaVersion: 1,
+				generatedAt: new Date().toISOString(),
+				job: 'post-publish-verify',
+				result: 'failed',
+				requested: options.publishRequested,
+				allowed: options.publishAllowed,
+				skipReason: null,
+				...sharedEvidence,
+				registry: {
+					packageSpec,
+					tarballUrl: null
+				},
+				checks
+			});
+
+			process.exitCode = 1;
+			return;
+		}
+
+		const registryTarballUrl = parseOptionalNonEmptyString(registryMetadata.dist?.tarball) ?? null;
 		const checks = {
 			version: buildVerificationCheck(sharedEvidence.package.version, registryMetadata.version),
 			integrity: buildVerificationCheck(
 				metadata.artifactMetadata.tarball.integrity,
 				registryMetadata.dist?.integrity ?? null
 			),
-			sha256: buildVerificationCheck(
-				metadata.artifactMetadata.tarball.sha256,
-				registryHashes.sha256
-			),
-			sha512: buildVerificationCheck(
-				metadata.artifactMetadata.tarball.sha512,
-				registryHashes.sha512
-			),
 			gitHead: buildVerificationCheck(
 				sharedEvidence.source.commitSha,
 				registryMetadata.gitHead ?? null
 			),
-			tagCommit: buildVerificationCheck(sharedEvidence.source.commitSha, tagCommit)
+			sha256: buildFailedVerificationCheck(
+				metadata.artifactMetadata.tarball.sha256,
+				'registry tarball was not downloaded'
+			),
+			sha512: buildFailedVerificationCheck(
+				metadata.artifactMetadata.tarball.sha512,
+				'registry tarball was not downloaded'
+			),
+			tagCommit: buildFailedVerificationCheck(
+				sharedEvidence.source.commitSha,
+				'git tag was not verified'
+			)
 		};
+
+		if (registryTarballUrl) {
+			try {
+				runCommand(
+					'curl',
+					['-LsSf', registryTarballUrl, '--output', downloadedTarballPath],
+					'curl registry tarball'
+				);
+
+				const registryHashes = computeHashes(downloadedTarballPath);
+				checks.sha256 = buildVerificationCheck(
+					metadata.artifactMetadata.tarball.sha256,
+					registryHashes.sha256
+				);
+				checks.sha512 = buildVerificationCheck(
+					metadata.artifactMetadata.tarball.sha512,
+					registryHashes.sha512
+				);
+			} catch (error) {
+				const errorMessage = formatErrorMessage(error);
+				checks.sha256 = buildFailedVerificationCheck(
+					metadata.artifactMetadata.tarball.sha256,
+					errorMessage
+				);
+				checks.sha512 = buildFailedVerificationCheck(
+					metadata.artifactMetadata.tarball.sha512,
+					errorMessage
+				);
+			}
+		} else {
+			const errorMessage = 'registry tarball url was not available from npm view';
+			checks.sha256 = buildFailedVerificationCheck(
+				metadata.artifactMetadata.tarball.sha256,
+				errorMessage
+			);
+			checks.sha512 = buildFailedVerificationCheck(
+				metadata.artifactMetadata.tarball.sha512,
+				errorMessage
+			);
+		}
+
+		try {
+			const tagCommit = runCommand(
+				'git',
+				['rev-parse', sharedEvidence.package.tagName],
+				'git rev-parse tag'
+			);
+			checks.tagCommit = buildVerificationCheck(sharedEvidence.source.commitSha, tagCommit);
+		} catch (error) {
+			checks.tagCommit = buildFailedVerificationCheck(
+				sharedEvidence.source.commitSha,
+				formatErrorMessage(error)
+			);
+		}
+
 		const passed = Object.values(checks).every((check) => check.passed);
 
 		writeJson(options.outputPath, {
