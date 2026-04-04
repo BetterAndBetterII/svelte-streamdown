@@ -261,8 +261,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			{
 				name: 'controls',
 				reference: 'ControlsConfig',
-				local:
-					'{code?:boolean|{copy?:boolean;download?:boolean;};mermaid?:MermaidControls;table?:TableControlsConfig;}'
+				local: 'StreamdownControlsConfig'
 			},
 			{
 				name: 'icons',
