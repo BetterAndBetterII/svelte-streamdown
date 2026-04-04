@@ -173,7 +173,8 @@ export class IncompleteMarkdownParser {
 
 					for (let i = 0; i < lines.length; i++) {
 						const line = lines[i];
-						const trimmedLine = line.trim();
+						const contentLine = line.replace(/^(?:\s*>\s*)+/, '');
+						const trimmedLine = contentLine.trim();
 						const startsBacktickFence = trimmedLine.startsWith('```');
 						const startsTildeFence = trimmedLine.startsWith('~~~');
 						const hasInlineBacktickFence =
@@ -457,6 +458,10 @@ export class IncompleteMarkdownParser {
 						if (conjunctionMatch && nextUnmatched !== -1) {
 							insertionPoint = current + between.length - conjunctionMatch[0].length;
 						}
+						const citationText = result.slice(current + 1, insertionPoint).trim();
+						if (!(nextUnmatched !== -1 && conjunctionMatch) && !looksLikeInlineCitationText(citationText)) {
+							return result;
+						}
 
 						result = result.slice(0, insertionPoint) + ']' + result.slice(insertionPoint);
 
@@ -464,6 +469,39 @@ export class IncompleteMarkdownParser {
 							return result;
 						}
 					}
+				}
+			},
+			{
+				name: 'quotedInlineMath',
+				pattern: /\$/,
+				skipInBlockTypes: ['code', 'math'],
+				handler: ({ line }) => {
+					if (!/^\s*>/.test(line) || line.includes('$$')) {
+						return line;
+					}
+
+					let count = 0;
+					for (let i = 0; i < line.length; i++) {
+						if (line[i] === '\\' && i + 1 < line.length && line[i + 1] === '$') {
+							i++;
+							continue;
+						}
+						if (
+							line[i] === '$' &&
+							(i === 0 || line[i - 1] !== '$') &&
+							(i === line.length - 1 || line[i + 1] !== '$') &&
+							!isWithinCompleteInlineCode(line, i)
+						) {
+							count++;
+						}
+					}
+
+					if (count % 2 === 1) {
+						const endOfCellOrLine = findEndOfCellOrLineContaining(line, line.length - 1);
+						return line.substring(0, endOfCellOrLine) + '$' + line.substring(endOfCellOrLine);
+					}
+
+					return line;
 				}
 			},
 			{
@@ -545,7 +583,6 @@ export class IncompleteMarkdownParser {
 				name: 'linksAndImages',
 				pattern: /\[/,
 				skipInBlockTypes: ['code', 'math'],
-				stopProcessingOnChange: true,
 				handler: ({ line }) => handleIncompleteLinksAndImages(line)
 			},
 			{
@@ -670,8 +707,10 @@ export class IncompleteMarkdownParser {
 						for (let i = currentState.incompletePositions.length - 1; i >= 0; i--) {
 							const pos = currentState.incompletePositions[i];
 							const before = result.substring(0, pos);
-							// Simply remove the incomplete MDX tag
-							result = before.trimEnd();
+							const incompleteTag = result.substring(pos);
+							const shouldPreserveWhitespace =
+								currentState.inMdx || /^<[A-Z][a-zA-Z0-9]*\s+/.test(incompleteTag);
+							result = shouldPreserveWhitespace ? before : before.replace(/[ \t]+$/, '');
 						}
 						return result;
 					}
@@ -839,6 +878,43 @@ const listItemPattern = /^[\s]*[-*+][\s]+$/;
 const isInsideCodeBlock = (text: string, position: number): boolean => {
 	let inInlineCode = false;
 	let inMultilineCode = false;
+	let inlineCodeStart = -1;
+
+	for (let i = 0; i < position; i++) {
+		if (text[i] === '\\' && i + 1 < text.length && text[i + 1] === '`') {
+			i++;
+			continue;
+		}
+
+		if (text.slice(i, i + 3) === '```') {
+			inMultilineCode = !inMultilineCode;
+			i += 2;
+			continue;
+		}
+
+		if (!inMultilineCode && text[i] === '`') {
+			inInlineCode = !inInlineCode;
+			inlineCodeStart = inInlineCode ? i : -1;
+		}
+	}
+
+	if (inInlineCode && !inMultilineCode && inlineCodeStart !== -1) {
+		const closingBacktickIndex = text.indexOf('`', position);
+		const spanContent = text.slice(
+			inlineCodeStart + 1,
+			closingBacktickIndex === -1 ? undefined : closingBacktickIndex
+		);
+		if (spanContent.includes('[') && !spanContent.includes(']')) {
+			return false;
+		}
+	}
+
+	return inInlineCode || inMultilineCode;
+};
+
+const isInsideUnclosedInlineCode = (text: string, position: number): boolean => {
+	let inInlineCode = false;
+	let inMultilineCode = false;
 
 	for (let i = 0; i < position; i++) {
 		if (text[i] === '\\' && i + 1 < text.length && text[i + 1] === '`') {
@@ -857,7 +933,7 @@ const isInsideCodeBlock = (text: string, position: number): boolean => {
 		}
 	}
 
-	return inInlineCode || inMultilineCode;
+	return inInlineCode && !inMultilineCode && text.indexOf('`', position) === -1;
 };
 
 const isWithinLinkOrImageUrl = (text: string, position: number): boolean => {
@@ -901,6 +977,18 @@ const isWithinHtmlTag = (text: string, position: number): boolean => {
 	}
 
 	return false;
+};
+
+const looksLikeInlineCitationText = (text: string): boolean => {
+	const normalized = text.replace(/\s+and\s+$/i, '').trim();
+	if (!normalized) {
+		return false;
+	}
+
+	return normalized
+		.split(/[\s,;]+/)
+		.filter((token) => token.length > 0)
+		.every((token) => /^(?:ref[\w-]*|\d[\w-]*)$/i.test(token));
 };
 
 const isHorizontalRule = (text: string, markerIndex: number, marker: '*' | '_'): boolean => {
@@ -1152,6 +1240,33 @@ const shouldSkipBoldCompletion = (
 const handleIncompleteBold = (text: string): string => {
 	const boldMatch = text.match(boldPattern);
 	if (!boldMatch) {
+		const markerIndex = text.lastIndexOf('**');
+		const beforeMarker = markerIndex === -1 ? '' : text.slice(0, markerIndex);
+		const openStrikethroughs = (beforeMarker.match(/~~/g) || []).length;
+		const trimmedPrefix = beforeMarker.trim();
+		const hasMarkdownPrefix = /^(?:[#>-]|\d+\.)/.test(trimmedPrefix);
+		const plainPrefixWordCount = trimmedPrefix
+			.replace(/^(?:[#>-]|\d+\.)\s*/, '')
+			.split(/\s+/)
+			.filter(Boolean).length;
+		if (
+			markerIndex !== -1 &&
+			(hasMarkdownPrefix || plainPrefixWordCount > 2) &&
+			openStrikethroughs % 2 === 0 &&
+			countDoubleAsterisksOutsideCodeBlocks(text) % 2 === 1 &&
+			!isInsideCodeBlock(text, markerIndex) &&
+			!isWithinCompleteInlineCode(text, markerIndex)
+		) {
+			const contentAfterMarker = text.slice(markerIndex + 2);
+			if (
+				contentAfterMarker.includes('*') &&
+				!/[`~[]/.test(contentAfterMarker) &&
+				!shouldSkipBoldCompletion(text, contentAfterMarker, markerIndex)
+			) {
+				return `${text}**`;
+			}
+		}
+
 		return text;
 	}
 
@@ -1467,7 +1582,10 @@ const handleIncompleteUrl = (text: string, lastParenIndex: number): string | nul
 	}
 
 	const openBracketIndex = findMatchingOpeningBracket(text, lastParenIndex);
-	if (openBracketIndex === -1 || isInsideCodeBlock(text, openBracketIndex)) {
+	if (
+		openBracketIndex === -1 ||
+		(isInsideCodeBlock(text, openBracketIndex) && !isInsideUnclosedInlineCode(text, openBracketIndex))
+	) {
 		return null;
 	}
 
@@ -1475,6 +1593,11 @@ const handleIncompleteUrl = (text: string, lastParenIndex: number): string | nul
 	const startIndex = isImage ? openBracketIndex - 1 : openBracketIndex;
 	const beforeLink = text.slice(0, startIndex);
 	const linkText = text.slice(openBracketIndex + 1, lastParenIndex);
+	const urlText = text.slice(lastParenIndex + 2);
+
+	if (/^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(urlText) || urlText.includes('/')) {
+		return `${text})`;
+	}
 
 	return isImage
 		? `${beforeLink}![${linkText}](streamdown:incomplete-image)`
@@ -1488,8 +1611,60 @@ const handleIncompleteTextLink = (text: string, index: number): string | null =>
 	const placeholderProtocol = isImage
 		? 'streamdown:incomplete-image'
 		: 'streamdown:incomplete-link';
+	const incompleteText = text.slice(index + 1);
 
 	if (closingIndex === -1) {
+		if (!isImage) {
+			const lineStart = text.lastIndexOf('\n', index - 1) + 1;
+			const prefix = text.slice(lineStart, index);
+			if (/^\s*[-*+]\s+$/.test(prefix)) {
+				const trimmedItem = incompleteText.trim();
+				if (trimmedItem === '' || trimmedItem === 'x' || trimmedItem === 'X') {
+					return `${text}]`;
+				}
+			}
+		}
+
+		if (!isImage) {
+			const prevBracketEnd = text.lastIndexOf(']', openIndex - 1);
+			if (prevBracketEnd !== -1) {
+				const prevBracketStart = findMatchingOpeningBracket(text, prevBracketEnd);
+				if (prevBracketStart !== -1) {
+					const prevBracketText = text.slice(prevBracketStart + 1, prevBracketEnd).trim();
+					const betweenGroups = text.slice(prevBracketEnd + 1, openIndex);
+					const trimmedIncompleteText = incompleteText.trim();
+
+					if (
+						prevBracketText.length > 0 &&
+						/^(?:\([^)\n]*\))?\s+and\s+$/.test(betweenGroups) &&
+						/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(trimmedIncompleteText)
+					) {
+						return `${text}]`;
+					}
+				}
+			}
+		}
+
+		if (
+			incompleteText.includes('|') ||
+			incompleteText.startsWith('[') ||
+			incompleteText.includes('![') ||
+			(isImage && incompleteText.includes('['))
+		) {
+			return null;
+		}
+
+		const prevBracketEnd = text.lastIndexOf(']', openIndex - 1);
+		if (prevBracketEnd !== -1) {
+			const prevBracketStart = findMatchingOpeningBracket(text, prevBracketEnd);
+			if (prevBracketStart !== -1) {
+				const prevBracketText = text.slice(prevBracketStart + 1, prevBracketEnd);
+				if (prevBracketText === incompleteText) {
+					return null;
+				}
+			}
+		}
+
 		return `${text}](${placeholderProtocol})`;
 	}
 
@@ -1501,6 +1676,9 @@ const handleIncompleteTextLink = (text: string, index: number): string | null =>
 	if (afterClosing.trim().length === 0) {
 		const linkText = text.slice(index + 1, closingIndex);
 		const beforeLink = text.slice(0, openIndex);
+		if (linkText.startsWith('[') || linkText.includes('![') || (isImage && linkText.includes('['))) {
+			return null;
+		}
 		const shouldRecoverAsLink = isImage || linkText.includes('[') || /[*_~`]/.test(linkText);
 
 		if (!shouldRecoverAsLink) {
@@ -1539,7 +1717,10 @@ const handleIncompleteLinksAndImages = (text: string): string => {
 	}
 
 	for (let i = text.length - 1; i >= 0; i--) {
-		if (text[i] === '[' && !isInsideCodeBlock(text, i)) {
+		if (
+			text[i] === '[' &&
+			(!isInsideCodeBlock(text, i) || isInsideUnclosedInlineCode(text, i))
+		) {
 			const result = handleIncompleteTextLink(text, i);
 			if (result !== null) {
 				return result;

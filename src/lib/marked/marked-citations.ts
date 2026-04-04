@@ -11,7 +11,7 @@ export const markedCitations: Extension = {
 	tokenizer(this, src) {
 		// Match inline citations like [1], [ref], [1] [2], [ref] [ref2], etc.
 		// Requires non-empty bracket contents and spaces between adjacent citation brackets
-		const match = src.match(/^\[[^\]]+\](?:\s+\[[^\]]+\])*/);
+		const match = src.match(/^\[[^\[\]]+\](?:\s+\[[^\[\]]+\])*/);
 
 		if (match) {
 			// Nested brackets are more likely link/image text than citation syntax.
