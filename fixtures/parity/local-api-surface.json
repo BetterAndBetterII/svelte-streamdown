@@ -511,7 +511,7 @@
 		{
 			"name": "controls",
 			"optional": true,
-			"type": "{code?:boolean|{copy?:boolean;download?:boolean;};mermaid?:MermaidControls;table?:TableControlsConfig;}",
+			"type": "StreamdownControlsConfig",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},

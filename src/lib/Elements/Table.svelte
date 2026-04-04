@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useStreamdown, type TableControlsConfig } from '$lib/context.svelte.js';
 	import type { TableToken } from '$lib/marked/index.js';
+	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
 	import { fullscreenIcon } from './icons.js';
 	import Slot from './Slot.svelte';
 	import TableDownload from './TableDownload.svelte';
@@ -59,6 +60,31 @@
 
 	const tableControls = $derived(resolveControls(streamdown.controls.table));
 	let isFullscreen = $state(false);
+
+	const closeFullscreen = () => {
+		isFullscreen = false;
+	};
+
+	useKeyDown({
+		keys: ['Escape'],
+		get isActive() {
+			return isFullscreen;
+		},
+		callback: closeFullscreen
+	});
+
+	$effect(() => {
+		if (typeof document === 'undefined' || !isFullscreen) {
+			return;
+		}
+
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+		};
+	});
 </script>
 
 <div class="my-4 flex flex-col gap-2" data-streamdown="table-wrapper">
@@ -75,8 +101,11 @@
 					title={streamdown.translations.viewFullscreen}
 					aria-label={streamdown.translations.viewFullscreen}
 					type="button"
+					disabled={streamdown.isAnimating}
 					onclick={() => {
-						isFullscreen = true;
+						if (!streamdown.isAnimating) {
+							isFullscreen = true;
+						}
 					}}
 				>
 					{@render (streamdown.icons?.fullscreen || fullscreenIcon)()}
@@ -106,8 +135,20 @@
 		data-streamdown="table-fullscreen"
 		class="fixed inset-0 z-50 flex flex-col bg-background p-4"
 		role="dialog"
+		tabindex="-1"
 		aria-modal="true"
 		aria-label={streamdown.translations.viewFullscreen}
+		onclick={(event) => {
+			if (event.target === event.currentTarget) {
+				closeFullscreen();
+			}
+		}}
+		onkeydown={(event) => {
+			if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+				event.preventDefault();
+				closeFullscreen();
+			}
+		}}
 	>
 		<div class="flex items-center justify-end gap-1 pb-4">
 			<TableDownload
@@ -120,9 +161,7 @@
 				title={streamdown.translations.exitFullscreen}
 				aria-label={streamdown.translations.exitFullscreen}
 				type="button"
-				onclick={() => {
-					isFullscreen = false;
-				}}
+				onclick={closeFullscreen}
 			>
 				X
 			</button>

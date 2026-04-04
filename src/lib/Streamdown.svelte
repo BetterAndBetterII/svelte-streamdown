@@ -78,6 +78,53 @@
 			stagger: animated.stagger ?? 40
 		} as const;
 	};
+
+	const resolveControls = (controls: StreamdownProps<Source>['controls']) => {
+		if (controls === false) {
+			return {
+				controls: {
+					code: false,
+					mermaid: normalizeMermaidControls(false),
+					table: false
+				},
+				codeControls: {
+					copy: false,
+					download: false
+				}
+			};
+		}
+
+		const codeControls =
+			controls === true || controls === undefined ? true : (controls.code ?? true);
+		const tableControls =
+			controls === true || controls === undefined ? true : (controls.table ?? true);
+		const mermaidControls =
+			controls === true || controls === undefined ? undefined : controls.mermaid;
+
+		return {
+			controls: {
+				code: codeControls !== false,
+				mermaid: normalizeMermaidControls(mermaidControls),
+				table: tableControls
+			},
+			codeControls:
+				codeControls === false
+					? {
+							copy: false,
+							download: false
+						}
+					: codeControls === true
+						? {
+								copy: true,
+								download: true
+							}
+						: {
+								copy: codeControls.copy ?? true,
+								download: codeControls.download ?? true
+							}
+		};
+	};
+
 	let {
 		content = '',
 		class: className,
@@ -140,6 +187,7 @@
 		[className, futureClassName].filter((value): value is string => Boolean(value)).join(' ')
 	);
 	const shouldShowCaret = $derived(resolvedMode !== 'static' && Boolean(caret) && isAnimating);
+	const resolvedControls = $derived(resolveControls(controls));
 	const resolvedAnimation = $derived.by(() => {
 		if (animation) {
 			if (!animation.enabled) {
@@ -347,34 +395,10 @@
 			return onAnimationEnd;
 		},
 		get controls() {
-			const codeControls = controls?.code ?? true;
-			const tableControls = controls?.table ?? true;
-			return {
-				code: codeControls !== false,
-				mermaid: normalizeMermaidControls(controls?.mermaid),
-				table: tableControls
-			};
+			return resolvedControls.controls;
 		},
 		get codeControls() {
-			const codeControls = controls?.code ?? true;
-			if (codeControls === false) {
-				return {
-					copy: false,
-					download: false
-				};
-			}
-
-			if (codeControls === true) {
-				return {
-					copy: true,
-					download: true
-				};
-			}
-
-			return {
-				copy: codeControls.copy ?? true,
-				download: codeControls.download ?? true
-			};
+			return resolvedControls.codeControls;
 		},
 		get children() {
 			return children;

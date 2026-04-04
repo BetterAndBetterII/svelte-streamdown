@@ -177,6 +177,21 @@ export type TableControlsConfig =
 			fullscreen?: boolean;
 	  };
 
+export type CodeControlsConfig =
+	| boolean
+	| {
+			copy?: boolean;
+			download?: boolean;
+	  };
+
+export type StreamdownControlsConfig =
+	| boolean
+	| {
+			code?: CodeControlsConfig;
+			mermaid?: MermaidControls;
+			table?: TableControlsConfig;
+	  };
+
 import type {
 	AlertToken,
 	MathToken,
@@ -359,16 +374,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	katexConfig?: KatexOptions | ((inline: boolean) => KatexOptions);
 	plugins?: PluginConfig;
 	translations?: Partial<StreamdownTranslations>;
-	controls?: {
-		code?:
-			| boolean
-			| {
-					copy?: boolean;
-					download?: boolean;
-			  };
-		mermaid?: MermaidControls;
-		table?: TableControlsConfig;
-	};
+	controls?: StreamdownControlsConfig;
 	renderHtml?: boolean | ((token: Tokens.HTML | Tokens.Tag) => string);
 	animation?: {
 		animateOnMount?: boolean;
