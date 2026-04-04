@@ -99,7 +99,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 	rootExports: {
 		// api-02, api-03, api-04, api-05, api-06
 		missingFromLocal: [
-			'AllowElement',
 			'AnimateOptions',
 			'Block',
 			'BlockProps',
@@ -116,7 +115,6 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'createAnimatePlugin',
 			'defaultRehypePlugins',
 			'defaultRemarkPlugins',
-			'defaultUrlTransform',
 			'detectTextDirection',
 			'escapeMarkdownTableCell',
 			'ExtraProps',
@@ -134,8 +132,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'TableDownloadButtonProps',
 			'TableDownloadDropdown',
 			'TableDownloadDropdownProps',
-			'ThemeRegistrationAny',
-			'UrlTransform'
+			'ThemeRegistrationAny'
 		],
 		// drift-01
 		extraInLocal: [
@@ -177,17 +174,11 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		// prop-04, prop-08, prop-09,
 		// prop-17, prop-18, prop-20, api-01
 		missingFromLocal: [
-			'allowedElements',
-			'allowElement',
 			'BlockComponent',
-			'disallowedElements',
 			'rehypePlugins',
 			'remarkPlugins',
 			'remarkRehypeOptions',
-			'remend',
-			'skipHtml',
-			'unwrapDisallowed',
-			'urlTransform'
+			'remend'
 		],
 		// api-01, prop-19, prop-22, prop-24
 		extraInLocal: [

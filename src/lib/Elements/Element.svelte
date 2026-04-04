@@ -356,7 +356,9 @@
 		allowedLinkPrefixes: streamdown.allowedLinkPrefixes,
 		allowedTags: streamdown.allowedTags,
 		defaultOrigin: streamdown.defaultOrigin,
-		renderHtml: streamdown.renderHtml
+		renderHtml: streamdown.renderHtml,
+		skipHtml: streamdown.skipHtml,
+		urlTransform: streamdown.urlTransform
 	})}
 	{@html content}
 {:else if token.type === 'mdx'}

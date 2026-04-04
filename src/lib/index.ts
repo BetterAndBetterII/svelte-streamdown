@@ -1,6 +1,7 @@
 export { default as Streamdown } from './Streamdown.svelte';
 export { useStreamdown, type StreamdownProps } from './context.svelte.js';
 export { hasIncompleteCodeFence, hasTable, useIsCodeFenceIncomplete } from './incomplete-code.js';
+export { defaultUrlTransform, type AllowElement, type UrlTransform } from './markdown.js';
 export type { AllowedTags } from './security/types.js';
 export { normalizeHtmlIndentation } from './security/html.js';
 export { theme, shadcnTheme, mergeTheme, type Theme } from './theme.js';

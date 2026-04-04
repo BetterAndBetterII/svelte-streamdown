@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useStreamdown } from '$lib/context.svelte.js';
+	import { applyMarkdownUrlTransform, createMarkdownElement } from '$lib/markdown.js';
 	import { save } from '$lib/utils/save.js';
 	import { isPathRelativeUrl, transformUrl } from '$lib/utils/url.js';
 	import Slot from './Slot.svelte';
@@ -18,27 +19,47 @@
 		id: string;
 	} = $props();
 
-	const isRelativeUrl = $derived(isPathRelativeUrl(token.href));
+	const imageSource = $derived.by(() => {
+		if (token.href === 'streamdown:incomplete-image') {
+			return null;
+		}
 
-	const transformedUrl = $derived(
-		transformUrl(token.href, streamdown.allowedImagePrefixes ?? [], streamdown.defaultOrigin, {
-			kind: 'image'
-		})
-	);
+		const transformedHref = applyMarkdownUrlTransform(
+			token.href,
+			'src',
+			createMarkdownElement('img', {
+				alt: token.text,
+				src: token.href,
+				title: token.title ?? undefined
+			}),
+			streamdown.urlTransform
+		);
+
+		if (typeof transformedHref !== 'string' || transformedHref.length === 0) {
+			return null;
+		}
+
+		if (isPathRelativeUrl(transformedHref)) {
+			return transformedHref;
+		}
+
+		return (
+			transformUrl(
+				transformedHref,
+				streamdown.allowedImagePrefixes ?? [],
+				streamdown.defaultOrigin,
+				{
+					kind: 'image'
+				}
+			) ?? null
+		);
+	});
 
 	let isLoaded = $state(false);
 	let hasError = $state(false);
 
 	function getImageSource(): string | null {
-		if (token.href === 'streamdown:incomplete-image') {
-			return null;
-		}
-
-		if (isRelativeUrl) {
-			return token.href;
-		}
-
-		return transformedUrl ?? null;
+		return imageSource;
 	}
 
 	function getExtensionFromBlob(blob: Blob): string {
@@ -84,10 +105,10 @@
 </script>
 
 {#if token.href !== 'streamdown:incomplete-image'}
-	{#if transformedUrl || isRelativeUrl}
+	{#if imageSource}
 		<Slot
 			props={{
-				src: isRelativeUrl ? token.href : transformedUrl,
+				src: imageSource,
 				alt: token.text,
 				class: streamdown.theme.image.image,
 				onload: handleLoad,
@@ -109,7 +130,7 @@
 				{:else}
 					<Slot
 						props={{
-							src: isRelativeUrl ? token.href : transformedUrl,
+							src: imageSource,
 							alt: token.text,
 							class: streamdown.theme.image.image,
 							onload: handleLoad,
@@ -121,7 +142,7 @@
 					>
 						<img
 							class={streamdown.theme.image.image}
-							src={isRelativeUrl ? token.href : transformedUrl}
+							src={imageSource}
 							alt={token.text}
 							onload={handleLoad}
 							onerror={handleError}
