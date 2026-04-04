@@ -26,7 +26,10 @@ describeInBrowser('ported streamdown root contract', () => {
 				'',
 				'---'
 			].join('\n'),
-			mode: 'static'
+			mode: 'static',
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.querySelector('h1')?.textContent).toBe('Heading 1');

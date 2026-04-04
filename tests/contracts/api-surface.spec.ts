@@ -296,17 +296,12 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 				local: 'string'
 			}
 		],
-		// prop-05, prop-13, prop-21
+		// prop-05, prop-21
 		defaultMismatches: [
 			{
 				name: 'controls',
 				reference: 'true',
 				local: null
-			},
-			{
-				name: 'linkSafety',
-				reference: 'defaultLinkSafetyConfig',
-				local: '{enabled:true}'
 			},
 			{
 				name: 'mode',

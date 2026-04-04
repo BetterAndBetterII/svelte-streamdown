@@ -9,6 +9,9 @@ describeInBrowser('ported streamdown CJK-friendly rendering', () => {
 		const screen = render(Streamdown, {
 			content: '请访问 https://example.com。谢谢',
 			static: true,
+			linkSafety: {
+				enabled: false
+			},
 			plugins: {
 				cjk: createCjkPlugin()
 			}
@@ -24,6 +27,9 @@ describeInBrowser('ported streamdown CJK-friendly rendering', () => {
 		const screen = render(Streamdown, {
 			content: '参考（https://example.com）了解详情',
 			static: true,
+			linkSafety: {
+				enabled: false
+			},
 			plugins: {
 				cjk: createCjkPlugin()
 			}
@@ -48,6 +54,9 @@ describeInBrowser('ported streamdown CJK-friendly rendering', () => {
 				const screen = render(Streamdown, {
 					content,
 					static: true,
+					linkSafety: {
+						enabled: false
+					},
 					plugins: {
 						cjk: createCjkPlugin()
 					}

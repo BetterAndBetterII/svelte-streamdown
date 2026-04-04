@@ -10,7 +10,10 @@ describeInBrowser('ported streamdown security email addresses', () => {
 			const screen = render(Streamdown, {
 				content: 'example@gmail.com',
 				static: true,
-				parseIncompleteMarkdown: true
+				parseIncompleteMarkdown: true,
+				linkSafety: {
+					enabled: false
+				}
 			});
 
 			expect(screen.container.textContent?.trim()).toBe('example@gmail.com');
@@ -21,7 +24,10 @@ describeInBrowser('ported streamdown security email addresses', () => {
 		const screen = render(Streamdown, {
 			content: 'Contact admin@site.com or support@site.com for more info.',
 			static: true,
-			parseIncompleteMarkdown: true
+			parseIncompleteMarkdown: true,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.textContent?.trim()).toBe(
@@ -33,7 +39,10 @@ describeInBrowser('ported streamdown security email addresses', () => {
 		const screen = render(Streamdown, {
 			content: 'user+test@example-domain.co.uk',
 			static: true,
-			parseIncompleteMarkdown: false
+			parseIncompleteMarkdown: false,
+			linkSafety: {
+				enabled: false
+			}
 		});
 
 		expect(screen.container.textContent?.trim()).toBe('user+test@example-domain.co.uk');

@@ -1,5 +1,11 @@
 export type StreamdownTranslations = {
 	copyCode: string;
+	copyLink: string;
+	copied: string;
+	openLink: string;
+	openExternalLink: string;
+	externalLinkWarning: string;
+	close: string;
 	downloadFile: string;
 	downloadDiagram: string;
 	downloadDiagramAsSvg: string;
@@ -36,6 +42,12 @@ export type StreamdownTranslations = {
 
 export const defaultTranslations: StreamdownTranslations = {
 	copyCode: 'Copy Code',
+	copyLink: 'Copy link',
+	copied: 'Copied',
+	openLink: 'Open link',
+	openExternalLink: 'Open external link?',
+	externalLinkWarning: "You're about to visit an external website.",
+	close: 'Close',
 	downloadFile: 'Download file',
 	downloadDiagram: 'Download diagram',
 	downloadDiagramAsSvg: 'Download diagram as SVG',

@@ -709,7 +709,7 @@
 			"optional": true,
 			"type": "LinkSafetyConfig",
 			"source": "src/lib/context.svelte.ts",
-			"default": "{enabled:true}"
+			"default": "defaultLinkSafetyConfig"
 		},
 		{
 			"name": "literalTagContent",

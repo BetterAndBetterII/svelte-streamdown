@@ -31,6 +31,9 @@
 		slideUp: 'slideUp'
 	} as const;
 	type LocalAnimationConfig = ResolvedAnimationConfig;
+	const defaultLinkSafetyConfig = {
+		enabled: true
+	} as const;
 
 	const resolveCompatAnimation = (
 		animated: StreamdownProps<Source>['animated'],
@@ -90,7 +93,7 @@
 		defaultOrigin,
 		allowedLinkPrefixes = ['*'],
 		allowedImagePrefixes = ['*'],
-		linkSafety = { enabled: true },
+		linkSafety = defaultLinkSafetyConfig,
 		allowedTags,
 		allowedElements,
 		allowElement,
