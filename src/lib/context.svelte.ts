@@ -9,6 +9,7 @@ import type { StreamdownTranslations } from './translations.js';
 import type { AllowedTags } from './security/types.js';
 import { carets } from './streaming.js';
 import type { PluginConfig } from './plugins.js';
+import type { AllowElement, UrlTransform } from './markdown.js';
 
 export type { AllowedTags } from './security/types.js';
 
@@ -310,8 +311,14 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 	allowedImagePrefixes?: string[];
 	linkSafety?: LinkSafetyConfig;
 	allowedTags?: AllowedTags;
+	allowedElements?: readonly string[];
+	allowElement?: AllowElement;
+	disallowedElements?: readonly string[];
 	literalTagContent?: string[];
 	normalizeHtmlIndentation?: boolean;
+	skipHtml?: boolean;
+	unwrapDisallowed?: boolean;
+	urlTransform?: UrlTransform;
 	prefix?: string;
 	lineNumbers?: boolean;
 

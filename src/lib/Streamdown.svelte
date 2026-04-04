@@ -14,6 +14,7 @@
 		type FootnoteState,
 		type StreamdownToken
 	} from './marked/index.js';
+	import { filterMarkdownTokens } from './markdown.js';
 	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
 	import Footnotes from './Elements/Footnotes.svelte';
 	import { normalizeHtmlIndentation } from './security/html.js';
@@ -92,8 +93,14 @@
 		allowedImagePrefixes = ['*'],
 		linkSafety = { enabled: true },
 		allowedTags,
+		allowedElements,
+		allowElement,
+		disallowedElements,
 		literalTagContent,
 		normalizeHtmlIndentation: shouldNormalizeHtmlIndentation = false,
+		skipHtml,
+		unwrapDisallowed,
+		urlTransform,
 		prefix,
 		lineNumbers = true,
 		theme,
@@ -221,11 +228,29 @@
 		get allowedTags() {
 			return allowedTags;
 		},
+		get allowedElements() {
+			return allowedElements;
+		},
+		get allowElement() {
+			return allowElement;
+		},
+		get disallowedElements() {
+			return disallowedElements;
+		},
 		get literalTagContent() {
 			return literalTagContent;
 		},
 		get normalizeHtmlIndentation() {
 			return shouldNormalizeHtmlIndentation;
+		},
+		get skipHtml() {
+			return skipHtml;
+		},
+		get unwrapDisallowed() {
+			return unwrapDisallowed;
+		},
+		get urlTransform() {
+			return urlTransform;
 		},
 		get prefix() {
 			return prefix;
@@ -460,7 +485,16 @@
 			return {
 				...entry,
 				lines: [...entry.lines],
-				tokens: content.length === 0 ? [] : lexWithFootnotes(content, streamdown.extensions).tokens
+				tokens:
+					content.length === 0
+						? []
+						: filterMarkdownTokens(lexWithFootnotes(content, streamdown.extensions).tokens, {
+								allowedElements: streamdown.allowedElements,
+								allowElement: streamdown.allowElement,
+								disallowedElements: streamdown.disallowedElements,
+								skipHtml: streamdown.skipHtml,
+								unwrapDisallowed: streamdown.unwrapDisallowed
+							})
 			};
 		}) satisfies Footnote[];
 	});
