@@ -60,7 +60,7 @@ describeInNode('ported streamdown dollar-sign handling', () => {
 			expect(paragraph).toBeDefined();
 			const mathTokens = (paragraph!.tokens || []).filter(
 				(t: { type: string }) => t.type === 'math'
-			);
+			) as any[];
 			// With default singleDollarTextMath=false, $x = y$ IS parsed as inline math
 			// because the tokenizer recognizes paired non-currency dollars.
 			// The upstream test expects 0 because React Streamdown defaults to singleDollarTextMath:false
@@ -76,7 +76,7 @@ describeInNode('ported streamdown dollar-sign handling', () => {
 			expect(paragraph).toBeDefined();
 			const mathTokens = (paragraph!.tokens || []).filter(
 				(t: { type: string }) => t.type === 'math'
-			);
+			) as any[];
 			expect(mathTokens.length).toBe(1);
 			expect(mathTokens[0].text).toBe('E = mc^2');
 			expect(mathTokens[0].displayMode).toBe(true);
@@ -90,7 +90,7 @@ describeInNode('ported streamdown dollar-sign handling', () => {
 			expect(paragraph).toBeDefined();
 			const mathTokens = (paragraph!.tokens || []).filter(
 				(t: { type: string }) => t.type === 'math'
-			);
+			) as any[];
 			// The $$ formula must appear as a math token; the currency $99.99 may or may not
 			// tokenize as math depending on the parser heuristic, but the $$ formula is always present.
 			const formulaToken = mathTokens.find((t: any) => t.text === 'x^2 + y^2 = z^2');
