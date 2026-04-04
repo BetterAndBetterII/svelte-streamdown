@@ -723,6 +723,54 @@ Success criteria:
 - Acceptance:
 - Release decision is based on documented evidence, not intuition
 
+## Phase 6: Release Re-Audit Closeout
+
+This phase tracks the execution split created after the `2026-04-04` release re-audit confirmed that refreshed evidence landed, but several trusted-release and parity-backed-release blockers remained open.
+
+### Issue P6-01: Close Remaining Parity Gaps
+
+- Status: `in_progress`
+- Goal: Keep the remaining parity closeout work grouped under a single umbrella so parser, security, rendering, interaction, and migration follow-ups can be sequenced explicitly instead of being rediscovered during each audit pass.
+- Deliverables:
+- platform execution tickets and dependency links for all still-open parity-backed release blockers
+- Acceptance:
+- every remaining parity-backed release blocker is assigned to a concrete execution ticket with clear handoff ordering
+
+### Issue P6-03: Close Remaining Alignment And Release Blockers
+
+- Status: `in_progress`
+- Goal: Convert every still-open closeout misalignment from the `2026-04-04` re-audit into an explicit execution ticket, separate work that can run in parallel from work that must wait on earlier evidence, and keep `PLAN.md`, platform state, and release-readiness evidence aligned.
+- Deliverables:
+- execution tickets `ASE-35` through `ASE-43`
+- dependency ordering that distinguishes immediately-runnable work from evidence-blocked follow-up work
+- `docs/release-readiness-report.md` execution mapping aligned with the platform ticket tree
+- Acceptance:
+- every remaining gap family from the `2026-04-04` re-audit is mapped to a concrete execution ticket
+- the dependency chain from implementation work to evidence refresh to final status synchronization is explicit
+- the next closeout pass can start from this plan without hidden work
+
+#### P6-03 Execution Map
+
+| Execution ticket | Focus                                                                            | Initial platform status | Depends on                                                 | Unblocks                     |
+| ---------------- | -------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------- | ---------------------------- |
+| `ASE-35`         | Remaining parser and security parity blockers from `docs/parity-matrix.md`       | `in_progress`           | `ASE-34` umbrella                                          | `ASE-37`, `ASE-39`           |
+| `ASE-36`         | Remaining rendering and interaction parity blockers from `docs/parity-matrix.md` | `in_progress`           | `ASE-34` umbrella                                          | `ASE-37`, `ASE-39`           |
+| `ASE-38`         | Baseline lint gate and evidence-artifact hygiene                                 | `in_progress`           | `ASE-34` umbrella                                          | `ASE-41`, `ASE-42`, `ASE-43` |
+| `ASE-40`         | Dependency and license exception re-review for the first trusted release         | `in_progress`           | `ASE-34` umbrella                                          | `ASE-42`, `ASE-43`           |
+| `ASE-37`         | Remaining test-migration inventory and unresolved `P0` evidence                  | `todo`                  | `ASE-35`, `ASE-36`                                         | `ASE-41`, `ASE-43`           |
+| `ASE-39`         | Baseline `pnpm test` gate on the candidate head                                  | `todo`                  | `ASE-35`, `ASE-36`                                         | `ASE-41`, `ASE-42`, `ASE-43` |
+| `ASE-41`         | Repo-hosted nightly full-parity evidence for the reviewed head                   | `todo`                  | `ASE-37`, `ASE-38`, `ASE-39`                               | `ASE-42`, `ASE-43`           |
+| `ASE-42`         | First repo-hosted release workflow provenance evidence                           | `todo`                  | `ASE-38`, `ASE-39`, `ASE-40`, `ASE-41`                     | `ASE-43`                     |
+| `ASE-43`         | Final `PLAN.md`, release-audit, and platform-status synchronization              | `todo`                  | `ASE-37`, `ASE-38`, `ASE-39`, `ASE-40`, `ASE-41`, `ASE-42` | final closeout               |
+
+#### P6-03 Execution Order
+
+1. Run the independent implementation and policy tracks in parallel: `ASE-35`, `ASE-36`, `ASE-38`, and `ASE-40`.
+2. Once the remaining surface work lands, close the evidence gaps that depend on it: `ASE-37` and `ASE-39`.
+3. Rebuild repo-hosted nightly parity evidence on the reviewed head through `ASE-41`.
+4. After nightly evidence, lint hygiene, baseline tests, and dependency decisions agree, produce repo-hosted release provenance in `ASE-42`.
+5. Only after the blocker tickets above are truly closed, perform final document and platform status synchronization in `ASE-43`.
+
 ## Suggested Execution Order
 
 ### Track 1: Foundation
