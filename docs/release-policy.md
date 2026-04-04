@@ -34,12 +34,18 @@ If any item above is false, the release is not trusted and must not be presented
 
 As of `2026-04-04`, this repository is still not authorized for a trusted release.
 
-The blockers are explicit:
+The remaining blocker is explicit:
 
 - the reviewed dependency decision for advisory `1115805` (`lodash-es` via `mermaid@11.11.0`) still marks that production `high` advisory as blocking until the shipped graph upgrades past `lodash-es < 4.18.0`
-- the npm package still lacks completed repo-hosted `publish-with-provenance` and `post-publish-verify` evidence for the reviewed commit
 
-Until those gates exist and are passing in CI:
+Repo-hosted Release workflow evidence is no longer missing:
+
+- Release run `23981764154` completed successfully for reviewed commit `753cf91573dcfc2a5187238e8067cf5c7f6f0f83`
+- that run uploaded `release-metadata-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`, `release-publish-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`, and `release-evidence-753cf91573dcfc2a5187238e8067cf5c7f6f0f83`
+- the uploaded bundle includes repo-hosted `publish-with-provenance` and `post-publish-verify` evidence for the reviewed commit
+- because that run was a reviewed dry-run evidence pass on a non-`master` ref, actual npm publish and tag creation were intentionally skipped
+
+Until the remaining blocking advisory is resolved:
 
 - no maintainer may cut a release from a local workstation
 - no maintainer may treat `npm publish` as an acceptable substitute for CI publishing
