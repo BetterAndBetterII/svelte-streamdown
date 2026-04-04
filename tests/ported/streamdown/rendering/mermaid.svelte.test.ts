@@ -16,9 +16,15 @@ describeInBrowser('ported streamdown mermaid rendering', () => {
 			});
 
 		const screen = render(Streamdown, {
-			content: ['```mermaid', 'graph TD; A-->B', '```', '', '```mermaid', 'graph TD; X-->Y', '```'].join(
-				'\n'
-			),
+			content: [
+				'```mermaid',
+				'graph TD; A-->B',
+				'```',
+				'',
+				'```mermaid',
+				'graph TD; X-->Y',
+				'```'
+			].join('\n'),
 			plugins: {
 				mermaid: {
 					name: 'mermaid',

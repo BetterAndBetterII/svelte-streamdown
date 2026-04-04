@@ -1,8 +1,8 @@
 <script lang="ts">
-import { useStreamdown } from '$lib/context.svelte.js';
-import { extractCodeFenceLanguage, getThemeName, type HighlightToken } from '$lib/plugins.js';
+	import { useStreamdown } from '$lib/context.svelte.js';
+	import { extractCodeFenceLanguage, getThemeName, type HighlightToken } from '$lib/plugins.js';
 	import { STREAMDOWN_BLOCK_CONTEXT } from '$lib/incomplete-code.js';
-import { save } from '$lib/utils/save.js';
+	import { save } from '$lib/utils/save.js';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
 	import { HighlighterManager, languageExtensionMap } from '$lib/utils/hightlighter.svelte.js';
 	import { parseCodeFenceInfo } from '$lib/utils/code-block.js';

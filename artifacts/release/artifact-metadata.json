@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-04-04T09:02:02.792Z",
-  "package": {
-    "name": "svelte-streamdown",
-    "version": "3.0.1"
-  },
-  "tarball": {
-    "fileName": "svelte-streamdown-3.0.1.tgz",
-    "sizeBytes": 90587,
-    "sha256": "1d8fd85f6806bca01955cf2d9f512babe2a0600a86db141092500c69e393b767",
-    "sha512": "53ba297d3f8ab737512507c1c134d76152bd5472d80ba6c8779f91a14c95470bdbd157b2908acc8dcbd9ecb7335e43dc75eb36f036887e98fc81bd9e111a1192",
-    "integrity": "sha512-U7opfT+KtzdRJQfBwTTXYVK9VHLYC6bId5+RoUyVRwvb0VeykIrMjcvZ7LczXkPcdes28DaIfpj8gb2eERoRkg=="
-  }
+	"schemaVersion": 1,
+	"generatedAt": "2026-04-04T09:02:02.792Z",
+	"package": {
+		"name": "svelte-streamdown",
+		"version": "3.0.1"
+	},
+	"tarball": {
+		"fileName": "svelte-streamdown-3.0.1.tgz",
+		"sizeBytes": 90587,
+		"sha256": "1d8fd85f6806bca01955cf2d9f512babe2a0600a86db141092500c69e393b767",
+		"sha512": "53ba297d3f8ab737512507c1c134d76152bd5472d80ba6c8779f91a14c95470bdbd157b2908acc8dcbd9ecb7335e43dc75eb36f036887e98fc81bd9e111a1192",
+		"integrity": "sha512-U7opfT+KtzdRJQfBwTTXYVK9VHLYC6bId5+RoUyVRwvb0VeykIrMjcvZ7LczXkPcdes28DaIfpj8gb2eERoRkg=="
+	}
 }

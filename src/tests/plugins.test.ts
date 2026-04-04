@@ -90,7 +90,9 @@ describe('plugin factories', () => {
 
 		await vi.waitFor(() => {
 			expect(callback).toHaveBeenCalled();
-			const line = callback.mock.calls[0]?.[0]?.tokens[0]?.map((token: { content: string }) => token.content).join('');
+			const line = callback.mock.calls[0]?.[0]?.tokens[0]
+				?.map((token: { content: string }) => token.content)
+				.join('');
 			expect(line).toContain('const answer = 42;');
 		});
 	});

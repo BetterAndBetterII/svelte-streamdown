@@ -28,7 +28,12 @@ import type {
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { lex, parseBlocks, parseIncompleteMarkdown, type StreamdownToken } from '../../src/lib/index.js';
+import {
+	lex,
+	parseBlocks,
+	parseIncompleteMarkdown,
+	type StreamdownToken
+} from '../../src/lib/index.js';
 
 export const PARSER_IR_SCHEMA_VERSION = 1 as const;
 
@@ -52,15 +57,18 @@ export const PARSER_IR_IGNORED_FIELDS: readonly ParserIrIgnoredField[] = [
 	},
 	{
 		field: 'position',
-		rationale: 'Source offsets are unstable across parser implementations and are not part of parity.'
+		rationale:
+			'Source offsets are unstable across parser implementations and are not part of parity.'
 	},
 	{
 		field: 'text',
-		rationale: 'Duplicate text caches are ignored when the normalized child structure already preserves content.'
+		rationale:
+			'Duplicate text caches are ignored when the normalized child structure already preserves content.'
 	},
 	{
 		field: 'tokens',
-		rationale: 'Implementation-owned token caches are replaced by explicit normalized block and inline trees.'
+		rationale:
+			'Implementation-owned token caches are replaced by explicit normalized block and inline trees.'
 	},
 	{
 		field: 'listType',
@@ -72,7 +80,8 @@ export const PARSER_IR_IGNORED_FIELDS: readonly ParserIrIgnoredField[] = [
 	},
 	{
 		field: 'skipped',
-		rationale: 'Skipped numbering is a local lexer detail and is not emitted by the reference parser.'
+		rationale:
+			'Skipped numbering is a local lexer detail and is not emitted by the reference parser.'
 	},
 	{
 		field: 'thead/tbody/tfoot',
@@ -80,7 +89,8 @@ export const PARSER_IR_IGNORED_FIELDS: readonly ParserIrIgnoredField[] = [
 	},
 	{
 		field: 'rowspan/colspan/complex span metadata',
-		rationale: 'Span bookkeeping is local-table specific and outside the shared reference feature set.'
+		rationale:
+			'Span bookkeeping is local-table specific and outside the shared reference feature set.'
 	}
 ] as const;
 
@@ -326,7 +336,9 @@ async function loadReferenceParsers(): Promise<ReferenceParsers> {
 			)
 		]).then(([remendModule, parseBlocksModule]) => ({
 			referenceRemend: remendModule.default as (markdown: string) => string,
-			parseReferenceBlocks: parseBlocksModule.parseMarkdownIntoBlocks as (markdown: string) => string[]
+			parseReferenceBlocks: parseBlocksModule.parseMarkdownIntoBlocks as (
+				markdown: string
+			) => string[]
 		}));
 	}
 
@@ -610,7 +622,9 @@ function normalizeLocalBlockToken(token: StreamdownToken): ParserIrBlockNode {
 	}
 }
 
-function normalizeLocalTable(token: Extract<StreamdownToken, { type: 'table' }>): ParserIrBlockNode {
+function normalizeLocalTable(
+	token: Extract<StreamdownToken, { type: 'table' }>
+): ParserIrBlockNode {
 	const rows: ParserIrTableRow[] = [];
 	let headerRowCount = 0;
 

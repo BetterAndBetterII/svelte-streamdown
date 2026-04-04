@@ -1,29 +1,29 @@
 {
-  "suite": "ported-tests",
-  "status": "success",
-  "ok": true,
-  "command": "pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile=artifacts/nightly/ported-tests/junit.xml",
-  "durationMs": 17000,
-  "failureStage": null,
-  "logFile": "artifacts/nightly/ported-tests/output.log",
-  "artifacts": [
-    {
-      "label": "summary",
-      "path": "artifacts/nightly/ported-tests/summary.md"
-    },
-    {
-      "label": "status",
-      "path": "artifacts/nightly/ported-tests/status.json"
-    },
-    {
-      "label": "log",
-      "path": "artifacts/nightly/ported-tests/output.log"
-    },
-    {
-      "label": "junit",
-      "path": "artifacts/nightly/ported-tests/junit.xml"
-    }
-  ],
-  "notes": [],
-  "generatedAt": "2026-04-04T09:00:36.864Z"
+	"suite": "ported-tests",
+	"status": "success",
+	"ok": true,
+	"command": "pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile=artifacts/nightly/ported-tests/junit.xml",
+	"durationMs": 17000,
+	"failureStage": null,
+	"logFile": "artifacts/nightly/ported-tests/output.log",
+	"artifacts": [
+		{
+			"label": "summary",
+			"path": "artifacts/nightly/ported-tests/summary.md"
+		},
+		{
+			"label": "status",
+			"path": "artifacts/nightly/ported-tests/status.json"
+		},
+		{
+			"label": "log",
+			"path": "artifacts/nightly/ported-tests/output.log"
+		},
+		{
+			"label": "junit",
+			"path": "artifacts/nightly/ported-tests/junit.xml"
+		}
+	],
+	"notes": [],
+	"generatedAt": "2026-04-04T09:00:36.864Z"
 }

@@ -206,12 +206,7 @@
 		{/if}
 
 		{#if renderedSvg}
-			<div
-				{@attach panzoom.attach}
-				data-mermaid-svg
-				aria-label="Mermaid chart"
-				role="img"
-			>
+			<div {@attach panzoom.attach} data-mermaid-svg aria-label="Mermaid chart" role="img">
 				{@html renderedSvg}
 			</div>
 		{:else if error}
@@ -223,14 +218,9 @@
 					<details class="mt-2">
 						<summary class="cursor-pointer text-xs text-red-600">Show Code</summary>
 						<pre class="mt-2 overflow-x-auto rounded bg-red-100 p-2 text-xs text-red-800">
-{token.text}</pre
-						>
+{token.text}</pre>
 					</details>
-					<button
-						type="button"
-						class={streamdown.theme.components.button}
-						onclick={retryRender}
-					>
+					<button type="button" class={streamdown.theme.components.button} onclick={retryRender}>
 						Retry
 					</button>
 				</div>

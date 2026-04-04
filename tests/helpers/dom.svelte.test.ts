@@ -1,9 +1,5 @@
 import { expect } from 'vitest';
-import {
-	describeInBrowser,
-	normalizeDomHtml,
-	testInBrowser
-} from './index.js';
+import { describeInBrowser, normalizeDomHtml, testInBrowser } from './index.js';
 
 describeInBrowser('dom normalization helpers', () => {
 	testInBrowser('preserves whitespace inside pre and code blocks', () => {

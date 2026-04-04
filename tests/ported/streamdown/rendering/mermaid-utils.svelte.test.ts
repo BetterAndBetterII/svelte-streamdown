@@ -68,8 +68,10 @@ describeInBrowser('ported streamdown mermaid utilities', () => {
 		document.body.innerHTML = '';
 	});
 
-	testInBrowser('serializes SVG markup with XML namespaces and finds DOM-backed markup', async () => {
-		document.body.innerHTML = `
+	testInBrowser(
+		'serializes SVG markup with XML namespaces and finds DOM-backed markup',
+		async () => {
+			document.body.innerHTML = `
 			<div data-streamdown-mermaid="mermaid-1">
 				<div data-mermaid-svg>
 					<svg width="40" height="20"><text>DOM Diagram</text></svg>
@@ -77,14 +79,15 @@ describeInBrowser('ported streamdown mermaid utilities', () => {
 			</div>
 		`;
 
-		const svg = document.querySelector('svg') as SVGSVGElement;
-		const serialized = serializeSvg(svg);
-		expect(serialized).toContain('xmlns="http://www.w3.org/2000/svg"');
-		expect(serialized).toContain('xmlns:xlink="http://www.w3.org/1999/xlink"');
+			const svg = document.querySelector('svg') as SVGSVGElement;
+			const serialized = serializeSvg(svg);
+			expect(serialized).toContain('xmlns="http://www.w3.org/2000/svg"');
+			expect(serialized).toContain('xmlns:xlink="http://www.w3.org/1999/xlink"');
 
-		const markup = await getMermaidSvgMarkup({ id: 'mermaid-1' });
-		expect(markup).toContain('DOM Diagram');
-	});
+			const markup = await getMermaidSvgMarkup({ id: 'mermaid-1' });
+			expect(markup).toContain('DOM Diagram');
+		}
+	);
 
 	testInBrowser('prefers renderSvg when provided', async () => {
 		const renderSvg = vi.fn(async () => '<svg><text>Rendered Directly</text></svg>');

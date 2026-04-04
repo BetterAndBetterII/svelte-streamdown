@@ -47,7 +47,9 @@
 
 <div class="my-4 overflow-hidden rounded-xl border border-border bg-card shadow-xs">
 	<div class="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-2">
-		<span class="font-medium text-xs uppercase tracking-[0.18em] text-muted-foreground">{language}</span>
+		<span class="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase"
+			>{language}</span
+		>
 		<span class="text-xs text-muted-foreground">Custom Renderer</span>
 	</div>
 
@@ -62,7 +64,7 @@
 	{:else}
 		<div class="space-y-4 bg-white p-5 text-slate-950">
 			<div class="space-y-1">
-				<p class="font-medium text-sm">{spec.description ?? 'Vega-Lite preview'}</p>
+				<p class="text-sm font-medium">{spec.description ?? 'Vega-Lite preview'}</p>
 				<p class="text-xs text-slate-500">{yTitle}</p>
 			</div>
 
@@ -80,7 +82,7 @@
 							></div>
 						</div>
 						<div class="text-center">
-							<p class="font-medium text-[11px]">{label}</p>
+							<p class="text-[11px] font-medium">{label}</p>
 							<p class="text-[10px] text-slate-500">{value}</p>
 						</div>
 					</div>

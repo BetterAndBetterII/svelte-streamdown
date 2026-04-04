@@ -1,29 +1,29 @@
 {
-  "suite": "dependency-audit",
-  "status": "success",
-  "ok": true,
-  "command": "pnpm verify:dependency-policy",
-  "durationMs": 1000,
-  "failureStage": null,
-  "logFile": null,
-  "artifacts": [
-    {
-      "label": "summary",
-      "path": "artifacts/nightly/dependency-audit/summary.md"
-    },
-    {
-      "label": "status",
-      "path": "artifacts/nightly/dependency-audit/status.json"
-    },
-    {
-      "label": "report",
-      "path": "artifacts/nightly/dependency-audit/dependency-policy.json"
-    },
-    {
-      "label": "stderr",
-      "path": "artifacts/nightly/dependency-audit/dependency-policy.stderr.log"
-    }
-  ],
-  "notes": [],
-  "generatedAt": "2026-04-04T09:00:20.690Z"
+	"suite": "dependency-audit",
+	"status": "success",
+	"ok": true,
+	"command": "pnpm verify:dependency-policy",
+	"durationMs": 1000,
+	"failureStage": null,
+	"logFile": null,
+	"artifacts": [
+		{
+			"label": "summary",
+			"path": "artifacts/nightly/dependency-audit/summary.md"
+		},
+		{
+			"label": "status",
+			"path": "artifacts/nightly/dependency-audit/status.json"
+		},
+		{
+			"label": "report",
+			"path": "artifacts/nightly/dependency-audit/dependency-policy.json"
+		},
+		{
+			"label": "stderr",
+			"path": "artifacts/nightly/dependency-audit/dependency-policy.stderr.log"
+		}
+	],
+	"notes": [],
+	"generatedAt": "2026-04-04T09:00:20.690Z"
 }

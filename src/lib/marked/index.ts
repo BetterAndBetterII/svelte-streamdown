@@ -10,7 +10,12 @@ import {
 	type TokensList
 } from 'marked';
 import { markedAlert, type AlertToken } from './marked-alert.js';
-import { markedFootnote, type Footnote, type FootnoteRef, type FootnoteToken } from './marked-footnotes.js';
+import {
+	markedFootnote,
+	type Footnote,
+	type FootnoteRef,
+	type FootnoteToken
+} from './marked-footnotes.js';
 import { markedMath, type MathToken } from './marked-math.js';
 import { markedSub, markedSup, type SubSupToken } from './marked-subsup.js';
 import { markedList, type ListItemToken, type ListToken } from './marked-list.js';

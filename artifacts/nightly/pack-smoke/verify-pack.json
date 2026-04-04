@@ -1,19 +1,6 @@
-
-> svelte-streamdown@3.0.1 verify:pack /home/yuzhong/.openase/workspace/test/cdn/ASE-32/svelte-streamdown
-> node scripts/verify-pack.mjs
-
 {
-  "tarball": "svelte-streamdown-3.0.1.tgz",
-  "fileCount": 141,
-  "exportsChecked": [
-    ".",
-    "./code",
-    "./mermaid",
-    "./math"
-  ],
-  "requiredRootFiles": [
-    "LICENSE",
-    "README.md",
-    "package.json"
-  ]
+	"tarball": "svelte-streamdown-3.0.1.tgz",
+	"fileCount": 141,
+	"exportsChecked": [".", "./code", "./mermaid", "./math"],
+	"requiredRootFiles": ["LICENSE", "README.md", "package.json"]
 }

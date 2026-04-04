@@ -50,7 +50,10 @@ export function listFixturePaths(source: FixtureSource = 'local'): string[] {
 	return [...fixtureIndexes[source].keys()].sort();
 }
 
-export async function loadFixtureText(path: string, source: FixtureSource = 'local'): Promise<string> {
+export async function loadFixtureText(
+	path: string,
+	source: FixtureSource = 'local'
+): Promise<string> {
 	const cachedText = fixtureCache[source].get(path);
 	if (typeof cachedText === 'string') {
 		return cachedText;

@@ -8,44 +8,44 @@
 
 - **Code, Mermaid, and Math components are now opt-in** - they are no longer bundled by default
 - Import heavy components separately and pass them via the `components` prop:
+
   ```svelte
   <script>
-    import { Streamdown } from 'svelte-streamdown';
-    import Code from 'svelte-streamdown/code';
-    import Mermaid from 'svelte-streamdown/mermaid';
-    import Math from 'svelte-streamdown/math';
+  	import { Streamdown } from 'svelte-streamdown';
+  	import Code from 'svelte-streamdown/code';
+  	import Mermaid from 'svelte-streamdown/mermaid';
+  	import Math from 'svelte-streamdown/math';
   </script>
 
-  <Streamdown 
-    content={markdown}
-    components={{ code: Code, mermaid: Mermaid, math: Math }}
-  />
+  <Streamdown content={markdown} components={{ code: Code, mermaid: Mermaid, math: Math }} />
   ```
+
 - If components are not provided, lightweight fallbacks are used (plain `<pre><code>` for code, raw text for math)
 
 #### Shiki Core Migration
 
 - **Migrated to `shiki/core`** for optimal bundle size - only explicitly imported languages and themes are bundled
 - **`shikiTheme` prop type changed**: Now accepts `string` instead of `BundledTheme` type
+
   ```svelte
   // Before
-  <Streamdown shikiTheme="github-light" /> // ✅ Still works
-  
-  // Type changed from BundledTheme to string
+  <Streamdown shikiTheme="github-light" /> // ✅ Still works // Type changed from BundledTheme to string
   ```
+
 - **Removed `shikiPreloadThemes` prop**: No longer needed as default themes are loaded immediately
 - **`shikiThemes` prop changed**: Now accepts `Record<string, ThemeRegistration>` instead of `ThemeInfo[]`
+
   ```svelte
   <script>
-    import { Streamdown } from 'svelte-streamdown';
-    import nord from '@shikijs/themes/nord';
-    
-    // Pass pre-imported theme objects
-    const customThemes = {
-      'nord': nord
-    };
+  	import { Streamdown } from 'svelte-streamdown';
+  	import nord from '@shikijs/themes/nord';
+
+  	// Pass pre-imported theme objects
+  	const customThemes = {
+  		nord: nord
+  	};
   </script>
-  
+
   <Streamdown content={markdown} shikiThemes={customThemes} shikiTheme="nord" />
   ```
 
@@ -81,16 +81,16 @@
 
 ```svelte
 <script>
-  import { Streamdown, type LanguageInfo } from 'svelte-streamdown';
+	import { Streamdown, type LanguageInfo } from 'svelte-streamdown';
 
-  // Add extra languages - automatically merged with defaults
-  const extraLanguages: LanguageInfo[] = [
-    {
-      id: 'haskell',
-      aliases: ['hs'],
-      import: () => import('@shikijs/langs/haskell')
-    }
-  ];
+	// Add extra languages - automatically merged with defaults
+	const extraLanguages: LanguageInfo[] = [
+		{
+			id: 'haskell',
+			aliases: ['hs'],
+			import: () => import('@shikijs/langs/haskell')
+		}
+	];
 </script>
 
 <Streamdown content={markdown} shikiLanguages={extraLanguages} />
@@ -102,15 +102,15 @@ Import themes from `@shikijs/themes` and pass them as a record:
 
 ```svelte
 <script>
-  import { Streamdown } from 'svelte-streamdown';
-  import nord from '@shikijs/themes/nord';
-  import draculaSoft from '@shikijs/themes/dracula-soft';
-  
-  // Add custom themes
-  const customThemes = {
-    'nord': nord,
-    'dracula-soft': draculaSoft
-  };
+	import { Streamdown } from 'svelte-streamdown';
+	import nord from '@shikijs/themes/nord';
+	import draculaSoft from '@shikijs/themes/dracula-soft';
+
+	// Add custom themes
+	const customThemes = {
+		nord: nord,
+		'dracula-soft': draculaSoft
+	};
 </script>
 
 <!-- Use a specific custom theme -->
@@ -123,29 +123,28 @@ When using custom themes, you need to handle the dark/light switching yourself:
 
 ```svelte
 <script>
-  import { Streamdown } from 'svelte-streamdown';
-  import tokyoNight from '@shikijs/themes/tokyo-night';
-  import catppuccinLatte from '@shikijs/themes/catppuccin-latte';
-  
-  const customThemes = {
-    'tokyo-night': tokyoNight,
-    'catppuccin-latte': catppuccinLatte
-  };
-  
-  // Your app's dark mode state
-  let isDark = $state(false);
+	import { Streamdown } from 'svelte-streamdown';
+	import tokyoNight from '@shikijs/themes/tokyo-night';
+	import catppuccinLatte from '@shikijs/themes/catppuccin-latte';
+
+	const customThemes = {
+		'tokyo-night': tokyoNight,
+		'catppuccin-latte': catppuccinLatte
+	};
+
+	// Your app's dark mode state
+	let isDark = $state(false);
 </script>
 
 <!-- Switch theme based on your dark mode state -->
-<Streamdown 
-  content={markdown} 
-  shikiThemes={customThemes} 
-  shikiTheme={isDark ? 'tokyo-night' : 'catppuccin-latte'} 
+<Streamdown
+	content={markdown}
+	shikiThemes={customThemes}
+	shikiTheme={isDark ? 'tokyo-night' : 'catppuccin-latte'}
 />
 ```
 
 ### 🛠️ Features
-
 
 #### Mermaid Diagram Export
 
@@ -182,4 +181,3 @@ When using custom themes, you need to handle the dark/light switching yourself:
 - `parseIncompleteMarkdown` - Parse incomplete/streaming markdown
 - `IncompleteMarkdownParser` - Parser class for streaming scenarios
 - `Plugin` type - For creating custom parser plugins
-

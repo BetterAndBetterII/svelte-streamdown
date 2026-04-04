@@ -1,135 +1,135 @@
 {
-  "ok": true,
-  "generatedAt": "2026-04-04T09:01:43.997Z",
-  "missingSuites": [],
-  "suites": [
-    {
-      "suite": "ported-tests",
-      "status": "success",
-      "ok": true,
-      "command": "pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile=artifacts/nightly/ported-tests/junit.xml",
-      "durationMs": 17000,
-      "failureStage": null,
-      "logFile": "artifacts/nightly/ported-tests/output.log",
-      "artifacts": [
-        {
-          "label": "summary",
-          "path": "artifacts/nightly/ported-tests/summary.md"
-        },
-        {
-          "label": "status",
-          "path": "artifacts/nightly/ported-tests/status.json"
-        },
-        {
-          "label": "log",
-          "path": "artifacts/nightly/ported-tests/output.log"
-        },
-        {
-          "label": "junit",
-          "path": "artifacts/nightly/ported-tests/junit.xml"
-        }
-      ],
-      "notes": [],
-      "generatedAt": "2026-04-04T09:00:36.864Z"
-    },
-    {
-      "suite": "playwright-parity",
-      "status": "success",
-      "ok": true,
-      "command": "pnpm exec playwright test tests/playwright/parity --reporter=line,html --output=artifacts/nightly/playwright-parity/test-results",
-      "durationMs": 9000,
-      "failureStage": null,
-      "logFile": "artifacts/nightly/playwright-parity/output.log",
-      "artifacts": [
-        {
-          "label": "summary",
-          "path": "artifacts/nightly/playwright-parity/summary.md"
-        },
-        {
-          "label": "status",
-          "path": "artifacts/nightly/playwright-parity/status.json"
-        },
-        {
-          "label": "log",
-          "path": "artifacts/nightly/playwright-parity/output.log"
-        },
-        {
-          "label": "html-report",
-          "path": "artifacts/nightly/playwright-parity/html-report"
-        },
-        {
-          "label": "test-results",
-          "path": "artifacts/nightly/playwright-parity/test-results"
-        }
-      ],
-      "notes": [],
-      "generatedAt": "2026-04-04T09:01:22.781Z"
-    },
-    {
-      "suite": "pack-smoke",
-      "status": "success",
-      "ok": true,
-      "command": "pnpm verify:pack && pnpm verify:exports",
-      "durationMs": 16000,
-      "failureStage": null,
-      "logFile": null,
-      "artifacts": [
-        {
-          "label": "summary",
-          "path": "artifacts/nightly/pack-smoke/summary.md"
-        },
-        {
-          "label": "status",
-          "path": "artifacts/nightly/pack-smoke/status.json"
-        },
-        {
-          "label": "verify-pack-json",
-          "path": "artifacts/nightly/pack-smoke/verify-pack.json"
-        },
-        {
-          "label": "verify-pack-stderr",
-          "path": "artifacts/nightly/pack-smoke/verify-pack.stderr.log"
-        },
-        {
-          "label": "verify-exports-json",
-          "path": "artifacts/nightly/pack-smoke/verify-exports.json"
-        },
-        {
-          "label": "verify-exports-stderr",
-          "path": "artifacts/nightly/pack-smoke/verify-exports.stderr.log"
-        }
-      ],
-      "notes": [],
-      "generatedAt": "2026-04-04T09:00:35.172Z"
-    },
-    {
-      "suite": "dependency-audit",
-      "status": "success",
-      "ok": true,
-      "command": "pnpm verify:dependency-policy",
-      "durationMs": 1000,
-      "failureStage": null,
-      "logFile": null,
-      "artifacts": [
-        {
-          "label": "summary",
-          "path": "artifacts/nightly/dependency-audit/summary.md"
-        },
-        {
-          "label": "status",
-          "path": "artifacts/nightly/dependency-audit/status.json"
-        },
-        {
-          "label": "report",
-          "path": "artifacts/nightly/dependency-audit/dependency-policy.json"
-        },
-        {
-          "label": "stderr",
-          "path": "artifacts/nightly/dependency-audit/dependency-policy.stderr.log"
-        }
-      ],
-      "notes": [],
-      "generatedAt": "2026-04-04T09:00:20.690Z"
-    }
-  ]
+	"ok": true,
+	"generatedAt": "2026-04-04T09:01:43.997Z",
+	"missingSuites": [],
+	"suites": [
+		{
+			"suite": "ported-tests",
+			"status": "success",
+			"ok": true,
+			"command": "pnpm exec vitest run tests/ported --reporter=default --reporter=junit --outputFile=artifacts/nightly/ported-tests/junit.xml",
+			"durationMs": 17000,
+			"failureStage": null,
+			"logFile": "artifacts/nightly/ported-tests/output.log",
+			"artifacts": [
+				{
+					"label": "summary",
+					"path": "artifacts/nightly/ported-tests/summary.md"
+				},
+				{
+					"label": "status",
+					"path": "artifacts/nightly/ported-tests/status.json"
+				},
+				{
+					"label": "log",
+					"path": "artifacts/nightly/ported-tests/output.log"
+				},
+				{
+					"label": "junit",
+					"path": "artifacts/nightly/ported-tests/junit.xml"
+				}
+			],
+			"notes": [],
+			"generatedAt": "2026-04-04T09:00:36.864Z"
+		},
+		{
+			"suite": "playwright-parity",
+			"status": "success",
+			"ok": true,
+			"command": "pnpm exec playwright test tests/playwright/parity --reporter=line,html --output=artifacts/nightly/playwright-parity/test-results",
+			"durationMs": 9000,
+			"failureStage": null,
+			"logFile": "artifacts/nightly/playwright-parity/output.log",
+			"artifacts": [
+				{
+					"label": "summary",
+					"path": "artifacts/nightly/playwright-parity/summary.md"
+				},
+				{
+					"label": "status",
+					"path": "artifacts/nightly/playwright-parity/status.json"
+				},
+				{
+					"label": "log",
+					"path": "artifacts/nightly/playwright-parity/output.log"
+				},
+				{
+					"label": "html-report",
+					"path": "artifacts/nightly/playwright-parity/html-report"
+				},
+				{
+					"label": "test-results",
+					"path": "artifacts/nightly/playwright-parity/test-results"
+				}
+			],
+			"notes": [],
+			"generatedAt": "2026-04-04T09:01:22.781Z"
+		},
+		{
+			"suite": "pack-smoke",
+			"status": "success",
+			"ok": true,
+			"command": "pnpm verify:pack && pnpm verify:exports",
+			"durationMs": 16000,
+			"failureStage": null,
+			"logFile": null,
+			"artifacts": [
+				{
+					"label": "summary",
+					"path": "artifacts/nightly/pack-smoke/summary.md"
+				},
+				{
+					"label": "status",
+					"path": "artifacts/nightly/pack-smoke/status.json"
+				},
+				{
+					"label": "verify-pack-json",
+					"path": "artifacts/nightly/pack-smoke/verify-pack.json"
+				},
+				{
+					"label": "verify-pack-stderr",
+					"path": "artifacts/nightly/pack-smoke/verify-pack.stderr.log"
+				},
+				{
+					"label": "verify-exports-json",
+					"path": "artifacts/nightly/pack-smoke/verify-exports.json"
+				},
+				{
+					"label": "verify-exports-stderr",
+					"path": "artifacts/nightly/pack-smoke/verify-exports.stderr.log"
+				}
+			],
+			"notes": [],
+			"generatedAt": "2026-04-04T09:00:35.172Z"
+		},
+		{
+			"suite": "dependency-audit",
+			"status": "success",
+			"ok": true,
+			"command": "pnpm verify:dependency-policy",
+			"durationMs": 1000,
+			"failureStage": null,
+			"logFile": null,
+			"artifacts": [
+				{
+					"label": "summary",
+					"path": "artifacts/nightly/dependency-audit/summary.md"
+				},
+				{
+					"label": "status",
+					"path": "artifacts/nightly/dependency-audit/status.json"
+				},
+				{
+					"label": "report",
+					"path": "artifacts/nightly/dependency-audit/dependency-policy.json"
+				},
+				{
+					"label": "stderr",
+					"path": "artifacts/nightly/dependency-audit/dependency-policy.stderr.log"
+				}
+			],
+			"notes": [],
+			"generatedAt": "2026-04-04T09:00:20.690Z"
+		}
+	]
 }

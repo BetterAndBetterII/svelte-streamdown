@@ -1,37 +1,37 @@
 {
-  "suite": "pack-smoke",
-  "status": "success",
-  "ok": true,
-  "command": "pnpm verify:pack && pnpm verify:exports",
-  "durationMs": 16000,
-  "failureStage": null,
-  "logFile": null,
-  "artifacts": [
-    {
-      "label": "summary",
-      "path": "artifacts/nightly/pack-smoke/summary.md"
-    },
-    {
-      "label": "status",
-      "path": "artifacts/nightly/pack-smoke/status.json"
-    },
-    {
-      "label": "verify-pack-json",
-      "path": "artifacts/nightly/pack-smoke/verify-pack.json"
-    },
-    {
-      "label": "verify-pack-stderr",
-      "path": "artifacts/nightly/pack-smoke/verify-pack.stderr.log"
-    },
-    {
-      "label": "verify-exports-json",
-      "path": "artifacts/nightly/pack-smoke/verify-exports.json"
-    },
-    {
-      "label": "verify-exports-stderr",
-      "path": "artifacts/nightly/pack-smoke/verify-exports.stderr.log"
-    }
-  ],
-  "notes": [],
-  "generatedAt": "2026-04-04T09:00:35.172Z"
+	"suite": "pack-smoke",
+	"status": "success",
+	"ok": true,
+	"command": "pnpm verify:pack && pnpm verify:exports",
+	"durationMs": 16000,
+	"failureStage": null,
+	"logFile": null,
+	"artifacts": [
+		{
+			"label": "summary",
+			"path": "artifacts/nightly/pack-smoke/summary.md"
+		},
+		{
+			"label": "status",
+			"path": "artifacts/nightly/pack-smoke/status.json"
+		},
+		{
+			"label": "verify-pack-json",
+			"path": "artifacts/nightly/pack-smoke/verify-pack.json"
+		},
+		{
+			"label": "verify-pack-stderr",
+			"path": "artifacts/nightly/pack-smoke/verify-pack.stderr.log"
+		},
+		{
+			"label": "verify-exports-json",
+			"path": "artifacts/nightly/pack-smoke/verify-exports.json"
+		},
+		{
+			"label": "verify-exports-stderr",
+			"path": "artifacts/nightly/pack-smoke/verify-exports.stderr.log"
+		}
+	],
+	"notes": [],
+	"generatedAt": "2026-04-04T09:00:35.172Z"
 }

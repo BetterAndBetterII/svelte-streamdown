@@ -2,8 +2,7 @@ import { describe, it } from 'vitest';
 
 export type TestEnvironment = 'browser' | 'node';
 
-export const TEST_ENVIRONMENT: TestEnvironment =
-	typeof window === 'undefined' ? 'node' : 'browser';
+export const TEST_ENVIRONMENT: TestEnvironment = typeof window === 'undefined' ? 'node' : 'browser';
 
 export const isBrowserTest = TEST_ENVIRONMENT === 'browser';
 export const isNodeTest = TEST_ENVIRONMENT === 'node';

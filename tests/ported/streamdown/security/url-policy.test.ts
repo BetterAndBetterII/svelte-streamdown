@@ -36,7 +36,11 @@ describeInNode('ported streamdown security URL policy', () => {
 
 	testInNode('preserves relative URLs after same-origin prefix checks', () => {
 		expect(
-			transformUrl('./guide/intro', ['https://example.com/docs/guide/'], 'https://example.com/docs/')
+			transformUrl(
+				'./guide/intro',
+				['https://example.com/docs/guide/'],
+				'https://example.com/docs/'
+			)
 		).toBe('./guide/intro');
 		expect(
 			transformUrl('/guide/intro', ['https://example.com/guide/'], 'https://example.com')

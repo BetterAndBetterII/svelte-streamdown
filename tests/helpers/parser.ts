@@ -10,7 +10,10 @@ import {
 import type { Token } from 'marked';
 
 type TokenLike = { type: string };
-type NarrowedToken<TToken extends TokenLike, TType extends TToken['type']> = Extract<TToken, { type: TType }>;
+type NarrowedToken<TToken extends TokenLike, TType extends TToken['type']> = Extract<
+	TToken,
+	{ type: TType }
+>;
 
 export function parseMarkdownTokens(
 	markdown: string,
@@ -50,7 +53,8 @@ export function getFirstTokenByType<TToken extends TokenLike, TType extends TTok
 
 export function getInlineTokens(markdown: string): Token[] {
 	const firstTokenWithChildren = parseMarkdownTokens(markdown).find(
-		(token): token is StreamdownToken & { tokens: Token[] } => 'tokens' in token && Array.isArray(token.tokens)
+		(token): token is StreamdownToken & { tokens: Token[] } =>
+			'tokens' in token && Array.isArray(token.tokens)
 	);
 
 	return firstTokenWithChildren?.tokens ?? [];
