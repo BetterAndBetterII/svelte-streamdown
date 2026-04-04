@@ -2,6 +2,7 @@
 	import { useStreamdown, type TableControlsConfig } from '$lib/context.svelte.js';
 	import type { TableToken } from '$lib/marked/index.js';
 	import { useKeyDown } from '$lib/utils/useKeyDown.svelte.js';
+	import { lockBodyScroll } from '$lib/utils/scroll-lock.js';
 	import { fullscreenIcon } from './icons.js';
 	import Slot from './Slot.svelte';
 	import TableDownload from './TableDownload.svelte';
@@ -78,12 +79,7 @@
 			return;
 		}
 
-		const previousOverflow = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
-
-		return () => {
-			document.body.style.overflow = previousOverflow;
-		};
+		return lockBodyScroll(document);
 	});
 </script>
 
