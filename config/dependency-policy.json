@@ -46,6 +46,12 @@
 						"reviewBy": "before the first trusted release"
 					},
 					{
+						"id": "1115969",
+						"module": "defu",
+						"reason": "Transitive via the current Cloudflare dev-tooling stack through wrangler/unenv; removal requires a coordinated toolchain upgrade outside ASE-29.",
+						"reviewBy": "before the first trusted release"
+					},
+					{
 						"id": "1112659",
 						"module": "tar",
 						"reason": "Transitive via the current dev-tooling graph; removal requires dependency upgrades outside P1-05.",

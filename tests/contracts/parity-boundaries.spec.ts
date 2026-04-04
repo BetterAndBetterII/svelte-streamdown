@@ -16,6 +16,18 @@ type DriftRow = {
 	id: string;
 };
 
+type InventoryRow = {
+	sourceFile: string;
+	migrationStatus: string;
+	evidence: string;
+};
+
+type MigrationStatusRow = {
+	sourceFile: string;
+	localDestination: string;
+	blocker: string;
+};
+
 function parseMarkdownRow(line: string): string[] {
 	return line
 		.slice(1, -1)
@@ -120,6 +132,63 @@ function collectReferencedDriftIds(markdown: string): string[] {
 	return [...new Set(markdown.match(/drift-\d+/g) ?? [])];
 }
 
+function collectInventoryRows(markdown: string): Map<string, InventoryRow> {
+	const rows = new Map<string, InventoryRow>();
+
+	for (const line of markdown.split('\n')) {
+		if (!line.startsWith('|')) {
+			continue;
+		}
+
+		const cells = parseMarkdownRow(line);
+		if (cells.length < 5 || !cells[0]?.startsWith('`packages/')) {
+			continue;
+		}
+
+		rows.set(unwrapCode(cells[0]), {
+			sourceFile: unwrapCode(cells[0]),
+			migrationStatus: unwrapCode(cells[3]),
+			evidence: cells[4]
+		});
+	}
+
+	return rows;
+}
+
+function collectMigrationStatusRows(markdown: string): Map<string, MigrationStatusRow> {
+	const rows = new Map<string, MigrationStatusRow>();
+
+	for (const line of markdown.split('\n')) {
+		if (!line.startsWith('|')) {
+			continue;
+		}
+
+		const cells = parseMarkdownRow(line);
+		if (!cells[0]?.startsWith('`packages/')) {
+			continue;
+		}
+
+		if (cells.length === 7) {
+			rows.set(unwrapCode(cells[0]), {
+				sourceFile: unwrapCode(cells[0]),
+				localDestination: cells[4],
+				blocker: cells[6]
+			});
+			continue;
+		}
+
+		if (cells.length >= 9) {
+			rows.set(unwrapCode(cells[0]), {
+				sourceFile: unwrapCode(cells[0]),
+				localDestination: cells[6],
+				blocker: cells[8]
+			});
+		}
+	}
+
+	return rows;
+}
+
 describe('parity boundary documentation', () => {
 	test('keeps plugin and package-boundary matrix rows in final-state classifications', () => {
 		const matrixRows = new Map(
@@ -194,6 +263,74 @@ describe('parity boundary documentation', () => {
 		expect(pluginContextRow).toBeDefined();
 		expect(pluginContextRow?.category).toBe('plugins');
 		expect(pluginContextRow?.nextAction).toBe('accepted drift');
+	});
+
+	test('keeps performance accepted-drift backlog items out of the implement bucket once they are classified drift', () => {
+		const backlogRows = collectRemainingBacklogRows(readDoc('docs/reference-tests-inventory.md'));
+		const performanceAcceptedDriftFiles = new Set([
+			'packages/streamdown/__tests__/code-block-memo.test.tsx',
+			'packages/streamdown/__tests__/components-memo.test.tsx',
+			'packages/streamdown/__tests__/components-rerender.test.tsx',
+			'packages/streamdown/__tests__/memo-comparators.test.tsx',
+			'packages/streamdown/__tests__/use-deferred-render.test.tsx'
+		]);
+
+		for (const row of backlogRows) {
+			if (performanceAcceptedDriftFiles.has(row.referenceFile)) {
+				expect(row.category, `Unexpected category for ${row.referenceFile}`).toBe(
+					'performance/framework drift'
+				);
+				expect(row.nextAction, `Unexpected next action for ${row.referenceFile}`).toBe(
+					'accepted drift'
+				);
+			}
+		}
+	});
+
+	test('documents every targeted accepted-drift row with explicit rationale and generated local evidence', () => {
+		const targetFiles = [
+			'packages/remend/__tests__/custom-handlers.test.ts',
+			'packages/remend/__tests__/utils.test.ts',
+			'packages/streamdown/__tests__/detect-direction.test.ts',
+			'packages/streamdown/__tests__/plugin-context.test.tsx',
+			'packages/streamdown/__tests__/icon-context.test.tsx',
+			'packages/streamdown/__tests__/utils.test.ts',
+			'packages/streamdown/__tests__/code-block-memo.test.tsx',
+			'packages/streamdown/__tests__/components-memo.test.tsx',
+			'packages/streamdown/__tests__/components-rerender.test.tsx',
+			'packages/streamdown/__tests__/memo-comparators.test.tsx',
+			'packages/streamdown/__tests__/use-deferred-render.test.tsx',
+			'packages/streamdown-cjk/__tests__/index.test.ts',
+			'packages/streamdown-code/__tests__/index.test.ts',
+			'packages/streamdown-math/__tests__/index.test.ts',
+			'packages/streamdown-mermaid/__tests__/index.test.ts'
+		];
+		const inventoryRows = collectInventoryRows(readDoc('docs/reference-tests-inventory.md'));
+		const statusRows = collectMigrationStatusRows(readDoc('docs/test-migration-status.md'));
+
+		for (const sourceFile of targetFiles) {
+			const inventoryRow = inventoryRows.get(sourceFile);
+			expect(inventoryRow, `Missing inventory row for ${sourceFile}`).toBeDefined();
+			expect(inventoryRow?.migrationStatus, `Unexpected migration status for ${sourceFile}`).toBe(
+				'blocked_by_missing_surface'
+			);
+			expect(inventoryRow?.evidence, `Missing drift rationale for ${sourceFile}`).toMatch(
+				/drift-\d+/
+			);
+			expect(inventoryRow?.evidence, `Missing local evidence path for ${sourceFile}`).toMatch(
+				/`(?:src|tests)\/[^`]+`/
+			);
+
+			const statusRow = statusRows.get(sourceFile);
+			expect(statusRow, `Missing generated status row for ${sourceFile}`).toBeDefined();
+			expect(
+				statusRow?.localDestination,
+				`Generated tracker still lacks local evidence for ${sourceFile}`
+			).not.toBe('-');
+			expect(statusRow?.blocker, `Generated tracker lost rationale for ${sourceFile}`).toMatch(
+				/drift-\d+/
+			);
+		}
 	});
 
 	test('defines every drift id that the parity matrix cites as accepted rationale', () => {
