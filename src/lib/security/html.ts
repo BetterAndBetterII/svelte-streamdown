@@ -48,6 +48,7 @@ type RehypeNode = {
 };
 
 const URL_ATTRIBUTE_KEYS = new Set(['href', 'src']);
+const FALLBACK_HARDEN_ORIGIN = 'https://streamdown.invalid';
 
 const visitRehypeTree = (node: RehypeNode, visitor: (node: RehypeNode) => void): void => {
 	visitor(node);
@@ -93,6 +94,33 @@ function rehypeTransformUrls({ urlTransform }: { urlTransform?: UrlTransform } =
 			}
 		});
 	};
+}
+
+function resolveHardenDefaultOrigin(
+	defaultOrigin: string | undefined,
+	allowedLinkPrefixes: string[],
+	allowedImagePrefixes: string[]
+): string {
+	if (defaultOrigin) {
+		return defaultOrigin;
+	}
+
+	const specificPrefixes = [...allowedLinkPrefixes, ...allowedImagePrefixes].filter(
+		(prefix) => prefix !== '*'
+	);
+	if (specificPrefixes.length === 0) {
+		return '';
+	}
+
+	for (const prefix of specificPrefixes) {
+		try {
+			return new URL(prefix).origin;
+		} catch {
+			continue;
+		}
+	}
+
+	return FALLBACK_HARDEN_ORIGIN;
 }
 
 const escapeHtml = (value: string): string =>
@@ -143,6 +171,12 @@ export function renderMarkdownFragment(
 	}: SecurityRenderOptions = {}
 ): string {
 	try {
+		const hardenDefaultOrigin = resolveHardenDefaultOrigin(
+			defaultOrigin,
+			allowedLinkPrefixes,
+			allowedImagePrefixes
+		);
+
 		return String(
 			unified()
 				.use(remarkParse)
@@ -155,7 +189,7 @@ export function renderMarkdownFragment(
 					allowedImagePrefixes,
 					allowedLinkPrefixes,
 					allowedProtocols: ['*'],
-					defaultOrigin,
+					defaultOrigin: hardenDefaultOrigin,
 					allowDataImages: true
 				})
 				.use(rehypeStringify)
