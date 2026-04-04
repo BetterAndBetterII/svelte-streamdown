@@ -19,6 +19,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout frozen reference repo
+        uses: actions/checkout@v4
+        with:
+          repository: vercel/streamdown
+          ref: 5f6475139a87dee8af08fcf7b01475292bc064d2
+          path: references/streamdown
+          fetch-depth: 1
+
       - name: Prepare artifact directory
         run: mkdir -p "$SUITE_DIR"
 
@@ -38,9 +46,14 @@ jobs:
         id: install
         run: pnpm install --frozen-lockfile
 
+      - name: Install Playwright Chromium
+        id: browser
+        if: ${{ steps.install.outcome == 'success' }}
+        run: pnpm exec playwright install chromium
+
       - name: Run full ported tests
         id: suite
-        if: ${{ steps.install.outcome == 'success' }}
+        if: ${{ steps.browser.outcome == 'success' }}
         continue-on-error: true
         shell: bash
         run: |
@@ -64,6 +77,10 @@ jobs:
             status=failure
             failure_stage=install
             note="pnpm install --frozen-lockfile failed before the ported Vitest suite could run."
+          elif [ "${{ steps.browser.outcome }}" != "success" ]; then
+            status=failure
+            failure_stage=browser-install
+            note="Chromium installation failed before the ported Vitest suite could run."
           elif [ "${{ steps.suite.outcome }}" = "failure" ]; then
             status=failure
             failure_stage=test
@@ -123,7 +140,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Fail job if suite did not pass
-        if: ${{ always() && (steps.install.outcome != 'success' || steps.suite.outcome == 'failure' || steps.suite.outcome == 'skipped') }}
+        if: ${{ always() && (steps.install.outcome != 'success' || steps.browser.outcome != 'success' || steps.suite.outcome == 'failure' || steps.suite.outcome == 'skipped') }}
         run: exit 1
 
   playwright-parity:
@@ -135,6 +152,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Checkout frozen reference repo
+        uses: actions/checkout@v4
+        with:
+          repository: vercel/streamdown
+          ref: 5f6475139a87dee8af08fcf7b01475292bc064d2
+          path: references/streamdown
+          fetch-depth: 1
 
       - name: Prepare artifact directory
         run: mkdir -p "$SUITE_DIR"
