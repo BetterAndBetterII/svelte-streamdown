@@ -107,10 +107,13 @@ describeInBrowser('ported streamdown image rendering', () => {
 		const loadScreen = render(Streamdown, {
 			content: '![Loaded image](https://example.com/loaded.png)'
 		});
-		const loadedImage = loadScreen.container.querySelector(
-			'img[alt="Loaded image"]'
-		) as HTMLImageElement | null;
-		loadedImage?.dispatchEvent(new Event('load'));
+		await vi.waitFor(() => {
+			const loadedImage = loadScreen.container.querySelector(
+				'img[alt="Loaded image"]'
+			) as HTMLImageElement | null;
+			expect(loadedImage).toBeTruthy();
+			loadedImage?.dispatchEvent(new Event('load'));
+		});
 
 		await vi.waitFor(() => {
 			expect(loadScreen.container.querySelector('button[title="Download image"]')).toBeTruthy();
@@ -119,10 +122,13 @@ describeInBrowser('ported streamdown image rendering', () => {
 		const errorScreen = render(Streamdown, {
 			content: '![Broken image](https://example.com/broken.png)'
 		});
-		const brokenImage = errorScreen.container.querySelector(
-			'img[alt="Broken image"]'
-		) as HTMLImageElement | null;
-		brokenImage?.dispatchEvent(new Event('error'));
+		await vi.waitFor(() => {
+			const brokenImage = errorScreen.container.querySelector(
+				'img[alt="Broken image"]'
+			) as HTMLImageElement | null;
+			expect(brokenImage).toBeTruthy();
+			brokenImage?.dispatchEvent(new Event('error'));
+		});
 
 		await vi.waitFor(() => {
 			expect(
