@@ -14,8 +14,13 @@ export const markedCitations: Extension = {
 		const match = src.match(/^\[[^\]]+\](?:\s+\[[^\]]+\])*/);
 
 		if (match) {
-			// Early exit: if first closing bracket is immediately followed by '[', it's likely link-style syntax
+			// Nested brackets are more likely link/image text than citation syntax.
 			const firstClosingBracketIndex = src.indexOf(']');
+			if (match[0].slice(1, firstClosingBracketIndex).includes('[')) {
+				return undefined;
+			}
+
+			// Early exit: if first closing bracket is immediately followed by '[', it's likely link-style syntax
 			if (firstClosingBracketIndex !== -1 && src[firstClosingBracketIndex + 1] === '[') {
 				return undefined;
 			}

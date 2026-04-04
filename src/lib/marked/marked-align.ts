@@ -1,47 +1,63 @@
 import type { Extension } from './index.js';
 import type { Token } from 'marked';
 
+const tokenizeAlignBlock = (
+	src: string,
+	align: 'center' | 'right',
+	blockTokens: (src: string, tokens: Token[]) => Token[]
+): AlignToken | undefined => {
+	const openingTag = `[${align}]`;
+	const closingTag = `[/${align}]`;
+
+	if (!src.startsWith(openingTag)) {
+		return undefined;
+	}
+
+	const lines = src.split('\n');
+	if (lines[0].trim() !== openingTag) {
+		return undefined;
+	}
+
+	let contentEndLine = -1;
+	let hasClosingTag = false;
+	for (let i = 1; i < lines.length; i++) {
+		const trimmed = lines[i].trim();
+		if (trimmed === closingTag) {
+			contentEndLine = i - 1;
+			hasClosingTag = true;
+			break;
+		}
+
+		if (trimmed === '[center]' || trimmed === '[right]') {
+			contentEndLine = i - 1;
+			break;
+		}
+	}
+
+	if (contentEndLine === -1 && !hasClosingTag) {
+		return undefined;
+	}
+
+	const text = lines.slice(1, contentEndLine + 1).join('\n');
+	const raw = lines.slice(0, hasClosingTag ? contentEndLine + 2 : contentEndLine + 1).join('\n');
+
+	return {
+		type: 'align',
+		align,
+		raw,
+		text,
+		tokens: blockTokens(text, [])
+	} satisfies AlignToken;
+};
+
 export const markedAlign: Extension = {
 	name: 'align',
 	level: 'block',
 	tokenizer(this, src) {
-		// Check if the source starts with [center] or [right] blocks
-		const centerMatch = src.match(/^\[center\]\n([\s\S]*?)\n\[\/center\]/);
-		const rightMatch = src.match(/^\[right\]\n([\s\S]*?)\n\[\/right\]/);
-
-		if (centerMatch) {
-			const text = centerMatch[1];
-			const raw = centerMatch[0];
-
-			// Tokenize the content inside the alignment block
-			const tokens = this.lexer.blockTokens(text, []);
-
-			return {
-				type: 'align',
-				align: 'center',
-				raw,
-				text,
-				tokens
-			} satisfies AlignToken;
-		}
-
-		if (rightMatch) {
-			const text = rightMatch[1];
-			const raw = rightMatch[0];
-
-			// Tokenize the content inside the alignment block
-			const tokens = this.lexer.blockTokens(text, []);
-
-			return {
-				type: 'align',
-				align: 'right',
-				raw,
-				text,
-				tokens
-			} satisfies AlignToken;
-		}
-
-		return undefined;
+		return (
+			tokenizeAlignBlock(src, 'center', this.lexer.blockTokens.bind(this.lexer)) ??
+			tokenizeAlignBlock(src, 'right', this.lexer.blockTokens.bind(this.lexer))
+		);
 	}
 };
 

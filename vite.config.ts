@@ -86,6 +86,7 @@ export default defineConfig({
 					exclude: [
 						'src/**/*.svelte.{test,spec}.{js,ts}',
 						'tests/**/*.svelte.{test,spec}.{js,ts}',
+						'tests/playwright/**',
 						'tests/pack-smoke/**'
 					]
 				}

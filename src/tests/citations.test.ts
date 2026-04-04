@@ -301,4 +301,11 @@ describe('incomplete markdown', () => {
 
 		expect(result).toBe('Multiple citations [ref1] and [ref2]');
 	});
+
+	test('should preserve complete citation groups in streaming recovery', () => {
+		const input = 'List mode [alpha] [beta]';
+		const result = parseIncompleteMarkdown(input);
+
+		expect(result).toBe('List mode [alpha] [beta]');
+	});
 });

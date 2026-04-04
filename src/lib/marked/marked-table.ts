@@ -229,23 +229,9 @@ const processSpans = (
 			trimmedCell = parts[0];
 			colspan = parseInt(parts[1], 10);
 		} else if (!trimmedCell.trim()) {
-			// Fallback: merge empty run into previous cell (backward compatibility)
-			let run = 1,
-				k = i + 1;
-			while (k < cells.length && !cells[k].trim()) {
-				run++;
-				mergedIndices.add(k++);
-			}
-			if (processedCells.length) {
-				const target = processedCells[processedCells.length - 1];
-				const allowed =
-					maxColspan != null ? Math.min(run, Math.max(0, maxColspan - target.colspan)) : run;
-				target.colspan += allowed;
-				numCols += allowed;
-				continue;
-			} else {
-				colspan = maxColspan != null ? Math.min(run, maxColspan) : run;
-			}
+			// Preserve explicit empty cells. Colspan should come from the dedicated
+			// repeated-pipe marker rather than silently merging blank markdown cells.
+			colspan = 1;
 		}
 
 		if (maxColspan !== null && colspan > maxColspan) colspan = maxColspan;

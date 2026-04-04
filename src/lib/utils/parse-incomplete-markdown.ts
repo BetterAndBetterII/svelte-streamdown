@@ -220,20 +220,31 @@ export class IncompleteMarkdownParser {
 					};
 				},
 				postprocess: ({ text, state }) => {
-					// Complete incomplete blocks at end of input
+					// Complete all incomplete blocks at end of input
+					let result = text;
 					if (state.blockingContexts.has('code')) {
-						return text + '\n```';
+						result += '\n```';
 					}
 					if (state.blockingContexts.has('math')) {
-						return text + '\n$$';
+						result += '\n$$';
 					}
 					if (state.blockingContexts.has('center')) {
-						return text + '\n[/center]';
+						// Only close if there is content after the opening [center] tag
+						const openIdx = result.lastIndexOf('[center]');
+						const afterOpen = openIdx !== -1 ? result.slice(openIdx + '[center]'.length) : '';
+						if (afterOpen.replace(/\n/g, '').trim().length > 0) {
+							result += '\n[/center]';
+						}
 					}
 					if (state.blockingContexts.has('right')) {
-						return text + '\n[/right]';
+						// Only close if there is content after the opening [right] tag
+						const openIdx = result.lastIndexOf('[right]');
+						const afterOpen = openIdx !== -1 ? result.slice(openIdx + '[right]'.length) : '';
+						if (afterOpen.replace(/\n/g, '').trim().length > 0) {
+							result += '\n[/right]';
+						}
 					}
-					return text;
+					return result;
 				}
 			},
 			{
@@ -513,14 +524,9 @@ export class IncompleteMarkdownParser {
 				name: 'alignmentBlocks',
 				pattern: /^(\s*\[(center|right)\])$/,
 				skipInBlockTypes: ['code', 'math'],
-				handler: ({ line, state }) => {
-					// Check if this is an opening alignment tag without content or closing tag
-					const alignMatch = line.match(/^(\s*\[(center|right)\])$/);
-					if (alignMatch) {
-						const indent = alignMatch[1].length - alignMatch[1].trim().length;
-						const alignType = alignMatch[2];
-						return line + '\n' + ' '.repeat(indent) + '[/' + alignType + ']';
-					}
+				handler: ({ line }) => {
+					// Alignment block closing is handled by the contextManager postprocessor.
+					// This plugin is a no-op placeholder to keep pattern-based skip logic intact.
 					return line;
 				}
 			},
