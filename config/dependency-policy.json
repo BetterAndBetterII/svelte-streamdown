@@ -126,7 +126,7 @@
 					{
 						"id": "1115969",
 						"module": "defu",
-						"reason": "Transitive via the pinned Wrangler/unenv toolchain in the current dev graph; removal requires a coordinated Cloudflare tooling upgrade outside ASE-22.",
+						"reason": "Transitive via unenv@2.0.0-rc.20 in the pinned Wrangler and adapter-cloudflare dev toolchain; removal requires a coordinated Cloudflare dependency upgrade outside the current parity ticket scope.",
 						"reviewBy": "before the first trusted release"
 					}
 				]
