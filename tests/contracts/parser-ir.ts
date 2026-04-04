@@ -284,9 +284,11 @@ export async function buildReferenceParserIr(markdown: string): Promise<ParserIr
 		normalization: {
 			incompleteMarkdownRepaired: repairedMarkdown !== markdown
 		},
-		blocks: parseReferenceBlocks(repairedMarkdown).map((blockMarkdown: string) => ({
-			nodes: normalizeReferenceRoot(parseReferenceRoot(blockMarkdown))
-		}))
+		blocks: parseReferenceBlocks(repairedMarkdown)
+			.map((blockMarkdown: string) => ({
+				nodes: normalizeReferenceRoot(parseReferenceRoot(blockMarkdown))
+			}))
+			.filter((block) => block.nodes.length > 0)
 	};
 }
 
@@ -298,9 +300,11 @@ export function buildLocalParserIr(markdown: string): ParserIrDocument {
 		normalization: {
 			incompleteMarkdownRepaired: repairedMarkdown !== markdown
 		},
-		blocks: parseBlocks(repairedMarkdown).map((blockMarkdown) => ({
-			nodes: normalizeLocalBlockTokens(lex(blockMarkdown))
-		}))
+		blocks: parseBlocks(repairedMarkdown)
+			.map((blockMarkdown) => ({
+				nodes: normalizeLocalBlockTokens(lex(blockMarkdown))
+			}))
+			.filter((block) => block.nodes.length > 0)
 	};
 }
 
