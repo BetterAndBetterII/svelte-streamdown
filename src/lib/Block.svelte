@@ -138,6 +138,8 @@
 
 		return token.type === 'text' ? decodeHtmlEntities(token.text) : token.text;
 	};
+	const shouldAnimateLeafText = (token: StreamdownToken): boolean =>
+		streamdown.animation.enabled && !insidePopover && !isStatic && token.type !== 'codespan';
 
 	setContext(STREAMDOWN_BLOCK_CONTEXT, {
 		get isIncompleteCodeFence() {
@@ -156,7 +158,7 @@
 				{@const isTextOnlyNode = children.length === 0}
 				<Element {token} {isIncomplete}>
 					{#if isTextOnlyNode}
-						{#if streamdown.animation.enabled && !insidePopover && !isStatic}
+						{#if shouldAnimateLeafText(token)}
 							<AnimatedText text={renderLeafText(token)} />
 						{:else}
 							{renderLeafText(token)}

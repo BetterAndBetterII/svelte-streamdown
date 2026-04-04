@@ -85,6 +85,53 @@ describeInBrowser('ported streamdown streaming update behavior', () => {
 		}
 	);
 
+	testInBrowser(
+		'keeps existing list item spans mounted when a new list group appears',
+		async () => {
+			const animated = {
+				animation: 'fadeIn',
+				duration: 700,
+				easing: 'ease-in-out',
+				sep: 'char'
+			} as const;
+
+			const screen = render(StreamdownWithFutureProps, {
+				content: '1. Item 1\n2. Item 2\n',
+				animated,
+				isAnimating: true
+			});
+
+			await vi.waitFor(() => {
+				expect(
+					screen.container.querySelectorAll('[data-streamdown-animate]').length
+				).toBeGreaterThan(0);
+			});
+
+			const initialSpans = [
+				...screen.container.querySelectorAll('[data-streamdown-animate]')
+			] as HTMLElement[];
+
+			await screen.rerender({
+				content: '1. Item 1\n2. Item 2\n\n1. Item A\n',
+				animated: {
+					animation: 'fadeIn',
+					duration: 700,
+					easing: 'ease-in-out',
+					sep: 'char'
+				},
+				isAnimating: true
+			});
+
+			await vi.waitFor(() => {
+				expect(
+					screen.container.querySelectorAll('[data-streamdown-animate]').length
+				).toBeGreaterThan(initialSpans.length);
+			});
+
+			expect(initialSpans.filter((span) => !screen.container.contains(span))).toHaveLength(0);
+		}
+	);
+
 	testInBrowser('keeps existing animated characters at 0ms when streamed text grows', async () => {
 		const animated = {
 			animation: 'fadeIn',

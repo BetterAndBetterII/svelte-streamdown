@@ -427,7 +427,7 @@
 		{
 			"name": "animation",
 			"optional": true,
-			"type": "{animateOnMount?:boolean;enabled?:boolean;type?:\"fade\"|\"blur\"|\"slideUp\"|\"slideDown\";duration?:number;timingFunction?:\"ease\"|\"ease-in\"|\"ease-out\"|\"ease-in-out\"|\"linear\";tokenize?:\"word\"|\"char\";}",
+			"type": "{animateOnMount?:boolean;enabled?:boolean;type?:\"fade\"|\"blur\"|\"slideUp\"|\"slideDown\";duration?:number;timingFunction?:\"ease\"|\"ease-in\"|\"ease-out\"|\"ease-in-out\"|\"linear\";tokenize?:\"word\"|\"char\";stagger?:number;}",
 			"source": "src/lib/context.svelte.ts",
 			"default": null
 		},

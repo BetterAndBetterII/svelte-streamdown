@@ -22,6 +22,8 @@
 
 	const tokens = $derived.by(() => {
 		let cursor = 0;
+		let newAnimatedTokenIndex = 0;
+		const stagger = streamdown.animation.stagger ?? 0;
 
 		return tokenizeNewContent(text).map((token) => {
 			const start = cursor;
@@ -35,17 +37,24 @@
 				};
 			}
 
-			const duration =
-				previousRenderedLength > 0 && start < previousRenderedLength
-					? 0
-					: streamdown.animation.duration;
+			const isAlreadyRendered = previousRenderedLength > 0 && start < previousRenderedLength;
+			const duration = isAlreadyRendered ? 0 : streamdown.animation.duration;
+			const delay = !isAlreadyRendered && stagger > 0 ? newAnimatedTokenIndex * stagger : 0;
+
+			if (!isAlreadyRendered) {
+				newAnimatedTokenIndex += 1;
+			}
 
 			return {
 				content: token,
 				animated: true,
-				style: `--sd-duration:${duration}ms;animation-name: sd-${streamdown.animation.type};
-animation-duration: ${duration}ms;
-animation-timing-function: ${streamdown.animation.timingFunction};
+				style: `--sd-animation:sd-${streamdown.animation.type};
+--sd-duration:${duration}ms;
+--sd-easing:${streamdown.animation.timingFunction};
+${delay > 0 ? `--sd-delay:${delay}ms;\n` : ''}animation-name: var(--sd-animation);
+animation-duration: var(--sd-duration);
+animation-timing-function: var(--sd-easing);
+animation-delay: var(--sd-delay, 0ms);
 animation-iteration-count: 1;
 animation-fill-mode: forwards;
 white-space: pre-wrap;

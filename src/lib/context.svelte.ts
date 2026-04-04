@@ -98,9 +98,13 @@ export class StreamdownContext<Source extends Record<string, any> = Record<strin
 		return getContext('POPOVER')
 			? undefined
 			: this.animation.enabled
-				? `animation-name: sd-${this.animation.type};
-animation-duration: ${this.animation.duration}ms;
-animation-timing-function: ${this.animation.timingFunction};
+				? `--sd-animation:sd-${this.animation.type};
+--sd-duration:${this.animation.duration}ms;
+--sd-easing:${this.animation.timingFunction};
+animation-name: var(--sd-animation);
+animation-duration: var(--sd-duration);
+animation-timing-function: var(--sd-easing);
+animation-delay: var(--sd-delay, 0ms);
 animation-iteration-count: 1;
 animation-fill-mode: forwards;
 white-space: pre-wrap;
@@ -113,9 +117,13 @@ text-decoration: inherit;`
 		return getContext('POPOVER')
 			? undefined
 			: this.animation.enabled
-				? `animation-name: sd-${this.animation.type};
-animation-duration: ${this.animation.duration}ms;
-animation-timing-function: ${this.animation.timingFunction};
+				? `--sd-animation:sd-${this.animation.type};
+--sd-duration:${this.animation.duration}ms;
+--sd-easing:${this.animation.timingFunction};
+animation-name: var(--sd-animation);
+animation-duration: var(--sd-duration);
+animation-timing-function: var(--sd-easing);
+animation-delay: var(--sd-delay, 0ms);
 animation-iteration-count: 1;
 animation-fill-mode: forwards;`
 				: undefined;
@@ -351,6 +359,7 @@ export type StreamdownProps<Source extends Record<string, any> = Record<string, 
 		duration?: number;
 		timingFunction?: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
 		tokenize?: 'word' | 'char';
+		stagger?: number;
 	};
 	icons?: {
 		copy?: Snippet;
