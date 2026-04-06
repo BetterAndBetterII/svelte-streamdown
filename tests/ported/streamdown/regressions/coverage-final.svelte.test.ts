@@ -27,7 +27,6 @@ function mockImageElementState({
 	complete: boolean;
 	naturalWidth: number;
 }) {
-
 	Object.defineProperty(HTMLImageElement.prototype, 'complete', {
 		configurable: true,
 		get() {

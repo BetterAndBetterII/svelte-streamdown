@@ -104,10 +104,9 @@ describeInBrowser('ported streamdown final aggregate closeout', () => {
 
 			const downloadButton = screen.container.querySelector(
 				'button[title="Download table"]'
-			);
+			) as HTMLButtonElement | null;
 			expect(downloadButton).toBeTruthy();
-
-			(downloadButton as HTMLButtonElement).click();
+			downloadButton?.click();
 
 			await vi.waitFor(() => {
 				expect(
