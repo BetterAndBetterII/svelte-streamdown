@@ -69,7 +69,7 @@ Everything else is blocking.
 
 Blocking by default:
 
-- any matrix row still marked `partial` or `missing`
+- any matrix row still marked `tracked_follow_up` or `missing`
 - any public rename, removed prop, changed default, or missing package export that is not covered by an approved adaptation
 - any parser, DOM, or interaction difference without frozen-reference evidence
 - any screenshot-only waiver that bypasses DOM parity
