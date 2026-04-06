@@ -1,8 +1,8 @@
 import { expect } from 'vitest';
-import { detectTextDirection } from '../../../../src/lib/index.js';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
+import { detectTextDirection } from '../../../../src/lib/detect-direction.js';
 
-describeInNode('ported streamdown detectTextDirection surface', () => {
+describeInNode('ported streamdown detect direction helper', () => {
 	testInNode('matches the frozen first-strong-character direction heuristics', () => {
 		expect(detectTextDirection('Hello world')).toBe('ltr');
 		expect(detectTextDirection('مرحبا بالعالم')).toBe('rtl');
@@ -16,5 +16,8 @@ describeInNode('ported streamdown detectTextDirection surface', () => {
 		expect(detectTextDirection('مرحبا Hello')).toBe('rtl');
 		expect(detectTextDirection('ދިވެހި')).toBe('rtl');
 		expect(detectTextDirection('`code` مرحبا')).toBe('rtl');
+		expect(detectTextDirection('# **مرحبا** [link](https://example.com)')).toBe('rtl');
+		expect(detectTextDirection('> `const x = 1` English then עברית')).toBe('ltr');
+		expect(detectTextDirection('--- ... ###')).toBe('ltr');
 	});
 });

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useStreamdown } from '$lib/context.svelte.js';
+	import { useStreamdown } from '../../../../../src/lib/plugin-context.js';
 	import type { Tokens } from 'marked';
 
 	let { token, id }: { token: Tokens.Code; id: string } = $props();

@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
-import { isPathRelativeUrl, transformUrl } from '../../../../src/lib/utils/url.js';
+import { isPathRelativeUrl, transformUrl } from '../../../../src/lib/url-policy.js';
 
 describeInNode('ported streamdown security URL policy', () => {
 	testInNode('recognizes the reference relative URL forms', () => {

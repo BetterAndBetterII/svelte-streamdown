@@ -1,20 +1,30 @@
 export { default as Streamdown } from './Streamdown.svelte';
+export { STREAMDOWN_CONTEXT_KEY } from './context-key.js';
 export {
 	StreamdownContext,
 	useStreamdown,
 	type AnimateOptions,
 	type BlockProps,
+	type CodeControlsConfig,
+	type Components,
 	type ControlsConfig,
 	type IconMap,
 	type LinkSafetyConfig,
 	type LinkSafetyModalProps,
+	type MermaidControls,
+	type MermaidErrorComponentProps,
 	type MermaidOptions,
+	type NormalizedMermaidControls,
+	type StreamdownComponents,
 	type StreamdownContextType,
-	type StreamdownProps
+	type StreamdownControlsConfig,
+	type StreamdownProps,
+	type TableControlsConfig
 } from './context.svelte.js';
 export { default as IconProvider } from './IconProvider.svelte';
 export { default as PluginProvider } from './PluginProvider.svelte';
-export { useIsCodeFenceIncomplete, hasIncompleteCodeFence, hasTable } from './incomplete-code.js';
+export { detectTextDirection } from './detect-direction.js';
+export { hasIncompleteCodeFence, hasTable, useIsCodeFenceIncomplete } from './incomplete-code.js';
 export {
 	defaultIcons,
 	IconContext,
@@ -63,19 +73,20 @@ export {
 	parseIncompleteMarkdown,
 	type Plugin,
 	IncompleteMarkdownParser
-} from './utils/parse-incomplete-markdown.js';
+} from './remend.js';
 export {
 	bundledLanguagesInfo,
 	createLanguageSet,
 	type LanguageInfo
 } from './utils/bundledLanguages.js';
-export { detectTextDirection } from './utils/detectDirection.js';
 export {
+	isPathRelativeUrl,
 	parseUrl,
-	save,
 	transformUrl,
-	isPathRelativeUrl
-} from './utils/index.js';
+	type TransformUrlOptions,
+	type UrlPolicyKind
+} from './url-policy.js';
+export { save } from './utils/index.js';
 export {
 	defaultTranslations,
 	mergeTranslations,

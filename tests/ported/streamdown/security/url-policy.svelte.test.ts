@@ -1,6 +1,6 @@
 import { render } from 'vitest-browser-svelte';
 import { expect } from 'vitest';
-import Streamdown from '../../../../src/lib/Streamdown.svelte';
+import { Streamdown } from '../../../../src/lib/index.js';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
 describeInBrowser('ported streamdown security URL rendering', () => {

@@ -30,9 +30,9 @@ export const isPathRelativeUrl = (url: unknown): boolean => {
 	);
 };
 
-type UrlPolicyKind = 'image' | 'link';
+export type UrlPolicyKind = 'image' | 'link';
 
-type TransformUrlOptions = {
+export type TransformUrlOptions = {
 	kind?: UrlPolicyKind;
 };
 

@@ -1,13 +1,14 @@
 import { type StreamdownToken, type Extension } from './index.js';
 import { StreamdownContext } from '$lib/context.svelte.js';
 import { getContext } from 'svelte';
+import { STREAMDOWN_CONTEXT_KEY } from '$lib/context-key.js';
 
 const footnoteRegex = /^\[\^([^\]\n]+)\]:(?:[ \t]+|\n|$)([^\n]*(?:\n(?:[ \t]+[^\n]*)?)*)/;
 const footnoteRefRegex = /^\[\^([^\]\n]+)\]/;
 const footNoteLastLineRegex = /^[ \t]*?[>\-*][ ]|[`]{3,}$|^[ \t]*?[|].+[|]$/;
 const safeGetContext = () => {
 	try {
-		return getContext<StreamdownContext>('streamdown');
+		return getContext<StreamdownContext>(STREAMDOWN_CONTEXT_KEY);
 	} catch (e) {
 		return null;
 	}

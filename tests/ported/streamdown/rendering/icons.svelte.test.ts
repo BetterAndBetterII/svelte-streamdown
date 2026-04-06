@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-svelte';
 import { expect, vi } from 'vitest';
 import Streamdown from '../../../../src/lib/Streamdown.svelte';
 import Mermaid from '../../../../src/lib/Elements/Mermaid.svelte';
+import type { IconMap } from '../../../../src/lib/icon-context.js';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
 vi.mock('mermaid', () => ({
@@ -21,6 +22,16 @@ const iconSnippet = (name: string) =>
 
 describeInBrowser('ported streamdown icon overrides', () => {
 	testInBrowser('accepts reference IconMap-style keys for shared control icons', async () => {
+		const icons: Partial<IconMap> = {
+			CopyIcon: iconSnippet('copy'),
+			DownloadIcon: iconSnippet('download'),
+			CheckIcon: iconSnippet('check'),
+			Maximize2Icon: iconSnippet('maximize'),
+			ZoomInIcon: iconSnippet('zoom-in'),
+			ZoomOutIcon: iconSnippet('zoom-out'),
+			RotateCcwIcon: iconSnippet('fit-view')
+		};
+
 		const screen = render(Streamdown, {
 			content: [
 				'```js',
@@ -38,15 +49,7 @@ describeInBrowser('ported streamdown icon overrides', () => {
 			components: {
 				mermaid: Mermaid
 			},
-			icons: {
-				CopyIcon: iconSnippet('copy'),
-				DownloadIcon: iconSnippet('download'),
-				CheckIcon: iconSnippet('check'),
-				Maximize2Icon: iconSnippet('maximize'),
-				ZoomInIcon: iconSnippet('zoom-in'),
-				ZoomOutIcon: iconSnippet('zoom-out'),
-				RotateCcwIcon: iconSnippet('fit-view')
-			}
+			icons
 		});
 
 		await vi.waitFor(() => {
