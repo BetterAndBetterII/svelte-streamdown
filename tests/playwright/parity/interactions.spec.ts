@@ -214,7 +214,7 @@ test.describe('interaction parity fixtures', () => {
 
 			const [referenceBeforeZoom, localBeforeZoom] = await Promise.all([
 				readTransform(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				readTransform(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				readTransform(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			await Promise.all([
@@ -224,7 +224,7 @@ test.describe('interaction parity fixtures', () => {
 
 			const [referenceAfterZoom, localAfterZoom] = await Promise.all([
 				readTransform(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				readTransform(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				readTransform(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			expect(referenceAfterZoom).not.toBe(referenceBeforeZoom);
@@ -232,12 +232,12 @@ test.describe('interaction parity fixtures', () => {
 
 			await Promise.all([
 				dragMermaidCanvas(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				dragMermaidCanvas(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				dragMermaidCanvas(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			const [referenceAfterDrag, localAfterDrag] = await Promise.all([
 				readTransform(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				readTransform(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				readTransform(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			expect(referenceAfterDrag).not.toBe(referenceAfterZoom);
@@ -245,12 +245,12 @@ test.describe('interaction parity fixtures', () => {
 
 			await Promise.all([
 				wheelMermaidCanvas(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				wheelMermaidCanvas(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				wheelMermaidCanvas(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			const [referenceAfterWheel, localAfterWheel] = await Promise.all([
 				readTransform(referencePage, '[data-streamdown="mermaid"] [role="application"]'),
-				readTransform(localPage, '[data-streamdown-mermaid] [data-mermaid-svg]')
+				readTransform(localPage, '[data-streamdown-mermaid] [role="application"]')
 			]);
 
 			expect(referenceAfterWheel).not.toBe(referenceAfterDrag);

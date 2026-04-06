@@ -226,6 +226,8 @@ export const markedList: Extension = {
 					expectedValue = value ?? 1;
 					// Set the start property for ordered lists
 					list.start = expectedValue;
+					// Subsequent ordered items should advance from the first marker.
+					expectedValue += 1;
 				} else {
 					// Subsequent items: check if value matches expected
 					skipped = value !== null && value !== expectedValue;

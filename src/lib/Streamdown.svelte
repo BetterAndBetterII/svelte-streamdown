@@ -15,7 +15,9 @@
 	import { getThemeName, type ThemeInput } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import {
+		lexWithoutFootnotes,
 		lexWithFootnotes,
+		parseBlocksWithoutFootnotes,
 		parseBlocksWithFootnotes,
 		type FootnoteState,
 		type StreamdownToken
@@ -24,7 +26,6 @@
 	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
 	import Footnotes from './Elements/Footnotes.svelte';
 	import { normalizeHtmlIndentation } from './security/html.js';
-	import { parseIncompleteMarkdown as repairIncompleteMarkdown } from './utils/parse-incomplete-markdown.js';
 	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
 	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
 	import { carets, hasIncompleteCodeFence, hasTable } from './streaming.js';
@@ -41,6 +42,7 @@
 		enabled: true
 	} as const;
 	const defaultShikiTheme: [ThemeInput, ThemeInput] = ['github-light', 'github-dark'];
+	const footnoteDefinitionPattern = /\[\^[\w-]{1,200}\]:/;
 
 	const resolveShikiThemePair = (
 		theme: StreamdownProps<Source>['shikiTheme'] | undefined
@@ -465,12 +467,61 @@
 		isIncomplete: boolean;
 	};
 
+	const preserveStreamingFootnoteLiterals = (tokens: StreamdownToken[]): StreamdownToken[] =>
+		tokens.map((token) => {
+			if (
+				resolvedMode === 'streaming' &&
+				isAnimating &&
+				token.type === 'footnoteRef' &&
+				token.content.lines.join('\n').trim().length === 0
+			) {
+				return {
+					type: 'text',
+					raw: token.raw,
+					text: token.raw
+				} as StreamdownToken;
+			}
+
+			if ('tokens' in token && Array.isArray(token.tokens)) {
+				return {
+					...token,
+					tokens: preserveStreamingFootnoteLiterals(token.tokens as StreamdownToken[])
+				} as StreamdownToken;
+			}
+
+			return token;
+		});
+
+	const shouldResolveFootnotes = (markdown: string): boolean =>
+		!(
+			resolvedMode === 'streaming' &&
+			parseIncompleteMarkdown &&
+			!footnoteDefinitionPattern.test(markdown)
+		);
+
+	const parseMarkdownWithOptionalFootnotes = (markdown: string) => {
+		if (shouldResolveFootnotes(markdown)) {
+			return lexWithFootnotes(markdown, streamdown.extensions);
+		}
+
+		return {
+			tokens: lexWithoutFootnotes(markdown, streamdown.extensions),
+			footnotes: {
+				refs: new Map<string, FootnoteRef>(),
+				footnotes: new Map<string, Footnote>()
+			}
+		};
+	};
+
 	const splitBlocks = $derived(
 		parseMarkdownIntoBlocksFn ??
-			((markdown: string) => parseBlocksWithFootnotes(markdown, streamdown.extensions).blocks)
+			((markdown: string) =>
+				shouldResolveFootnotes(markdown)
+					? parseBlocksWithFootnotes(markdown, streamdown.extensions).blocks
+					: parseBlocksWithoutFootnotes(markdown, streamdown.extensions))
 	);
 	const normalizedContent = $derived.by(() => {
-		if (!(resolvedMode === 'streaming' && parseIncompleteMarkdown && remendOptions)) {
+		if (!(resolvedMode === 'streaming' && parseIncompleteMarkdown)) {
 			return preprocessedContent;
 		}
 
@@ -490,25 +541,19 @@
 	);
 	const parsedDocument = $derived.by(() => {
 		return {
-			footnotes: lexWithFootnotes(normalizedContent, streamdown.extensions).footnotes
+			footnotes: parseMarkdownWithOptionalFootnotes(normalizedContent).footnotes
 		};
 	});
 
 	const parsedBlocks = $derived.by(() => {
 		return rawBlocks.map((raw, index) => {
 			const isIncomplete = blockIsIncomplete[index] ?? false;
-			const markdown =
-				resolvedStatic ||
-				!parseIncompleteMarkdown ||
-				isIncomplete ||
-				(resolvedMode === 'streaming' && remendOptions)
-					? raw
-					: repairIncompleteMarkdown(raw);
-			const parsed = lexWithFootnotes(markdown, streamdown.extensions);
+			const markdown = raw;
+			const parsed = parseMarkdownWithOptionalFootnotes(markdown);
 
 			return {
 				raw,
-				tokens: parsed.tokens,
+				tokens: preserveStreamingFootnoteLiterals(parsed.tokens),
 				footnotes: parsed.footnotes,
 				isIncomplete
 			};
@@ -544,7 +589,7 @@
 				tokens:
 					content.length === 0
 						? []
-						: filterMarkdownTokens(lexWithFootnotes(content, streamdown.extensions).tokens, {
+						: filterMarkdownTokens(parseMarkdownWithOptionalFootnotes(content).tokens, {
 								allowedElements: streamdown.allowedElements,
 								allowElement: streamdown.allowElement,
 								disallowedElements: streamdown.disallowedElements,
@@ -592,45 +637,27 @@
 	};
 </script>
 
-<div bind:this={element} class={rootClassName} style={rootStyle}>
-	{#if shouldShowCaret && !shouldHideCaret && parsedBlocks.length === 0}
-		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
-	{/if}
-	{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}
-		{#if BlockComponent}
-			{#snippet blockChildren()}
-				<Block
-					static={resolvedStatic}
-					block={parsedBlock.raw}
-					tokens={parsedBlock.tokens}
-					parseIncompleteMarkdown={false}
-					isIncomplete={parsedBlock.isIncomplete}
-				/>
-			{/snippet}
-			<BlockComponent
-				content={parsedBlock.raw}
-				shouldParseIncompleteMarkdown={parseIncompleteMarkdown}
-				{shouldNormalizeHtmlIndentation}
-				{index}
-				isIncomplete={parsedBlock.isIncomplete}
-				dir={resolveBlockDirection(parsedBlock.raw)}
-				children={blockChildren}
-			/>
-		{:else}
-			<Block
-				static={resolvedStatic}
-				block={parsedBlock.raw}
-				tokens={parsedBlock.tokens}
-				parseIncompleteMarkdown={false}
-				isIncomplete={parsedBlock.isIncomplete}
-			/>
-		{/if}
-	{/each}
-	<Footnotes entries={footnoteEntries} />
-	{#if shouldShowCaret && !shouldHideCaret && !content.trim()}
-		<span aria-hidden="true" data-streamdown-caret-placeholder></span>
-	{/if}
-</div>
+<div bind:this={element} class={rootClassName} style={rootStyle}>{#if shouldShowCaret && !shouldHideCaret && parsedBlocks.length === 0}<span></span>{/if}{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}{#if BlockComponent}{#snippet blockChildren()}<Block
+	static={resolvedStatic}
+	block={parsedBlock.raw}
+	tokens={parsedBlock.tokens}
+	parseIncompleteMarkdown={false}
+	isIncomplete={parsedBlock.isIncomplete}
+/>{/snippet}<BlockComponent
+	content={parsedBlock.raw}
+	shouldParseIncompleteMarkdown={parseIncompleteMarkdown}
+	{shouldNormalizeHtmlIndentation}
+	{index}
+	isIncomplete={parsedBlock.isIncomplete}
+	dir={resolveBlockDirection(parsedBlock.raw)}
+	children={blockChildren}
+/>{:else}<Block
+	static={resolvedStatic}
+	block={parsedBlock.raw}
+	tokens={parsedBlock.tokens}
+	parseIncompleteMarkdown={false}
+	isIncomplete={parsedBlock.isIncomplete}
+/>{/if}{/each}<Footnotes entries={footnoteEntries} /></div>
 
 <style global>
 	:global {

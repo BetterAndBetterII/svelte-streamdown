@@ -109,7 +109,7 @@
 				}}
 				class={streamdown.theme.components.button}
 				title={label}
-				aria-label={label}
+				type="button"
 			>
 				{type === 'PNG'
 					? streamdown.translations.mermaidFormatPng
@@ -137,9 +137,9 @@
 	}}
 	{@attach clickOutside.attachment}
 	title={streamdown.translations.downloadDiagram}
-	aria-label={streamdown.translations.downloadDiagram}
 	disabled={streamdown.isAnimating}
 	data-panzoom-ignore
+	type="button"
 >
 	{@render resolveIcon(streamdown.icons, 'download', downloadIcon)()}
 </button>

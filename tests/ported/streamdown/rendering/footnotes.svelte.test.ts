@@ -55,21 +55,43 @@ describeInBrowser('ported streamdown footnote rendering', () => {
 		expect(section?.textContent).not.toContain('Placeholder');
 	});
 
-	testInBrowser('shows footnotes only after streamed definition content arrives', async () => {
+	testInBrowser('shows an empty footnote section as soon as a streamed definition stub arrives', async () => {
 		const screen = render(Streamdown, {
 			content: ['Text with footnote[^1].', '', '[^1]:'].join('\n'),
-			mode: 'streaming'
+			mode: 'streaming',
+			isAnimating: true
 		});
 
-		expect(screen.container.querySelector('section[data-footnotes]')).toBeNull();
+		const placeholderSection = screen.container.querySelector('section[data-footnotes]');
+		expect(placeholderSection).toBeTruthy();
+		expect(placeholderSection?.querySelectorAll('li')).toHaveLength(0);
+		expect(screen.container.querySelector('sup[data-streamdown-sup]')).toBeNull();
 
 		await screen.rerender({
 			content: ['Text with footnote[^1].', '', '[^1]: This is the content.'].join('\n'),
-			mode: 'streaming'
+			mode: 'streaming',
+			isAnimating: false
 		});
 
 		const section = screen.container.querySelector('section[data-footnotes]');
 		expect(section).toBeTruthy();
 		expect(section?.textContent).toContain('This is the content.');
+	});
+
+	testInBrowser('keeps unresolved streamed footnote references literal until a definition arrives', async () => {
+		const screen = render(Streamdown, {
+			content: 'Footnote reference[^1].',
+			mode: 'streaming'
+		});
+
+		expect(screen.container.querySelector('sup[data-streamdown-sup]')).toBeNull();
+		expect(screen.container.textContent).toContain('Footnote reference[^1].');
+
+		await screen.rerender({
+			content: ['Footnote reference[^1].', '', '[^1]: Defined later.'].join('\n'),
+			mode: 'streaming'
+		});
+
+		expect(screen.container.querySelector('sup[data-streamdown-sup] a[href="#footnote-1"]')).toBeTruthy();
 	});
 });

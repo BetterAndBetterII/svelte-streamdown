@@ -175,6 +175,8 @@ describeInBrowser('ported streamdown mermaid download controls', () => {
 		expect(screen.container.querySelector('button[title="View fullscreen"]')).toHaveAttribute(
 			'disabled'
 		);
-		expect(screen.container.querySelector('button[title="Zoom in"]')).toHaveAttribute('disabled');
+		expect(screen.container.querySelector('button[title="Zoom in"]')).not.toHaveAttribute(
+			'disabled'
+		);
 	});
 });

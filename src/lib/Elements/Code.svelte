@@ -32,6 +32,9 @@
 	);
 	const codePlugin = $derived(streamdown.plugins?.code ?? null);
 	const fence = $derived(parseCodeFenceInfo(token.lang));
+	const displayLanguage = $derived(
+		extractCodeFenceLanguage(token) || fence.language || token.lang || ''
+	);
 	const language = $derived(
 		extractCodeFenceLanguage(token) || fence.language || token.lang || 'text'
 	);
@@ -104,6 +107,10 @@
 	});
 
 	const renderedLines = $derived.by(() => {
+		if (incomplete) {
+			return null;
+		}
+
 		if (codePlugin) {
 			return pluginTokens;
 		}
@@ -125,7 +132,7 @@
 	class={streamdown.theme.code.base}
 >
 	<div data-streamdown="code-block-header" class={streamdown.theme.code.header}>
-		<span class={streamdown.theme.code.language}>{language}</span>
+		<span class={streamdown.theme.code.language}>{displayLanguage}</span>
 		{#if showCodeActions}
 			<div data-streamdown="code-block-actions" class={streamdown.theme.code.buttons}>
 				{#if streamdown.codeControls.download}
@@ -133,7 +140,6 @@
 						class={streamdown.theme.components.button}
 						onclick={downloadCode}
 						title={streamdown.translations.downloadFile}
-						aria-label={streamdown.translations.downloadFile}
 						disabled={buttonDisabled}
 						type="button"
 					>
@@ -150,7 +156,6 @@
 							}
 						}}
 						title={streamdown.translations.copyCode}
-						aria-label={streamdown.translations.copyCode}
 						disabled={buttonDisabled}
 						type="button"
 					>
@@ -213,15 +218,19 @@
 {/snippet}
 
 {#snippet Skeleton(lines: string[])}
-	{#each lines as line}
-		<span
-			class={`sd-code-line ${streamdown.theme.code.skeleton} ${
-				showLineNumbers
-					? 'before:mr-4 before:inline-block before:w-6 before:text-right before:font-mono before:text-[13px] before:text-muted-foreground/50 before:content-[counter(line)] before:select-none before:[counter-increment:line]'
-					: ''
-			}`}
-		>
-			{line.trim().length > 0 ? line : '\u200B'}
-		</span>
-	{/each}
+	{#if lines.length === 1 && lines[0]?.length === 0}
+		{'\n'}
+	{:else}
+		{#each lines as line}
+			<span
+				class={`sd-code-line ${streamdown.theme.code.skeleton} ${
+					showLineNumbers
+						? 'before:mr-4 before:inline-block before:w-6 before:text-right before:font-mono before:text-[13px] before:text-muted-foreground/50 before:content-[counter(line)] before:select-none before:[counter-increment:line]'
+						: ''
+				}`}
+			>
+				{line.length > 0 ? line : '\n'}
+			</span>
+		{/each}
+	{/if}
 {/snippet}

@@ -197,7 +197,9 @@ function main() {
 			'--coverage.reporter=json-summary',
 			'--coverage.reporter=html',
 			`--coverage.reportsDirectory=${relative(repoRoot, reportsDirectory)}`,
-			...coverageSourceInclude.map((pattern) => `--coverage.include=${pattern}`),
+			...(suite.sourceInclude ?? coverageSourceInclude).map(
+				(pattern) => `--coverage.include=${pattern}`
+			),
 			...coverageSourceExclude.map((pattern) => `--coverage.exclude=${pattern}`),
 			...(suite.projects.includes('client') ? ['--maxWorkers=1'] : []),
 			...suite.projects.map((project) => `--project=${project}`),

@@ -583,8 +583,8 @@ export const markedTable: Extension = {
 
 		// If no match with header alignment, try table without header alignment
 		if (!cap) {
-			// Simple regex for tables without header alignment
-			regex = /^(\|.*\|(?:\n\|.*\|)*)/;
+			// Simple tables still require at least two pipe-delimited rows.
+			regex = /^(\|.*\|\n\|.*\|(?:\n\|.*\|)*)/;
 			cap = regex.exec(src);
 			hasHeaderAlignment = false;
 		}
@@ -630,6 +630,7 @@ export const markedTable: Extension = {
 				// Filter out empty rows and the alignment row itself from headers
 
 				headerRows = allRows.slice(0, headerEndIndex).filter((row) => row.trim() !== '');
+				const headerCellCount = splitRow(headerRows[0] ?? '').filter((cell) => cell.length > 0).length;
 
 				bodyRows = headerEndIndex + 1 < allRows.length ? allRows.slice(headerEndIndex + 1) : [];
 
@@ -637,7 +638,7 @@ export const markedTable: Extension = {
 				colCount = alignRow.length;
 
 				// Validate that we have a reasonable table structure
-				if (colCount === 0) return undefined;
+				if (colCount === 0 || (headerCellCount > 0 && colCount < headerCellCount)) return undefined;
 
 				// Process alignment
 				alignment = processAlignment(alignRow);

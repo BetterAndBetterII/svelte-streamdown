@@ -151,7 +151,7 @@ describeInBrowser('ported streamdown mermaid controls', () => {
 		expect(screen.container.querySelector('button[title="View fullscreen"]')).toBeNull();
 		expect(screen.container.querySelector('button[title="Zoom in"]')).toBeNull();
 		expect(screen.container.querySelector('button[title="Zoom out"]')).toBeNull();
-		expect(screen.container.querySelector('button[title="Zoom to fit"]')).toBeNull();
+		expect(screen.container.querySelector('button[title="Reset zoom and pan"]')).toBeNull();
 
 		(screen.container.querySelector('[data-mermaid-error-retry]') as HTMLButtonElement).click();
 

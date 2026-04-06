@@ -122,7 +122,7 @@
 		modeState === 'download' ? ['Markdown', 'CSV'] : ['Markdown', 'CSV', 'TSV']
 	);
 	const buttonModes = $derived(
-		[showDownload ? 'download' : null, showCopy ? 'copy' : null].filter(
+		[showCopy ? 'copy' : null, showDownload ? 'download' : null].filter(
 			(mode): mode is 'download' | 'copy' => mode !== null
 		)
 	);
@@ -156,7 +156,7 @@
 				onclick={() => copyOrDownload(type as 'Markdown' | 'CSV' | 'TSV')}
 				class={streamdown.theme.components.button}
 				title={label}
-				aria-label={label}
+				type="button"
 			>
 				{type === 'Markdown'
 					? streamdown.translations.tableFormatMarkdown
@@ -199,10 +199,8 @@
 				title={mode === 'download'
 					? streamdown.translations.downloadTable
 					: streamdown.translations.copyTable}
-				aria-label={mode === 'download'
-					? streamdown.translations.downloadTable
-					: streamdown.translations.copyTable}
 				disabled={streamdown.isAnimating}
+				type="button"
 			>
 				{#if mode === 'download'}
 					{@render resolveIcon(streamdown.icons, 'download', downloadIcon)()}

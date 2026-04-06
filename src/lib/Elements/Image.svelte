@@ -183,12 +183,13 @@
 			</span>
 		</Slot>
 	{:else}
-		<span
-			data-streamdown-image-blocked={id}
-			class="inline-block rounded bg-gray-200 px-3 py-1 text-sm text-gray-600 dark:bg-gray-700 dark:text-gray-400"
-			title={`Blocked URL: ${token.href}`}
-		>
-			[Image blocked: {token.text || 'No description'}]
-		</span>
+		<p>
+			<span
+				data-streamdown-image-blocked={id}
+				class="inline-block rounded bg-gray-200 px-3 py-1 text-sm text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+			>
+				[Image blocked: {token.text || 'No description'}]
+			</span>
+		</p>
 	{/if}
 {/if}

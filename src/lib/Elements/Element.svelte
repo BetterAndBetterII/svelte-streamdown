@@ -94,8 +94,18 @@
 	const DelComponent = $derived(token.type === 'del' ? streamdown.components?.del : undefined);
 	const HrComponent = $derived(token.type === 'hr' ? streamdown.components?.hr : undefined);
 	const BrComponent = $derived(token.type === 'br' ? streamdown.components?.br : undefined);
+	const shouldRenderCitationPreview = $derived.by(() => {
+		if (token.type !== 'inline-citations') {
+			return false;
+		}
+
+		return token.keys.some((key) => key in (streamdown.sources ?? {}));
+	});
 	const shouldUnwrapStandaloneImageParagraph = $derived(
 		token.type === 'paragraph' && token.tokens?.length === 1 && token.tokens[0]?.type === 'image'
+	);
+	const listHasTaskItems = $derived(
+		token.type === 'list' && token.tokens.some((item) => item.task)
 	);
 
 	// Only apply animation on block level elements. Leaves text elements to be animated by their text children.
@@ -115,29 +125,17 @@
 		component={HeadingComponent}
 	>
 		{#if token.depth === 1}
-			<h1 data-streamdown-heading-1={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h1>
+			<h1 data-streamdown-heading-1={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h1>
 		{:else if token.depth === 2}
-			<h2 data-streamdown-heading-2={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h2>
+			<h2 data-streamdown-heading-2={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h2>
 		{:else if token.depth === 3}
-			<h3 data-streamdown-heading-3={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h3>
+			<h3 data-streamdown-heading-3={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h3>
 		{:else if token.depth === 4}
-			<h4 data-streamdown-heading-4={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h4>
+			<h4 data-streamdown-heading-4={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h4>
 		{:else if token.depth === 5}
-			<h5 data-streamdown-heading-5={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h5>
+			<h5 data-streamdown-heading-5={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h5>
 		{:else if token.depth === 6}
-			<h6 data-streamdown-heading-6={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
-				{@render children()}
-			</h6>
+			<h6 data-streamdown-heading-6={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h6>
 		{/if}
 	</Slot>
 {:else if token.type === 'paragraph'}
@@ -150,9 +148,7 @@
 			render={streamdown.snippets.paragraph}
 			component={ParagraphComponent}
 		>
-			<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>
-				{@render children()}
-			</p>
+			<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>{@render children()}</p>
 		</Slot>
 	{/if}
 {:else if token.type === 'blockquote'}
@@ -161,9 +157,7 @@
 		render={streamdown.snippets.blockquote}
 		component={BlockquoteComponent}
 	>
-		<blockquote data-streamdown-blockquote={id} {style} class={streamdown.theme.blockquote.base}>
-			{@render children()}
-		</blockquote>
+		<blockquote data-streamdown-blockquote={id} {style} class={streamdown.theme.blockquote.base}>{@render children()}</blockquote>
 	</Slot>
 {:else if token.type === 'code' && customRenderer}
 	{@const Renderer = customRenderer.component}
@@ -175,11 +169,7 @@
 	/>
 {:else if token.type === 'code' && extractCodeFenceLanguage(token) === 'mermaid'}
 	<Slot props={{ children, token }} render={streamdown.snippets.code}>
-		{#if isIncomplete}
-			<MermaidFallback {id} {token} isIncomplete={true} />
-		{:else}
-			<MermaidComponent {id} {token} isIncomplete={false} />
-		{/if}
+		<MermaidComponent {id} {token} {isIncomplete} />
 	</Slot>
 {:else if token.type === 'code'}
 	<Slot props={{ children, token }} render={streamdown.snippets.code}>
@@ -205,6 +195,8 @@
 			<ol
 				data-streamdown-ol={id}
 				style:list-style-type={token.listType}
+				{...(token.start && token.start !== 1 ? { start: token.start } : {})}
+				class:contains-task-list={listHasTaskItems}
 				class={streamdown.theme.ol.base}
 			>
 				{@render children()}
@@ -216,7 +208,11 @@
 			render={streamdown.snippets.ul}
 			component={UnorderedListComponent}
 		>
-			<ul data-streamdown-ul={id} class={streamdown.theme.ul.base}>
+			<ul
+				data-streamdown-ul={id}
+				class:contains-task-list={listHasTaskItems}
+				class={streamdown.theme.ul.base}
+			>
 				{@render children()}
 			</ul>
 		</Slot>
@@ -231,19 +227,18 @@
 			data-streamdown-li={id}
 			{style}
 			style:list-style-type={token.task ? 'none' : undefined}
-			{...token.value && !token.task ? { value: token.value } : {}}
+			{...token.value && token.skipped && !token.task ? { value: token.value } : {}}
+			class:task-list-item={token.task}
 			class={streamdown.theme.li.base}
-		>
-			{#if token.task}
+		>{#if token.task}
 				<input
 					disabled
 					type="checkbox"
 					checked={token.checked}
 					class={streamdown.theme.li.checkbox}
 				/>
-			{/if}
-			{@render children()}
-		</li>
+				{' '}
+			{/if}{@render children()}</li>
 	</Slot>
 {:else if token.type === 'table'}
 	<Slot props={{ token, children }} render={streamdown.snippets.table}>
@@ -345,9 +340,7 @@
 		render={streamdown.snippets.sub}
 		component={SubComponent}
 	>
-		<sub data-streamdown-sub={id} class={streamdown.theme.sub.base}>
-			{@render children()}
-		</sub>
+		<sub data-streamdown-sub={id} class={streamdown.theme.sub.base}>{@render children()}</sub>
 	</Slot>
 {:else if token.type === 'sup'}
 	<Slot
@@ -355,9 +348,7 @@
 		render={streamdown.snippets.sup}
 		component={SupComponent}
 	>
-		<sup data-streamdown-sup={id} class={streamdown.theme.sup.base}>
-			{@render children()}
-		</sup>
+		<sup data-streamdown-sup={id} class={streamdown.theme.sup.base}>{@render children()}</sup>
 	</Slot>
 {:else if token.type === 'strong'}
 	<Slot
@@ -365,9 +356,7 @@
 		render={streamdown.snippets.strong}
 		component={StrongComponent}
 	>
-		<strong data-streamdown-strong={id} class={streamdown.theme.strong.base}>
-			{@render children()}
-		</strong>
+		<strong data-streamdown-strong={id} class={streamdown.theme.strong.base}>{@render children()}</strong>
 	</Slot>
 {:else if token.type === 'em'}
 	<Slot
@@ -375,9 +364,7 @@
 		render={streamdown.snippets.em}
 		component={EmComponent}
 	>
-		<em data-streamdown-em={id} class={streamdown.theme.em.base}>
-			{@render children()}
-		</em>
+		<em data-streamdown-em={id} class={streamdown.theme.em.base}>{@render children()}</em>
 	</Slot>
 {:else if token.type === 'del'}
 	<Slot
@@ -385,9 +372,7 @@
 		render={streamdown.snippets.del}
 		component={DelComponent}
 	>
-		<del data-streamdown-del={id} class={streamdown.theme.del.base}>
-			{@render children()}
-		</del>
+		<del data-streamdown-del={id} class={streamdown.theme.del.base}>{@render children()}</del>
 	</Slot>
 {:else if token.type === 'hr'}
 	<Slot
@@ -418,9 +403,13 @@
 		<FootnoteRef {token} />
 	</Slot>
 {:else if token.type === 'inline-citations'}
-	<Slot props={{ token }} render={streamdown.snippets.inlineCitation}>
-		<Citation {token} />
-	</Slot>
+	{#if shouldRenderCitationPreview}
+		<Slot props={{ token }} render={streamdown.snippets.inlineCitation}>
+			<Citation {token} />
+		</Slot>
+	{:else}
+		{token.text}
+	{/if}
 {:else if token.type === 'footnote'}
 	<!-- Footnotes render as a trailing section in Streamdown.svelte. -->
 {:else if token.type === 'descriptionList'}

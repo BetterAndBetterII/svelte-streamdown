@@ -59,6 +59,12 @@ describeInBrowser('ported streamdown final-coverage regressions', () => {
 			).toBeTruthy();
 			expect(omitted.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
 			expect(explicitUndefined.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
+			expect(
+				omitted.container.querySelector('button[title="Reset zoom and pan"]')
+			).toBeTruthy();
+			expect(
+				explicitUndefined.container.querySelector('button[title="Reset zoom and pan"]')
+			).toBeTruthy();
 		}
 	);
 

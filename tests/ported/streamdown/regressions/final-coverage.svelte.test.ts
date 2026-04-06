@@ -62,7 +62,9 @@ describeInBrowser('ported streamdown final aggregate closeout', () => {
 			expect(enabled.container.querySelector('button[title="View fullscreen"]')).toBeTruthy();
 			expect(enabled.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
 			expect(enabled.container.querySelector('button[title="Zoom out"]')).toBeTruthy();
-			expect(enabled.container.querySelector('button[title="Zoom to fit"]')).toBeTruthy();
+			expect(
+				enabled.container.querySelector('button[title="Reset zoom and pan"]')
+			).toBeTruthy();
 		});
 	});
 

@@ -81,7 +81,8 @@ describeInBrowser('ported streamdown caret rendering', () => {
 			isAnimating: true
 		});
 
-		expect(screen.container.querySelector('[data-streamdown-caret-placeholder]')).toBeTruthy();
+		expect(screen.container.querySelector('span')).toBeTruthy();
+		expect(screen.container.querySelector('[data-streamdown-caret-placeholder]')).toBeNull();
 	});
 
 	testInBrowser('does not apply caret styles in static mode', () => {

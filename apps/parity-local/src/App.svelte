@@ -100,7 +100,7 @@
 						mode={harnessState.mode}
 						isAnimating={harnessState.isAnimating}
 						caret={harnessState.caret === 'none' ? undefined : harnessState.caret}
-						controls={harnessState.profile === 'commonmark' ? false : true}
+						controls={harnessState.profile === 'commonmark' ? false : undefined}
 						linkSafety={{ enabled: harnessState.profile !== 'commonmark' }}
 						plugins={harnessState.profile === 'commonmark' ? undefined : defaultPlugins}
 					/>
