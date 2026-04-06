@@ -54,6 +54,26 @@ describeInBrowser('ported streamdown component overrides', () => {
 		}
 	);
 
+	testInBrowser('matches reference ordered-list attributes and blocked incomplete-link rendering', () => {
+		const screen = render(Streamdown, {
+			content: ['3. Third', '4. Fourth', '', 'Paragraph with [dangling link'].join('\n'),
+			mode: 'streaming',
+			isAnimating: true,
+			caret: 'block'
+		});
+
+		const orderedList = screen.container.querySelector('ol');
+		const listItems = [...screen.container.querySelectorAll('li')];
+		const blockedLink = screen.container.querySelector('[data-streamdown-link-blocked]');
+
+		expect(orderedList?.getAttribute('start')).toBe('3');
+		expect(listItems[0]?.getAttribute('value')).toBeNull();
+		expect(listItems[1]?.getAttribute('value')).toBeNull();
+		expect(blockedLink?.textContent).toContain('[blocked]');
+		expect(blockedLink?.getAttribute('title')).toBe('Blocked URL: undefined');
+		expect(screen.container.querySelector('a[data-incomplete="true"]')).toBeNull();
+	});
+
 	testInBrowser(
 		'supports reference-style components overrides for headings, paragraphs, links, images, tables, and inline code',
 		() => {

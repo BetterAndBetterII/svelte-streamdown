@@ -19,7 +19,6 @@ type ParityHarnessSnapshot = {
 	mode: string;
 	fixtureId: string;
 	isAnimating: string;
-	text: string;
 };
 
 type RenderSnapshot = {
@@ -299,7 +298,6 @@ async function readRenderSnapshot(locator: Locator): Promise<RenderSnapshot> {
 		normalizeDom(locator).then((fragment) => formatNormalizedDom(fragment)),
 		locator.evaluate((rootElement) => {
 			const hostElement = rootElement.firstElementChild as HTMLElement | null;
-			const normalizeText = (value: string): string => value.replace(/\s+/g, ' ').trim();
 
 			return {
 				caret: hostElement?.style.getPropertyValue('--streamdown-caret') ?? '',
@@ -322,16 +320,12 @@ async function readRenderSnapshot(locator: Locator): Promise<RenderSnapshot> {
 					rootElement
 						.closest('[data-parity-app]')
 						?.querySelector('[data-parity-mode]')
-						?.textContent?.trim() ?? '',
-				text: normalizeText(rootElement.textContent ?? '')
+						?.textContent?.trim() ?? ''
 			};
 		})
 	]);
 
 	const dump = [
-		'Normalized text:',
-		summary.text.length > 0 ? summary.text : '<empty>',
-		'',
 		'Summary:',
 		JSON.stringify(summary, null, 2),
 		'',

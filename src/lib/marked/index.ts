@@ -275,6 +275,41 @@ type LexerWithFootnotes = Lexer & {
 	footnotes?: FootnoteState;
 };
 
+const filterOutFootnoteExtensions = (extensions: Extension[]) =>
+	extensions.filter(({ name }) => name !== 'footnote' && name !== 'footnoteRef');
+
+const buildInlineLexerOptions = (extensions: Extension[], includeFootnotes: boolean) =>
+	parseExtensions(
+		markedHr,
+		markedTable,
+		...(includeFootnotes ? markedFootnote({ preferContext: false }) : []),
+		markedAlert,
+		...markedMath,
+		...markedCjk,
+		markedSub,
+		markedSup,
+		markedList,
+		markedBr,
+		markedDl,
+		markedAlign,
+		markedCitations,
+		markedMdx,
+		...(includeFootnotes ? extensions : filterOutFootnoteExtensions(extensions))
+	);
+
+const buildBlockLexerOptions = (extensions: Extension[], includeFootnotes: boolean) =>
+	parseExtensions(
+		markedHr,
+		...(includeFootnotes ? markedFootnote({ preferContext: false }) : []),
+		markedDl,
+		markedTable,
+		markedAlign,
+		markedMdx,
+		...(includeFootnotes ? extensions : filterOutFootnoteExtensions(extensions)).filter(
+			({ level, applyInBlockParsing }) => level === 'block' && applyInBlockParsing
+		)
+	);
+
 export const lexWithFootnotes = (
 	markdown: string,
 	extensions: Extension[] = []
@@ -282,25 +317,7 @@ export const lexWithFootnotes = (
 	tokens: StreamdownToken[];
 	footnotes: FootnoteState;
 } => {
-	const lexer = new Lexer(
-		parseExtensions(
-			markedHr,
-			markedTable,
-			...markedFootnote({ preferContext: false }),
-			markedAlert,
-			...markedMath,
-			...markedCjk,
-			markedSub,
-			markedSup,
-			markedList,
-			markedBr,
-			markedDl,
-			markedAlign,
-			markedCitations,
-			markedMdx,
-			...extensions
-		)
-	) as LexerWithFootnotes;
+	const lexer = new Lexer(buildInlineLexerOptions(extensions, true)) as LexerWithFootnotes;
 
 	return {
 		tokens: lexer
@@ -308,6 +325,16 @@ export const lexWithFootnotes = (
 			.filter((token) => token.type !== 'space' && token.type !== 'footnote') as StreamdownToken[],
 		footnotes: cloneFootnoteState(lexer.footnotes)
 	};
+};
+
+export const lexWithoutFootnotes = (
+	markdown: string,
+	extensions: Extension[] = []
+): StreamdownToken[] => {
+	const lexer = new Lexer(buildInlineLexerOptions(extensions, false));
+	return lexer
+		.lex(markdown)
+		.filter((token) => token.type !== 'space' && token.type !== 'footnote') as StreamdownToken[];
 };
 
 export const lex = (markdown: string, extensions: Extension[] = []): StreamdownToken[] => {
@@ -327,19 +354,7 @@ export const parseBlocksWithFootnotes = (
 			footnotes: lexWithFootnotes(markdown, extensions).footnotes
 		};
 	}
-	const blockLexer = new Lexer(
-		parseExtensions(
-			markedHr,
-			...markedFootnote({ preferContext: false }),
-			markedDl,
-			markedTable,
-			markedAlign,
-			markedMdx,
-			...extensions.filter(
-				({ level, applyInBlockParsing }) => level === 'block' && applyInBlockParsing
-			)
-		)
-	) as LexerWithFootnotes;
+	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, true)) as LexerWithFootnotes;
 
 	const rawBlocks = blockLexer
 		.blockTokens(markdown, [])
@@ -383,6 +398,49 @@ export const parseBlocksWithFootnotes = (
 		blocks: mergedBlocks,
 		footnotes: cloneFootnoteState(blockLexer.footnotes)
 	};
+};
+
+export const parseBlocksWithoutFootnotes = (
+	markdown: string,
+	extensions: Extension[] = []
+): string[] => {
+	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, false));
+	const rawBlocks = blockLexer.blockTokens(markdown, []).filter((block) => block.type !== 'space');
+	const mergedBlocks: string[] = [];
+	let previousTokenWasCode = false;
+
+	for (let index = 0; index < rawBlocks.length; index += 1) {
+		const block = rawBlocks[index];
+		let currentBlock = block.raw;
+
+		if (block.type === 'html') {
+			const tagName = getOpeningHtmlTagName(block.raw);
+			if (tagName) {
+				let depth = getHtmlTagDepthDelta(block.raw, tagName);
+
+				while (depth > 0 && index + 1 < rawBlocks.length) {
+					index += 1;
+					const nextBlock = rawBlocks[index];
+					currentBlock += nextBlock.raw;
+					depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
+				}
+			}
+		}
+
+		if (mergedBlocks.length > 0 && !previousTokenWasCode) {
+			const previousBlock = mergedBlocks[mergedBlocks.length - 1];
+			if (countDoubleDollars(previousBlock) % 2 === 1) {
+				mergedBlocks[mergedBlocks.length - 1] = previousBlock + currentBlock;
+				previousTokenWasCode = block.type === 'code';
+				continue;
+			}
+		}
+
+		mergedBlocks.push(currentBlock);
+		previousTokenWasCode = block.type === 'code';
+	}
+
+	return mergedBlocks;
 };
 
 export const parseBlocks = (markdown: string, extensions: Extension[] = []): string[] => {

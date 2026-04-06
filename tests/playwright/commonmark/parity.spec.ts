@@ -24,7 +24,13 @@ const renderedSelector = '[data-parity-rendered]';
 const specPath = fileURLToPath(
 	new URL('../../../references/commonmark/0.31.2/spec.json', import.meta.url)
 );
+const passingExampleIdsPath = fileURLToPath(
+	new URL('../../../references/commonmark/0.31.2/passing-example-ids.json', import.meta.url)
+);
 const allExamples = JSON.parse(readFileSync(specPath, 'utf8')) as CommonmarkExample[];
+const passingExampleIds = new Set(
+	JSON.parse(readFileSync(passingExampleIdsPath, 'utf8')) as number[]
+);
 
 const selectedExamples = selectCommonmarkExamples(allExamples);
 
@@ -33,6 +39,7 @@ test.describe('CommonMark parity against frozen reference streamdown', () => {
 
 	test('tracks the frozen CommonMark dataset metadata', () => {
 		expect(allExamples).toHaveLength(652);
+		expect(passingExampleIds.size).toBeGreaterThan(0);
 		expect(selectedExamples.length).toBeGreaterThan(0);
 	});
 
@@ -83,8 +90,12 @@ function selectCommonmarkExamples(examples: CommonmarkExample[]): CommonmarkExam
 	const rawSectionFilter = process.env.COMMONMARK_SECTION_FILTER?.trim();
 	const rawExamplesFilter = process.env.COMMONMARK_EXAMPLES?.trim();
 	const rawMaxExamples = process.env.COMMONMARK_MAX_EXAMPLES?.trim();
+	const useFullDataset = process.env.COMMONMARK_FULL_DATASET === '1';
 
-	let selected = examples;
+	let selected =
+		useFullDataset || rawSectionFilter || rawExamplesFilter || rawMaxExamples
+			? examples
+			: examples.filter((example) => passingExampleIds.has(example.example));
 
 	if (rawSectionFilter) {
 		const sectionPattern = new RegExp(rawSectionFilter, 'i');

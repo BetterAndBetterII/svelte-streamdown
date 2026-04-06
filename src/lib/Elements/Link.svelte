@@ -24,7 +24,7 @@
 			return {
 				href: undefined,
 				rel: undefined,
-				state: 'anchor' as const,
+				state: 'blocked' as const,
 				target: undefined,
 				isIncomplete: true,
 				isRelative: false
@@ -45,7 +45,7 @@
 			return {
 				href: undefined,
 				rel: undefined,
-				state: 'anchor' as const,
+				state: 'literal' as const,
 				target: undefined,
 				isIncomplete: false,
 				isRelative: false
@@ -167,14 +167,7 @@
 			data-incomplete={resolvedLink.isIncomplete ? 'true' : undefined}
 			class={`${streamdown.theme.link.base} appearance-none border-none bg-transparent p-0 text-left`}
 			onclick={(event) => void handleInterceptedClick(event)}
-		>
-			{@render children()}
-		</button>
-		{#if customModal}
-			{@render customModal(modalProps)}
-		{:else}
-			<LinkSafetyModal {...modalProps} />
-		{/if}
+		>{@render children()}</button>{#if customModal}{@render customModal(modalProps)}{:else}<LinkSafetyModal {...modalProps} />{/if}
 	{:else}
 		<Slot
 			props={{
@@ -197,17 +190,15 @@
 				href={resolvedLink.href}
 				target={resolvedLink.target}
 				rel={resolvedLink.rel}
-			>
-				{@render children()}
-			</a>
+			>{@render children()}</a>
 		</Slot>
 	{/if}
+{:else if resolvedLink.state === 'literal'}
+	{'['}{@render children()}{']'}
 {:else}
 	<span
 		data-streamdown-link-blocked={id}
 		class={streamdown.theme.link.blocked}
-		title={token.title ? `Blocked URL: ${token.href}` : undefined}
-	>
-		{@render children()} [blocked]
-	</span>
+		title={`Blocked URL: ${resolvedLink.href}`}
+	>{@render children()} [blocked]</span>
 {/if}

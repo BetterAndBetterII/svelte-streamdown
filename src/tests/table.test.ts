@@ -29,6 +29,14 @@ describe('tokenization', () => {
 		expect(tableBody).toBeDefined();
 	});
 
+	test('does not treat a single pipe-delimited row as a complete table', () => {
+		const tokens = lex('| Left |');
+
+		expect(getFirstTokenByType(tokens, 'table')).toBeUndefined();
+		expect(tokens[0]?.type).toBe('paragraph');
+		expect(tokens[0]?.raw).toBe('| Left |');
+	});
+
 	test('should parse table header and verify header properties', () => {
 		const tokens = lex('| Name | Age | City |\n|------|-----|------|\n| John | 25  | NYC  |');
 		const tableToken = getFirstTokenByType(tokens, 'table');

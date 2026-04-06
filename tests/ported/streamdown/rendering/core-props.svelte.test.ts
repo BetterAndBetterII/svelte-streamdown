@@ -101,7 +101,8 @@ describeInBrowser('ported streamdown core props', () => {
 		});
 
 		const root = screen.container.firstElementChild;
-		expect(root?.querySelector('[data-streamdown-caret-placeholder]')).toBeTruthy();
+		expect(root?.querySelectorAll('span')).toHaveLength(1);
+		expect(root?.querySelector('[data-streamdown-caret-placeholder]')).toBeNull();
 	});
 
 	testInBrowser('animated + isAnimating uses the animation compatibility layer', () => {

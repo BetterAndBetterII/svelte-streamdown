@@ -178,7 +178,9 @@ async function openStyleProbePage(page: Page, url: string): Promise<void> {
 	).toHaveCount(2);
 	await expect(page.locator(`${renderedSelector} button[title="Copy table"]`)).toHaveCount(1);
 	await expect(page.locator(`${renderedSelector} button[title="Download table"]`)).toHaveCount(1);
-	await expect(page.locator(`${renderedSelector} button[title="Zoom to fit"]`)).toHaveCount(1);
+	await expect(page.locator(`${renderedSelector} button[title="Reset zoom and pan"]`)).toHaveCount(
+		1
+	);
 	await expect(page.locator(`${renderedSelector} button[title="Zoom in"]`)).toHaveCount(1);
 	await expect(page.locator(`${renderedSelector} button[title="Zoom out"]`)).toHaveCount(1);
 	await expect(page.locator(`${renderedSelector} button[title="View fullscreen"]`)).toHaveCount(2);
@@ -236,7 +238,7 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 			};
 
 			const findMermaidShellElement = () => {
-				const zoomButton = root.querySelector('button[title="Zoom to fit"]');
+				const zoomButton = root.querySelector('button[title="Reset zoom and pan"]');
 				if (!(zoomButton instanceof Element)) {
 					throw new Error('Style probe mermaid zoom button did not resolve.');
 				}
@@ -294,10 +296,13 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 				tableFullscreenButton: query('button[title="View fullscreen"]', 'tableFullscreenButton'),
 				mermaidShell: readElement(findMermaidShellElement(), 'mermaidShell'),
 				mermaidActionBar: readElement(
-					querySelectorParent(root, 'button[title="Zoom to fit"]'),
+					querySelectorParent(root, 'button[title="Reset zoom and pan"]'),
 					'mermaidActionBar'
 				),
-				mermaidActionButton: query('button[title="Zoom to fit"]', 'mermaidActionButton'),
+				mermaidActionButton: query(
+					'button[title="Reset zoom and pan"]',
+					'mermaidActionButton'
+				),
 				mermaidZoomInButton: query('button[title="Zoom in"]', 'mermaidZoomInButton'),
 				mermaidZoomOutButton: query('button[title="Zoom out"]', 'mermaidZoomOutButton'),
 				mermaidFullscreenButton: queryWithin(

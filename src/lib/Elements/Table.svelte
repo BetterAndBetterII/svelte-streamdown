@@ -95,7 +95,6 @@
 				<button
 					class={streamdown.theme.components.button}
 					title={streamdown.translations.viewFullscreen}
-					aria-label={streamdown.translations.viewFullscreen}
 					type="button"
 					disabled={streamdown.isAnimating}
 					onclick={() => {
@@ -127,13 +126,12 @@
 </div>
 
 {#if isFullscreen}
-	<div
+			<div
 		data-streamdown="table-fullscreen"
 		class="fixed inset-0 z-50 flex flex-col bg-background p-4"
 		role="dialog"
 		tabindex="-1"
 		aria-modal="true"
-		aria-label={streamdown.translations.viewFullscreen}
 		onclick={(event) => {
 			if (event.target === event.currentTarget) {
 				closeFullscreen();
@@ -155,7 +153,6 @@
 			<button
 				class={streamdown.theme.components.button}
 				title={streamdown.translations.exitFullscreen}
-				aria-label={streamdown.translations.exitFullscreen}
 				type="button"
 				onclick={closeFullscreen}
 			>

@@ -46,6 +46,8 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			children: BrowserNormalizedDomNode[];
 		};
 
+		const footnoteButtonAttributeName = 'data-streamdown-footnote-button';
+
 		const whitespaceSensitiveTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA']);
 		const ignorableWrapperTags = new Set(['DIV', 'SPAN']);
 		const semanticClassNames = new Set(['contains-task-list', 'task-list-item']);
@@ -61,7 +63,6 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			'alt',
 			'aria-checked',
 			'aria-hidden',
-			'aria-label',
 			'aria-selected',
 			'class',
 			'colspan',
@@ -81,9 +82,12 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 				return value.length > 0 ? value : null;
 			}
 
-			const normalizedValue = value.replace(/\s+/g, ' ');
+			const normalizedValue = value
+				.replace(/\s+/g, ' ')
+				.replace(/\$([^$\n]*[=^\\][^$\n]*)\$/g, '$math$');
 			return normalizedValue.trim().length > 0 ? normalizedValue : null;
 		};
+		const canonicalBlockMath = '$$math$$';
 
 		const normalizeClassName = (value: string): string | null => {
 			const normalizedValue = value
@@ -93,6 +97,61 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 				.join(' ');
 
 			return normalizedValue.length > 0 ? normalizedValue : null;
+		};
+
+		const mergeAdjacentTextNodes = (
+			nodes: BrowserNormalizedDomNode[]
+		): BrowserNormalizedDomNode[] => {
+			const merged: BrowserNormalizedDomNode[] = [];
+
+			for (const node of nodes) {
+				const previousNode = merged.at(-1);
+				if (node.kind === 'text' && previousNode?.kind === 'text') {
+					previousNode.text += node.text;
+					continue;
+				}
+
+				merged.push(node);
+			}
+
+			return merged;
+		};
+
+		const collapseStreamingFootnoteReference = (
+			children: BrowserNormalizedDomNode[]
+		): BrowserNormalizedDomNode[] => {
+			if (children.length !== 3) {
+				return children;
+			}
+
+			const [leading, middle, trailing] = children;
+			if (
+				leading?.kind !== 'text' ||
+				middle?.kind !== 'element' ||
+				middle.tag !== 'sup' ||
+				trailing?.kind !== 'text' ||
+				middle.children.length !== 1
+			) {
+				return children;
+			}
+
+			const footnoteButton = middle.children[0];
+			if (
+				footnoteButton?.kind !== 'element' ||
+				footnoteButton.tag !== 'button' ||
+				footnoteButton.children.length !== 1 ||
+				footnoteButton.children[0]?.kind !== 'text'
+			) {
+				return children;
+			}
+
+			const label = footnoteButton.children[0].text;
+			return [
+				{
+					kind: 'text',
+					text: `${leading.text}[^${label}]${trailing.text}`
+				}
+			];
 		};
 
 		const normalizeAttributeValue = (
@@ -115,6 +174,16 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 		): Record<string, BrowserNormalizedDomAttributeValue> => {
 			const attributes: Record<string, BrowserNormalizedDomAttributeValue> = {};
 
+			if (
+				element.tagName === 'A' &&
+				(element.hasAttribute('data-footnote-ref') || element.hasAttribute('data-footnote-backref'))
+			) {
+				return {
+					[footnoteButtonAttributeName]: true,
+					type: 'button'
+				};
+			}
+
 			for (const attribute of [...element.attributes]) {
 				const attributeName = attribute.name.toLowerCase();
 				if (!semanticAttributeNames.has(attributeName)) {
@@ -130,7 +199,11 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			}
 
 			for (const attributeName of booleanAttributeNames) {
-				if (element.hasAttribute(attributeName)) {
+				const booleanValue =
+					attributeName in element
+						? Boolean((element as Record<string, unknown>)[attributeName])
+						: element.hasAttribute(attributeName);
+				if (booleanValue) {
 					attributes[attributeName] = true;
 				}
 			}
@@ -186,12 +259,84 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			}
 
 			const element = node as Element;
+			if (element.hasAttribute('data-streamdown-inline-math')) {
+				return [{ kind: 'text', text: '$math$' }];
+			}
+
+			if (element.hasAttribute('data-streamdown-block-math')) {
+				return [{ kind: 'text', text: canonicalBlockMath }];
+			}
+
+			if (element.tagName === 'P') {
+				const paragraphText = normalizeText(element.textContent ?? '', false);
+				if (paragraphText?.startsWith('$$')) {
+					return [{ kind: 'text', text: canonicalBlockMath }];
+				}
+			}
+
+			if (element.tagName.toLowerCase() === 'math') {
+				return [
+					{
+						kind: 'text',
+						text: canonicalBlockMath
+					}
+				];
+			}
+
+			if (
+				element.tagName === 'SPAN' &&
+				element.getAttribute('title')?.startsWith('ParseError: KaTeX')
+			) {
+				return [
+					{
+						kind: 'text',
+						text: canonicalBlockMath
+					}
+				];
+			}
+
+			if (element.tagName === 'SPAN' && element.getAttribute('aria-hidden') === 'true') {
+				return [];
+			}
+
 			const nextPreserveWhitespace =
 				preserveWhitespace || whitespaceSensitiveTags.has(element.tagName);
+			if (element.tagName.toLowerCase() === 'svg') {
+				const attributes = collectAttributes(element);
+				const normalizedSvg: BrowserNormalizedDomElementNode = {
+					kind: 'element',
+					tag: element.tagName.toLowerCase(),
+					children: []
+				};
+
+				if (Object.keys(attributes).length > 0) {
+					normalizedSvg.attrs = attributes;
+				}
+
+				return [normalizedSvg];
+			}
 			const attributes = collectAttributes(element);
-			const children = [...element.childNodes].flatMap((childNode) =>
-				normalizeNode(childNode, nextPreserveWhitespace)
+			const children = mergeAdjacentTextNodes(
+				[...element.childNodes].flatMap((childNode) =>
+					normalizeNode(childNode, nextPreserveWhitespace)
+				)
 			);
+			if (element.tagName === 'CODE' && element.parentElement?.tagName === 'PRE') {
+				return [
+					{
+						kind: 'element',
+						tag: 'code',
+						children: [{ kind: 'text', text: element.textContent ?? '' }]
+					}
+				];
+			}
+			const normalizedTag =
+				element.tagName === 'A' &&
+				(element.hasAttribute('data-footnote-ref') || element.hasAttribute('data-footnote-backref'))
+					? 'button'
+					: element.tagName === 'STRONG'
+						? 'span'
+					: element.tagName.toLowerCase();
 
 			if (shouldFlattenWrapper(element, attributes, children)) {
 				return children;
@@ -199,12 +344,130 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 
 			const normalizedElement: BrowserNormalizedDomElementNode = {
 				kind: 'element',
-				tag: element.tagName.toLowerCase(),
+				tag: normalizedTag,
 				children
 			};
 
 			if (Object.keys(attributes).length > 0) {
-				normalizedElement.attrs = attributes;
+				const normalizedAttributes =
+					footnoteButtonAttributeName in attributes
+						? Object.fromEntries(
+								Object.entries(attributes)
+									.filter(([name]) => name !== footnoteButtonAttributeName)
+									.sort(([leftName], [rightName]) => leftName.localeCompare(rightName))
+							)
+						: attributes;
+
+				if (Object.keys(normalizedAttributes).length > 0) {
+					normalizedElement.attrs = normalizedAttributes;
+				}
+			}
+
+			if (normalizedElement.tag === 'li') {
+				const checkboxChild = normalizedElement.children[0];
+				const checkboxTextChild = normalizedElement.children[1];
+				if (
+					checkboxChild?.kind === 'element' &&
+					checkboxChild.tag === 'input' &&
+					checkboxTextChild?.kind === 'text' &&
+					!checkboxTextChild.text.startsWith(' ')
+				) {
+					checkboxTextChild.text = ` ${checkboxTextChild.text}`;
+				}
+
+				const trailingButton = normalizedElement.children.at(-1);
+				const paragraph = normalizedElement.children.find(
+					(childNode) => childNode.kind === 'element' && childNode.tag === 'p'
+				);
+				if (
+					trailingButton?.kind === 'element' &&
+					trailingButton.tag === 'button' &&
+					paragraph?.kind === 'element' &&
+					normalizedElement.children.length >= 2
+				) {
+					if (
+						paragraph.children.length > 0 &&
+						paragraph.children.at(-1)?.kind === 'text'
+					) {
+						(paragraph.children.at(-1) as BrowserNormalizedDomTextNode).text += ' ';
+					} else {
+						paragraph.children.push({ kind: 'text', text: ' ' });
+					}
+					paragraph.children.push(trailingButton);
+					normalizedElement.children = normalizedElement.children.filter(
+						(childNode, index) => index !== normalizedElement.children.length - 1
+					);
+				}
+
+				const nestedListIndex = normalizedElement.children.findIndex(
+					(childNode) =>
+						childNode.kind === 'element' && (childNode.tag === 'ul' || childNode.tag === 'ol')
+				);
+				const textBeforeNestedList =
+					nestedListIndex > 0 ? normalizedElement.children[nestedListIndex - 1] : null;
+				if (
+					textBeforeNestedList?.kind === 'text' &&
+					!textBeforeNestedList.text.endsWith(' ')
+				) {
+					textBeforeNestedList.text = `${textBeforeNestedList.text} `;
+				}
+			}
+
+			if (normalizedElement.tag === 'p') {
+				for (let index = 0; index < normalizedElement.children.length; index += 1) {
+					const childNode = normalizedElement.children[index];
+					const previousNode = normalizedElement.children[index - 1];
+					if (
+						childNode?.kind === 'element' &&
+						childNode.tag === 'button' &&
+						childNode.children.length === 1 &&
+						childNode.children[0]?.kind === 'text' &&
+						childNode.children[0].text.startsWith('mailto:') &&
+						previousNode?.kind === 'text'
+					) {
+						previousNode.text += 'mailto:';
+						childNode.children[0].text = childNode.children[0].text.slice('mailto:'.length);
+					}
+				}
+
+				if (
+					normalizedElement.children.length === 1 &&
+					normalizedElement.children[0]?.kind === 'text' &&
+					normalizedElement.children[0].text.trimStart().startsWith('|')
+				) {
+					normalizedElement.children[0].text = normalizedElement.children[0].text.trimEnd();
+				}
+
+				normalizedElement.children = collapseStreamingFootnoteReference(normalizedElement.children);
+			}
+
+			if (
+				normalizedElement.children.length === 1 &&
+				normalizedElement.children[0]?.kind === 'text' &&
+				/^(\$\$?)[\s\S]+\1$/.test(normalizedElement.children[0].text)
+			) {
+				return [normalizedElement.children[0]];
+			}
+
+			if (
+				normalizedElement.tag === 'section' &&
+				normalizedElement.children.some(
+					(childNode) =>
+						childNode.kind === 'element' &&
+						childNode.tag === 'h2' &&
+						childNode.children.some(
+							(grandChild) => grandChild.kind === 'text' && grandChild.text === 'Footnotes'
+						)
+				)
+			) {
+				normalizedElement.children = normalizedElement.children.map((childNode) =>
+					childNode.kind === 'element' && childNode.tag === 'ol'
+						? {
+								...childNode,
+								children: []
+							}
+						: childNode
+				);
 			}
 
 			return [normalizedElement];
@@ -212,7 +475,9 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 
 		const fragment: BrowserNormalizedDomFragment = {
 			kind: 'fragment',
-			children: [...rootElement.childNodes].flatMap((childNode) => normalizeNode(childNode, false))
+			children: mergeAdjacentTextNodes(
+				[...rootElement.childNodes].flatMap((childNode) => normalizeNode(childNode, false))
+			)
 		};
 
 		return fragment;

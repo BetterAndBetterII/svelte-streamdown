@@ -33,6 +33,11 @@
 
 	let inner = $state<HTMLElement | null>(null);
 	const html = $derived.by(() => {
+		const code = token.text;
+		if (streamdown.isAnimating && token.isInline) {
+			return escapeHtml(`$${code}$`);
+		}
+
 		if (!katexInstance) {
 			return '';
 		}
@@ -48,8 +53,6 @@
 		if (config.strict === undefined && import.meta.env.MODE === 'test') {
 			config.strict = 'ignore';
 		}
-
-		const code = token.text;
 
 		try {
 			return katexInstance.renderToString(code, config);

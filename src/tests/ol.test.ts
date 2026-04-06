@@ -40,6 +40,9 @@ describe('tokenization', () => {
 		expect(listToken.tokens[0].text).toBe('Fifth item');
 		expect(listToken.tokens[1].text).toBe('Sixth item');
 		expect(listToken.tokens[2].text).toBe('Seventh item');
+		expect(listToken.tokens[0].skipped).toBe(false);
+		expect(listToken.tokens[1].skipped).toBe(false);
+		expect(listToken.tokens[2].skipped).toBe(false);
 	});
 
 	test('should parse ordered list with different number formats', () => {

@@ -35,9 +35,11 @@ describeInBrowser('ported streamdown pan-zoom pointer interactions', () => {
 			expect(screen.container.querySelector('[data-mermaid-svg]')).toBeTruthy();
 		});
 
-		const target = screen.container.querySelector('[data-mermaid-svg]') as HTMLElement;
+		const target = screen.container.querySelector(
+			'[data-streamdown-mermaid] [role="application"]'
+		) as HTMLElement;
 		const interactionSurface = screen.container.querySelector(
-			'[data-streamdown-mermaid] > div'
+			'[data-streamdown-mermaid] [role="application"]'
 		) as HTMLElement;
 		const initialTransform = target.style.transform;
 

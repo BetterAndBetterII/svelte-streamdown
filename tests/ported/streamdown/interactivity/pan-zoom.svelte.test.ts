@@ -34,11 +34,13 @@ describeInBrowser('ported streamdown pan-zoom controls', () => {
 		await vi.waitFor(() => {
 			expect(screen.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
 			expect(screen.container.querySelector('button[title="Zoom out"]')).toBeTruthy();
-			expect(screen.container.querySelector('button[title="Zoom to fit"]')).toBeTruthy();
+			expect(screen.container.querySelector('button[title="Reset zoom and pan"]')).toBeTruthy();
 			expect(screen.container.querySelector('[data-mermaid-svg]')).toBeTruthy();
 		});
 
-		const target = screen.container.querySelector('[data-mermaid-svg]') as HTMLElement;
+		const target = screen.container.querySelector(
+			'[data-streamdown-mermaid] [role="application"]'
+		) as HTMLElement;
 		const initialTransform = target.style.transform;
 
 		(screen.container.querySelector('button[title="Zoom in"]') as HTMLButtonElement).click();
@@ -54,7 +56,11 @@ describeInBrowser('ported streamdown pan-zoom controls', () => {
 			expect(target.style.transform).not.toBe(zoomedTransform);
 		});
 
-		(screen.container.querySelector('button[title="Zoom to fit"]') as HTMLButtonElement).click();
+		(
+			screen.container.querySelector(
+				'button[title="Reset zoom and pan"]'
+			) as HTMLButtonElement
+		).click();
 
 		await vi.waitFor(() => {
 			expect(target.style.transform).toContain('scale(');
@@ -85,6 +91,6 @@ describeInBrowser('ported streamdown pan-zoom controls', () => {
 
 		expect(screen.container.querySelector('button[title="Zoom in"]')).toBeNull();
 		expect(screen.container.querySelector('button[title="Zoom out"]')).toBeNull();
-		expect(screen.container.querySelector('button[title="Zoom to fit"]')).toBeNull();
+		expect(screen.container.querySelector('button[title="Reset zoom and pan"]')).toBeNull();
 	});
 });

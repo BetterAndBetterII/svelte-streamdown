@@ -84,25 +84,35 @@ export function markedFootnote({ preferContext = true }: MarkedFootnoteOptions =
 			name: 'footnoteRef',
 			level: 'inline',
 			tokenizer(this, src) {
+				const streamdown = preferContext ? safeGetContext() : null;
 				const maps = ensureMaps(this);
 				const match = footnoteRefRegex.exec(src);
 
 				if (match) {
 					const [raw, label] = match;
-
 					const footnote = maps.footnotes.get(label);
+					const hasResolvedStreamingContent = Boolean(footnote?.lines.join('\n').trim().length);
+					if (
+						label === 'streamdown:footnote' ||
+						(streamdown?.mode === 'streaming' &&
+							streamdown.isAnimating &&
+							(!footnote || !hasResolvedStreamingContent))
+					) {
+						return;
+					}
 
 					const token: FootnoteRef = {
 						type: 'footnoteRef',
 						raw,
 						label,
-						content: footnote || {
-							type: 'footnote',
-							raw,
-							label,
-							lines: [],
-							tokens: []
-						}
+						content:
+							footnote || {
+								type: 'footnote',
+								raw,
+								label,
+								lines: [],
+								tokens: []
+							}
 					};
 					maps.refs.set(label, token);
 					return token;

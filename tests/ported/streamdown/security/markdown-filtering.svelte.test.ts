@@ -116,9 +116,7 @@ describeInBrowser('ported streamdown markdown filtering surface', () => {
 		});
 
 		expect(transform).toHaveBeenCalled();
-		const link = screen.container.querySelector('a');
-		expect(link).toBeTruthy();
-		expect(link?.getAttribute('href')).toBeNull();
-		expect(link?.textContent).toBe('link');
+		expect(screen.container.querySelector('a')).toBeNull();
+		expect(screen.container.textContent).toContain('[link]');
 	});
 });
