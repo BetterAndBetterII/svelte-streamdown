@@ -1,3 +1,9 @@
+import type { Link, Root } from 'mdast';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import remarkStringify from 'remark-stringify';
+import { unified, type Plugin } from 'unified';
+import { visit } from 'unist-util-visit';
 import { describe, expect, test, vi } from 'vitest';
 import {
 	cjk,
@@ -71,6 +77,24 @@ describe('plugin factories', () => {
 		expect(plugin1.remarkPlugins).toHaveLength(3);
 		expect(plugin1.remarkPluginsBefore).not.toBe(plugin2.remarkPluginsBefore);
 		expect(plugin1.remarkPluginsAfter).not.toBe(plugin2.remarkPluginsAfter);
+	});
+
+	test('createCjkPlugin exposes standalone-compatible autolink remark hooks', async () => {
+		const [autolinkBoundaryPlugin] = createCjkPlugin().remarkPluginsAfter as Plugin<[], Root>[];
+		const processor = unified()
+			.use(remarkParse)
+			.use(remarkGfm)
+			.use(autolinkBoundaryPlugin)
+			.use(remarkStringify);
+		const tree = (await processor.run(processor.parse('请访问 https://example.com。谢谢'))) as Root;
+		const links: Link[] = [];
+
+		visit(tree, 'link', (node: Link) => {
+			links.push(node);
+		});
+
+		expect(links).toHaveLength(1);
+		expect(links[0].url).toBe('https://example.com');
 	});
 
 	test('createCodePlugin highlights through the async callback when tokens are not ready yet', async () => {

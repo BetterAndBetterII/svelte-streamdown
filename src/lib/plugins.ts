@@ -3,6 +3,8 @@ import type { Component } from 'svelte';
 import type { ThemeRegistration } from 'shiki';
 import type { Pluggable } from 'unified';
 import type { Tokens } from 'marked';
+export { cjk, createCjkPlugin, type CjkPlugin } from './plugins/cjk-shared.js';
+import type { CjkPlugin } from './plugins/cjk-shared.js';
 import { HighlighterManager } from './utils/hightlighter.svelte.js';
 import {
 	bundledLanguagesInfo,
@@ -62,14 +64,6 @@ export interface MathPlugin {
 	rehypePlugin: Pluggable;
 	remarkPlugin: Pluggable;
 	type: 'math';
-}
-
-export interface CjkPlugin {
-	name: 'cjk';
-	remarkPlugins: Pluggable[];
-	remarkPluginsAfter: Pluggable[];
-	remarkPluginsBefore: Pluggable[];
-	type: 'cjk';
 }
 
 export interface CustomRendererProps {
@@ -358,20 +352,6 @@ export function createMermaidPlugin(options: MermaidPluginOptions = {}): Diagram
 	};
 }
 
-export function createCjkPlugin(): CjkPlugin {
-	const remarkPluginsBefore: Pluggable[] = [noopPluggable];
-	const remarkPluginsAfter: Pluggable[] = [noopPluggable, noopPluggable];
-
-	return {
-		name: 'cjk',
-		type: 'cjk',
-		remarkPluginsBefore,
-		remarkPluginsAfter,
-		remarkPlugins: [...remarkPluginsBefore, ...remarkPluginsAfter]
-	};
-}
-
 export const code = createCodePlugin();
 export const math = createMathPlugin();
 export const mermaid = createMermaidPlugin();
-export const cjk = createCjkPlugin();

@@ -1,6 +1,6 @@
 "use client";
 
-// index.ts
+// ../../src/lib/plugins/cjk-shared.ts
 import remarkCjkFriendly from "remark-cjk-friendly";
 import remarkCjkFriendlyGfmStrikethrough from "remark-cjk-friendly-gfm-strikethrough";
 import { visit } from "unist-util-visit";
@@ -59,31 +59,22 @@ var buildTrailingText = (value) => ({
   value
 });
 var remarkCjkAutolinkBoundary = () => (tree) => {
-  visit(
-    tree,
-    "link",
-    (node, index, parent) => {
-      if (!parent || typeof index !== "number") {
-        return;
-      }
-      if (!isAutolinkLiteral(node)) {
-        return;
-      }
-      if (!AUTOLINK_PREFIX_PATTERN.test(node.url)) {
-        return;
-      }
-      const boundaryIndex = findCjkBoundaryIndex(node.url);
-      if (boundaryIndex === null || boundaryIndex === 0) {
-        return;
-      }
-      const trimmedUrl = node.url.slice(0, boundaryIndex);
-      const trailing = node.url.slice(boundaryIndex);
-      const trimmedLink = buildAutolink(trimmedUrl, node);
-      const trailingText = buildTrailingText(trailing);
-      parent.children.splice(index, 1, trimmedLink, trailingText);
-      return index + 1;
+  visit(tree, "link", (node, index, parent) => {
+    if (!parent || typeof index !== "number") {
+      return;
     }
-  );
+    if (!isAutolinkLiteral(node) || !AUTOLINK_PREFIX_PATTERN.test(node.url)) {
+      return;
+    }
+    const boundaryIndex = findCjkBoundaryIndex(node.url);
+    if (boundaryIndex === null || boundaryIndex === 0) {
+      return;
+    }
+    const trimmedUrl = node.url.slice(0, boundaryIndex);
+    const trailing = node.url.slice(boundaryIndex);
+    parent.children.splice(index, 1, buildAutolink(trimmedUrl, node), buildTrailingText(trailing));
+    return index + 1;
+  });
 };
 function createCjkPlugin() {
   const remarkPluginsBefore = [remarkCjkFriendly];
@@ -91,16 +82,12 @@ function createCjkPlugin() {
     remarkCjkAutolinkBoundary,
     remarkCjkFriendlyGfmStrikethrough
   ];
-  const remarkPlugins = [
-    ...remarkPluginsBefore,
-    ...remarkPluginsAfter
-  ];
   return {
     name: "cjk",
     type: "cjk",
     remarkPluginsBefore,
     remarkPluginsAfter,
-    remarkPlugins
+    remarkPlugins: [...remarkPluginsBefore, ...remarkPluginsAfter]
   };
 }
 var cjk = createCjkPlugin();
