@@ -89,7 +89,7 @@ function unwrapCode(cell) {
 }
 
 function extractLocalDestinations(evidence) {
-	const matches = evidence.matchAll(/`((?:src|tests)\/[^`]+)`/g);
+	const matches = evidence.matchAll(/`((?:src|tests|packages)\/[^`]+)`/g);
 	return [...new Set(Array.from(matches, (match) => match[1]))];
 }
 

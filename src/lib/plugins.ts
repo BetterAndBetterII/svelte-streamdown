@@ -269,11 +269,16 @@ export function createCodePlugin(options: CodePluginOptions = {}): CodeHighlight
 	const themes = options.themes ?? ['github-light', 'github-dark'];
 	const languages = options.languages ?? bundledLanguagesInfo;
 	const supported = createLanguageSet(languages);
-	const highlighter = HighlighterManager.create(
-		languages,
-		extractAdditionalThemes(themes),
-		options.languages
-	);
+	let highlighter: HighlighterManager | null = null;
+
+	const getHighlighter = () => {
+		highlighter ??= HighlighterManager.create(
+			languages,
+			extractAdditionalThemes(themes),
+			options.languages
+		);
+		return highlighter;
+	};
 
 	return {
 		name: 'shiki',
@@ -289,13 +294,14 @@ export function createCodePlugin(options: CodePluginOptions = {}): CodeHighlight
 		},
 		highlight({ code, language }, callback) {
 			const activeTheme = resolvePreferredTheme(themes);
+			const activeHighlighter = getHighlighter();
 			const produce = () =>
 				normalizeHighlightResult(
-					highlighter.highlightCode(code, normalizeLanguage(language), activeTheme)
+					activeHighlighter.highlightCode(code, normalizeLanguage(language), activeTheme)
 				);
 
-			if (!highlighter.isReady(activeTheme, normalizeLanguage(language))) {
-				void highlighter.load(activeTheme, normalizeLanguage(language)).then(() => {
+			if (!activeHighlighter.isReady(activeTheme, normalizeLanguage(language))) {
+				void activeHighlighter.load(activeTheme, normalizeLanguage(language)).then(() => {
 					callback?.(produce());
 				});
 				return null;
