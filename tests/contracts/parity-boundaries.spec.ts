@@ -29,10 +29,34 @@ type MigrationStatusRow = {
 };
 
 function parseMarkdownRow(line: string): string[] {
-	return line
-		.slice(1, -1)
-		.split('|')
-		.map((cell) => cell.trim());
+	const cells: string[] = [];
+	let current = '';
+	let isEscaped = false;
+
+	for (const char of line.slice(1, -1)) {
+		if (isEscaped) {
+			current += char;
+			isEscaped = false;
+			continue;
+		}
+
+		if (char === '\\') {
+			current += char;
+			isEscaped = true;
+			continue;
+		}
+
+		if (char === '|') {
+			cells.push(current.trim());
+			current = '';
+			continue;
+		}
+
+		current += char;
+	}
+
+	cells.push(current.trim());
+	return cells;
 }
 
 function unwrapCode(cell: string): string {
@@ -58,7 +82,7 @@ function collectMatrixRows(markdown: string): MatrixRow[] {
 		}
 
 		const id = unwrapCode(cells[0]);
-		if (!/^(api|prop|plugin)-\d+$/.test(id)) {
+		if (!/^(api|prop|parser|render|waiver|interact|sec|plugin)-\d+$/.test(id)) {
 			continue;
 		}
 
@@ -66,6 +90,42 @@ function collectMatrixRows(markdown: string): MatrixRow[] {
 			id,
 			status: unwrapCode(cells[2])
 		});
+	}
+
+	return rows;
+}
+
+function collectCapabilityBacklogRows(
+	markdown: string
+): Map<string, { category: string; nextAction: string }> {
+	const rows = new Map<string, { category: string; nextAction: string }>();
+	let inSection = false;
+
+	for (const line of markdown.split('\n')) {
+		if (line.startsWith('## ')) {
+			inSection = line.trim() === '## Categorized Unresolved Capability Backlog';
+			continue;
+		}
+
+		if (!inSection || !line.startsWith('|')) {
+			continue;
+		}
+
+		const cells = parseMarkdownRow(line);
+		if (cells.length < 4 || cells[0] === 'Parity category' || /^-+$/.test(cells[0])) {
+			continue;
+		}
+
+		const category = unwrapCode(cells[0]);
+		const nextAction = unwrapCode(cells[1]);
+		const ids = unwrapCode(cells[2])
+			.split(',')
+			.map((cell) => cell.trim())
+			.filter((cell) => cell.length > 0);
+
+		for (const id of ids) {
+			rows.set(id, { category, nextAction });
+		}
 	}
 
 	return rows;
@@ -219,6 +279,41 @@ describe('parity boundary documentation', () => {
 		for (const [id, expectedStatus] of expectedStatuses) {
 			expect(matrixRows.get(id), `Unexpected matrix status for ${id}`).toBe(expectedStatus);
 		}
+	});
+
+	test('closes the targeted prop/render partials and keeps any remaining prop/render partials in the canonical backlog', () => {
+		const matrixRows = new Map(
+			collectMatrixRows(readDoc('docs/parity-matrix.md')).map((row) => [row.id, row.status])
+		);
+		const backlogRows = collectCapabilityBacklogRows(readDoc('docs/parity-matrix.md'));
+		const closedRows = new Map<string, string>([
+			['prop-01', 'done'],
+			['prop-02', 'done'],
+			['render-01', 'done'],
+			['render-02', 'done'],
+			['render-04', 'done'],
+			['render-06', 'done'],
+			['render-07', 'done'],
+			['render-09', 'done']
+		]);
+
+		for (const [id, expectedStatus] of closedRows) {
+			expect(matrixRows.get(id), `Unexpected matrix status for ${id}`).toBe(expectedStatus);
+			expect(backlogRows.has(id), `${id} should not remain in the unresolved backlog`).toBe(false);
+		}
+
+		const remainingPropRenderPartials = [...matrixRows.entries()].filter(
+			([id, status]) => /^(prop|render)-\d+$/.test(id) && status === 'partial'
+		);
+
+		for (const [id] of remainingPropRenderPartials) {
+			expect(backlogRows.has(id), `Missing canonical backlog entry for ${id}`).toBe(true);
+		}
+
+		expect(backlogRows.get('render-11')).toEqual({
+			category: 'rendering',
+			nextAction: 'add/port test'
+		});
 	});
 
 	test('keeps package/export backlog items out of the implement bucket once they are accepted drift', () => {
