@@ -7,7 +7,8 @@ const renderedSelector = '[data-parity-rendered]';
 
 const expandedRenderingFixtureIds = [
 	'15-composite-playground.md',
-	'16-html-entities-and-cjk.md'
+	'16-html-entities-and-cjk.md',
+	'17-math-rendering.md'
 ] as const;
 
 test.describe('expanded rendering parity fixtures', () => {
@@ -25,7 +26,8 @@ test.describe('expanded rendering parity fixtures', () => {
 			'08-blockquote-plain.md',
 			'09-paragraphs.md',
 			'15-composite-playground.md',
-			'16-html-entities-and-cjk.md'
+			'16-html-entities-and-cjk.md',
+			'17-math-rendering.md'
 		]);
 	});
 
@@ -44,8 +46,10 @@ test.describe('expanded rendering parity fixtures', () => {
 
 				if (fixtureId === '15-composite-playground.md') {
 					await assertCompositePlaygroundParity(referencePage, localPage);
-				} else {
+				} else if (fixtureId === '16-html-entities-and-cjk.md') {
 					await assertHtmlEntitiesAndCjkParity(referencePage, localPage);
+				} else {
+					await assertMathParity(referencePage, localPage);
 				}
 			} finally {
 				await context.close();
@@ -123,4 +127,19 @@ async function assertHtmlEntitiesAndCjkParity(referencePage: Page, localPage: Pa
 			'이 문장은 취소선입니다（괄호 포함）。계속'
 		)
 	]);
+}
+
+async function assertMathParity(referencePage: Page, localPage: Page): Promise<void> {
+	const [referenceKatexCount, localKatexCount, referenceDisplayCount, localDisplayCount] =
+		await Promise.all([
+			referencePage.locator(`${renderedSelector} .katex`).count(),
+			localPage.locator(`${renderedSelector} .katex`).count(),
+			referencePage.locator(`${renderedSelector} .katex-display`).count(),
+			localPage.locator(`${renderedSelector} .katex-display`).count()
+		]);
+
+	expect(referenceKatexCount).toBeGreaterThan(0);
+	expect(localKatexCount).toBeGreaterThan(0);
+	expect(referenceDisplayCount).toBeGreaterThan(0);
+	expect(localDisplayCount).toBeGreaterThan(0);
 }

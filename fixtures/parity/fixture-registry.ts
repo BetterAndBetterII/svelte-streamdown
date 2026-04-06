@@ -9,7 +9,8 @@ export const domParityFixtureIds = [
 	'08-blockquote-plain.md',
 	'09-paragraphs.md',
 	'15-composite-playground.md',
-	'16-html-entities-and-cjk.md'
+	'16-html-entities-and-cjk.md',
+	'17-math-rendering.md'
 ] as const;
 
 export const interactionParityFixtureIds = [
@@ -36,6 +37,7 @@ export const parityFixturePaths: Record<ParityFixtureId, string> = {
 	'09-paragraphs.md': 'markdown/09-paragraphs.md',
 	'15-composite-playground.md': 'markdown/15-composite-playground.md',
 	'16-html-entities-and-cjk.md': 'markdown/16-html-entities-and-cjk.md',
+	'17-math-rendering.md': 'markdown/17-math-rendering.md',
 	'10-code-actions.md': 'interactions/10-code-actions.md',
 	'11-table-actions.md': 'interactions/11-table-actions.md',
 	'12-mermaid-actions.md': 'interactions/12-mermaid-actions.md',
