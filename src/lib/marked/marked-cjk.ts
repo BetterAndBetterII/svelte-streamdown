@@ -74,23 +74,20 @@ function findDelimitedMatch(src: string, delimiter: string) {
 		return;
 	}
 
-	let searchIndex = delimiter.length;
-	while (searchIndex <= src.length - delimiter.length) {
-		const closingIndex = src.indexOf(delimiter, searchIndex);
-		if (closingIndex === -1) {
-			return;
-		}
-
-		const content = src.slice(delimiter.length, closingIndex);
-		if (hasNonWhitespaceBoundaryContent(content) && containsCjkBoundaryChar(content)) {
-			return {
-				raw: src.slice(0, closingIndex + delimiter.length),
-				content
-			};
-		}
-
-		searchIndex = closingIndex + 1;
+	const closingIndex = src.indexOf(delimiter, delimiter.length);
+	if (closingIndex === -1) {
+		return;
 	}
+
+	const content = src.slice(delimiter.length, closingIndex);
+	if (!hasNonWhitespaceBoundaryContent(content) || !containsCjkBoundaryChar(content)) {
+		return;
+	}
+
+	return {
+		raw: src.slice(0, closingIndex + delimiter.length),
+		content
+	};
 }
 
 function createInlineTextToken(text: string): Tokens.Text {

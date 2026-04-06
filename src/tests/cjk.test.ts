@@ -42,6 +42,26 @@ describe('CJK-friendly tokenization', () => {
 		expect(tokens[1].text).toBe('后续');
 	});
 
+	test('does not swallow earlier latin emphasis when a later CJK emphasis appears in the same paragraph', () => {
+		const tokens = getParagraphTokens('**Chinese:** **你好世界。** Streamdown 支持中文排版。');
+
+		expect(tokens.map((token) => token.type)).toEqual(['strong', 'text', 'strong', 'text']);
+		expect(tokens[0].text).toBe('Chinese:');
+		expect(tokens[1].text).toBe(' ');
+		expect(tokens[2].text).toBe('你好世界。');
+		expect(tokens[3].text).toBe(' Streamdown 支持中文排版。');
+	});
+
+	test('does not leak asterisks for italic CJK segments that follow a latin strong label', () => {
+		const tokens = getParagraphTokens('**Japanese:** *こんにちは。* Streamdown は日本語をサポートしています。');
+
+		expect(tokens.map((token) => token.type)).toEqual(['strong', 'text', 'em', 'text']);
+		expect(tokens[0].text).toBe('Japanese:');
+		expect(tokens[1].text).toBe(' ');
+		expect(tokens[2].text).toBe('こんにちは。');
+		expect(tokens[3].text).toBe(' Streamdown は日本語をサポートしています。');
+	});
+
 	test('splits autolinks at ideographic full stop boundaries', () => {
 		const tokens = getParagraphTokens('请访问 https://example.com。谢谢');
 

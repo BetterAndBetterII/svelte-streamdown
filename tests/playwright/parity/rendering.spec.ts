@@ -120,12 +120,41 @@ async function assertHtmlEntitiesAndCjkParity(referencePage: Page, localPage: Pa
 		),
 		expect(referencePage.locator(renderedSelector)).toContainText('这是斜体文字（带括号）。后续'),
 		expect(localPage.locator(renderedSelector)).toContainText('这是斜体文字（带括号）。后续'),
-		expect(referencePage.locator(renderedSelector)).toContainText(
-			'이 문장은 취소선입니다（괄호 포함）。계속'
-		),
-		expect(localPage.locator(renderedSelector)).toContainText(
-			'이 문장은 취소선입니다（괄호 포함）。계속'
-		)
+			expect(referencePage.locator(renderedSelector)).toContainText(
+				'이 문장은 취소선입니다（괄호 포함）。계속'
+			),
+			expect(localPage.locator(renderedSelector)).toContainText(
+				'이 문장은 취소선입니다（괄호 포함）。계속'
+			),
+			expect(referencePage.locator(renderedSelector)).toContainText('CJK Support'),
+			expect(localPage.locator(renderedSelector)).toContainText('CJK Support'),
+			expect(referencePage.locator(renderedSelector)).toContainText(
+				'Chinese: 你好世界。 Streamdown 支持中文排版。'
+			),
+			expect(localPage.locator(renderedSelector)).toContainText(
+				'Chinese: 你好世界。 Streamdown 支持中文排版。'
+			),
+			expect(referencePage.locator(renderedSelector)).toContainText(
+				'Japanese: こんにちは。 Streamdown は日本語をサポートしています。'
+			),
+			expect(localPage.locator(renderedSelector)).toContainText(
+				'Japanese: こんにちは。 Streamdown は日本語をサポートしています。'
+			),
+			expect(referencePage.locator(renderedSelector)).toContainText(
+				'Korean: 안녕하세요. Streamdown은 한국어를 지원합니다。'
+			),
+			expect(localPage.locator(renderedSelector)).toContainText(
+				'Korean: 안녕하세요. Streamdown은 한국어를 지원합니다。'
+			)
+		]);
+
+	await Promise.all([
+		expect(referencePage.locator(renderedSelector)).not.toContainText('Chinese:** **你好世界。'),
+		expect(localPage.locator(renderedSelector)).not.toContainText('Chinese:** **你好世界。'),
+		expect(referencePage.locator(renderedSelector)).not.toContainText('Japanese:* *こんにちは。'),
+		expect(localPage.locator(renderedSelector)).not.toContainText('Japanese:* *こんにちは。'),
+		expect(referencePage.locator(renderedSelector)).not.toContainText('Korean: ~~안녕하세요.~~'),
+		expect(localPage.locator(renderedSelector)).not.toContainText('Korean: ~~안녕하세요.~~')
 	]);
 }
 

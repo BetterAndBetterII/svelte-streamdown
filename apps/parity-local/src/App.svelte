@@ -1,33 +1,54 @@
 <script lang="ts">
-	import { Streamdown } from '../../../src/lib/index.js';
-	import { cjk, code, math, mermaid } from '../../../src/lib/index.js';
-	import { onMount } from 'svelte';
-	import type { ParityFixtureId } from '../../../fixtures/parity/fixture-registry.js';
-	import { resolveParityFixture, listParityFixtures } from '../../parity-shared/fixtures.js';
+	import { onMount, tick } from 'svelte';
+	import { Streamdown, cjk, code, math, mermaid } from '../../../src/lib/index.js';
+	import { listParityFixtures } from '../../parity-shared/fixtures.js';
+	import {
+		applyParityHarnessUpdate,
+		buildParityUrlFromState,
+		createDefaultParityHarnessState,
+		resolveParityHarnessStateFromUrl,
+		type ParityHarnessUpdate
+	} from '../../parity-shared/harness-state.js';
 
 	const fixtureOptions = listParityFixtures();
+	const defaultPlugins = { code, math, mermaid, cjk };
 
-	let currentFixture = resolveParityFixture(null);
-	let currentFixtureId: ParityFixtureId = currentFixture.id;
+	let harnessState = createDefaultParityHarnessState();
+	let mounted = false;
 
-	const replaceFixtureInUrl = (fixtureId: ParityFixtureId) => {
-		const url = new URL(window.location.href);
-		url.searchParams.set('fixture', fixtureId);
-		window.history.replaceState(null, '', url);
-	};
+	function syncUrl(): void {
+		if (!mounted) {
+			return;
+		}
 
-	const applyFixture = (rawFixtureId: string | null | undefined) => {
-		currentFixture = resolveParityFixture(rawFixtureId);
-		currentFixtureId = currentFixture.id;
-		replaceFixtureInUrl(currentFixture.id);
-	};
+		window.history.replaceState(null, '', buildParityUrlFromState(harnessState));
+	}
 
-	const handleFixtureChange = (event: Event) => {
-		applyFixture((event.currentTarget as HTMLSelectElement).value);
-	};
+	async function applyUpdate(update: ParityHarnessUpdate): Promise<void> {
+		harnessState = applyParityHarnessUpdate(harnessState, update);
+		syncUrl();
+		await tick();
+	}
+
+	function handleFixtureChange(event: Event): void {
+		void applyUpdate({ fixtureId: (event.currentTarget as HTMLSelectElement).value });
+	}
 
 	onMount(() => {
-		applyFixture(new URL(window.location.href).searchParams.get('fixture'));
+		mounted = true;
+		harnessState = resolveParityHarnessStateFromUrl(new URL(window.location.href));
+		syncUrl();
+
+		window.__STREAMDOWN_PARITY__ = {
+			getState: () => ({ ...harnessState }),
+			setState: async (update) => {
+				await applyUpdate(update);
+			}
+		};
+
+		return () => {
+			delete window.__STREAMDOWN_PARITY__;
+		};
 	});
 </script>
 
@@ -37,8 +58,9 @@
 			<div>
 				<h1>Local Svelte Streamdown Harness</h1>
 				<p>
-					Shared query route: <code>/?fixture=&lt;fixture-id&gt;</code>. The rendered output below
-					is the local `svelte-streamdown` target for browser parity tests.
+					Shared query route: <code>/?fixture=&lt;fixture-id&gt;</code> or
+					<code>/?markdown=&lt;base64url&gt;</code>. The rendered output below is the local
+					`svelte-streamdown` target for browser parity tests.
 				</p>
 			</div>
 
@@ -47,7 +69,7 @@
 				<select
 					id="parity-local-fixture"
 					name="fixture"
-					bind:value={currentFixtureId}
+					value={harnessState.fixtureId}
 					on:change={handleFixtureChange}
 				>
 					{#each fixtureOptions as fixture}
@@ -60,20 +82,27 @@
 		<div class="parity-grid">
 			<section class="parity-panel">
 				<h2>Source Fixture</h2>
-				<p data-parity-fixture-id>{currentFixture.id}</p>
-				<textarea class="parity-source" data-parity-source readonly value={currentFixture.markdown}
+				<p data-parity-fixture-id>{harnessState.fixtureId}</p>
+				<p data-parity-profile>{harnessState.profile}</p>
+				<p data-parity-mode>{harnessState.mode}</p>
+				<p data-parity-is-animating>{harnessState.isAnimating ? 'true' : 'false'}</p>
+				<textarea class="parity-source" data-parity-source readonly value={harnessState.markdown}
 				></textarea>
 			</section>
 
 			<section class="parity-panel">
 				<h2>Rendered Output</h2>
-				<p>{currentFixture.label}</p>
+				<p>{harnessState.fixtureLabel}</p>
 				<div class="parity-rendered" data-parity-rendered>
 					<Streamdown
-						content={currentFixture.markdown}
+						content={harnessState.markdown}
 						baseTheme="shadcn"
-						static
-						plugins={{ code, math, mermaid, cjk }}
+						mode={harnessState.mode}
+						isAnimating={harnessState.isAnimating}
+						caret={harnessState.caret === 'none' ? undefined : harnessState.caret}
+						controls={harnessState.profile === 'commonmark' ? false : true}
+						linkSafety={{ enabled: harnessState.profile !== 'commonmark' }}
+						plugins={harnessState.profile === 'commonmark' ? undefined : defaultPlugins}
 					/>
 				</div>
 			</section>

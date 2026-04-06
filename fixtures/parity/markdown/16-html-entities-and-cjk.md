@@ -12,6 +12,14 @@ Use `&lt;section&gt;` when you want to show escaped HTML literally.
 
 ~~이 문장은 취소선입니다（괄호 포함）。~~계속
 
+## CJK Support
+
+**Chinese:** **你好世界。** Streamdown 支持中文排版。
+
+**Japanese:** *こんにちは。* Streamdown は日本語をサポートしています。
+
+**Korean:** ~~안녕하세요.~~ Streamdown은 한국어를 지원합니다。
+
 请访问 https://example.com。谢谢
 
 邮件：mailto:test@example.com。谢谢

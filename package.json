@@ -37,6 +37,9 @@
 		"build:packages": "pnpm -r --filter './packages/*' build",
 		"package:root": "svelte-kit sync && svelte-package && publint",
 		"verify:workspace-smoke": "node scripts/verify-workspace-smoke.mjs"
+		,
+		"snapshot:commonmark-spec": "node scripts/fetch-commonmark-spec.mjs",
+		"test:playwright:commonmark": "playwright test tests/playwright/commonmark --reporter=dot --quiet"
 	},
 	"files": [
 		"dist",

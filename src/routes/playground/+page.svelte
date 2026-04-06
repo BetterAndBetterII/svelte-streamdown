@@ -3,7 +3,12 @@
 	import { cjk, code, math, mermaid } from '$lib/index.js';
 	import type { AnimateOptions } from '$lib/context.svelte.js';
 	import type { CustomRenderer } from '$lib/plugins.js';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import {
+		listParityFixtures,
+		resolveParityFixture,
+		type ParityFixture
+	} from '../../../apps/parity-shared/fixtures.js';
 	import { defaultMarkdown } from './default-markdown.js';
 	import VegaLiteRenderer from './VegaLiteRenderer.svelte';
 
@@ -14,9 +19,39 @@
 	const easingOptions = ['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear'] as const;
 	const sepOptions = ['word', 'char'] as const;
 	const caretOptions = ['block', 'circle', 'none'] as const;
+	const showcaseFixtureId = '__showcase__' as const;
+	const customFixtureId = '__custom__' as const;
+	const defaultPlaygroundFixture = resolveParityFixture('15-composite-playground.md');
+	type ShowcaseFixture = {
+		id: typeof showcaseFixtureId;
+		label: string;
+		markdown: string;
+	};
+	type PresetFixture = ParityFixture | ShowcaseFixture;
+	type PlaygroundFixtureId = PresetFixture['id'] | typeof customFixtureId;
+	const presetFixtures: readonly PresetFixture[] = [
+		{
+			id: showcaseFixtureId,
+			label: 'Feature showcase',
+			markdown: defaultMarkdown
+		},
+		...listParityFixtures()
+	];
+	const fixtureOptions = [
+		...presetFixtures,
+		{
+			id: customFixtureId,
+			label: 'Custom draft',
+			markdown: ''
+		}
+	] as const;
+	const fixtureMap = new Map<PresetFixture['id'], PresetFixture>(
+		presetFixtures.map((fixture) => [fixture.id, fixture])
+	);
 
-	let markdown = $state(defaultMarkdown);
-	let markdownOutput = $state(defaultMarkdown);
+	let markdown = $state(defaultPlaygroundFixture.markdown);
+	let markdownOutput = $state(defaultPlaygroundFixture.markdown);
+	let selectedFixtureId = $state<PlaygroundFixtureId>(defaultPlaygroundFixture.id);
 	let mode = $state<'static' | 'streaming'>('static');
 	let isStreaming = $state(false);
 	let animated = $state(false);
@@ -54,6 +89,40 @@
 		isStreaming = false;
 	}
 
+	function replaceFixtureInUrl(fixtureId: string) {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const url = new URL(window.location.href);
+		url.searchParams.set('fixture', fixtureId);
+		window.history.replaceState(null, '', url);
+	}
+
+	function syncFixtureSelection(nextMarkdown: string) {
+		const matchedFixture = presetFixtures.find((fixture) => fixture.markdown === nextMarkdown);
+		selectedFixtureId = matchedFixture?.id ?? customFixtureId;
+	}
+
+	function handleMarkdownInput(event: Event) {
+		const nextMarkdown = (event.currentTarget as HTMLTextAreaElement).value;
+		markdown = nextMarkdown;
+		syncFixtureSelection(nextMarkdown);
+	}
+
+	function applyFixture(rawFixtureId: string | null | undefined) {
+		const fallbackFixture = defaultPlaygroundFixture;
+		const fixture = rawFixtureId
+			? (fixtureMap.get(rawFixtureId as PresetFixture['id']) ?? fallbackFixture)
+			: fallbackFixture;
+
+		stopStreaming();
+		selectedFixtureId = fixture.id;
+		markdown = fixture.markdown;
+		markdownOutput = fixture.markdown;
+		replaceFixtureInUrl(fixture.id);
+	}
+
 	function simulateStreaming() {
 		stopStreaming();
 		markdownOutput = '';
@@ -78,6 +147,7 @@
 		stopStreaming();
 		markdown = '';
 		markdownOutput = '';
+		selectedFixtureId = customFixtureId;
 	}
 
 	function currentContent() {
@@ -86,6 +156,10 @@
 
 	onDestroy(() => {
 		stopStreaming();
+	});
+
+	onMount(() => {
+		applyFixture(new URL(window.location.href).searchParams.get('fixture'));
 	});
 </script>
 
@@ -102,6 +176,22 @@
 		<h1 class="px-2 text-lg font-semibold tracking-tight">Streamdown Playground</h1>
 
 		<div class="flex items-center gap-2">
+			<select
+				class="h-8 max-w-56 rounded-md border border-input bg-background px-3 text-sm"
+				bind:value={selectedFixtureId}
+				disabled={isStreaming}
+				onchange={(event) => {
+					const fixtureId = (event.currentTarget as HTMLSelectElement).value;
+					if (fixtureId !== customFixtureId) {
+						applyFixture(fixtureId);
+					}
+				}}
+			>
+				{#each fixtureOptions as fixture}
+					<option value={fixture.id}>{fixture.label}</option>
+				{/each}
+			</select>
+
 			<select
 				class="h-8 rounded-md border border-input bg-background px-3 text-sm"
 				bind:value={mode}
@@ -246,7 +336,8 @@
 			<div class="min-h-0 flex-1 bg-background">
 				<textarea
 					class="h-full min-h-[42vh] w-full resize-none border-0 bg-background px-4 py-4 font-mono text-sm leading-relaxed outline-none"
-					bind:value={markdown}
+					value={markdown}
+					oninput={handleMarkdownInput}
 					spellcheck="false"
 					placeholder="Type your markdown here..."
 				></textarea>
@@ -264,6 +355,7 @@
 				<div class="mx-auto w-full max-w-4xl">
 					<Streamdown
 						content={currentContent()}
+						baseTheme="shadcn"
 						{mode}
 						isAnimating={isStreaming}
 						animated={animatedOptions}

@@ -6,5 +6,5 @@
 </script>
 
 <SvelteTheme>
-	{@render children()}
+	{@render children?.()}
 </SvelteTheme>
