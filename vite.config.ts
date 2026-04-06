@@ -55,6 +55,16 @@ function copyReadmePlugin() {
 
 export default defineConfig({
 	logLevel: isTestMode ? 'error' : undefined,
+	resolve: {
+		alias: {
+			'remend/utils': resolve('packages/remend/src/utils.ts'),
+			remend: resolve('packages/remend/src/index.ts'),
+			'@streamdown/code': resolve('packages/streamdown-code/index.ts'),
+			'@streamdown/math': resolve('packages/streamdown-math/index.ts'),
+			'@streamdown/mermaid': resolve('packages/streamdown-mermaid/index.ts'),
+			'@streamdown/cjk': resolve('packages/streamdown-cjk/index.ts')
+		}
+	},
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), copyReadmePlugin()],
 	assetsInclude: ['**/*.md'],
 	test: {

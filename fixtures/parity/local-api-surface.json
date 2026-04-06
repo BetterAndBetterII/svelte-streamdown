@@ -23,6 +23,20 @@
 					}
 				},
 				{
+					"subpath": "./detect-direction",
+					"target": {
+						"types": "./dist/utils/detectDirection.d.ts",
+						"import": "./dist/utils/detectDirection.js"
+					}
+				},
+				{
+					"subpath": "./icon-context",
+					"target": {
+						"types": "./dist/icon-context.d.ts",
+						"import": "./dist/icon-context.js"
+					}
+				},
+				{
 					"subpath": "./math",
 					"target": {
 						"types": "./dist/Elements/Math.svelte.d.ts",
@@ -34,6 +48,20 @@
 					"target": {
 						"types": "./dist/Elements/Mermaid.svelte.d.ts",
 						"svelte": "./dist/Elements/Mermaid.svelte"
+					}
+				},
+				{
+					"subpath": "./plugin-context",
+					"target": {
+						"types": "./dist/plugin-context.d.ts",
+						"import": "./dist/plugin-context.js"
+					}
+				},
+				{
+					"subpath": "./utils",
+					"target": {
+						"types": "./dist/utils/index.d.ts",
+						"import": "./dist/utils/index.js"
 					}
 				}
 			]
@@ -54,6 +82,18 @@
 				"importedName": "AllowElement"
 			},
 			{
+				"name": "AnimateOptions",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "AnimateOptions"
+			},
+			{
+				"name": "BlockProps",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "BlockProps"
+			},
+			{
 				"name": "CjkPlugin",
 				"kind": "type",
 				"source": "./plugins.js",
@@ -64,6 +104,12 @@
 				"kind": "type",
 				"source": "./plugins.js",
 				"importedName": "CodeHighlighterPlugin"
+			},
+			{
+				"name": "ControlsConfig",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "ControlsConfig"
 			},
 			{
 				"name": "CustomRenderer",
@@ -108,10 +154,40 @@
 				"importedName": "HighlightToken"
 			},
 			{
+				"name": "IconComponent",
+				"kind": "type",
+				"source": "./icon-context.js",
+				"importedName": "IconComponent"
+			},
+			{
+				"name": "IconMap",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "IconMap"
+			},
+			{
 				"name": "LanguageInfo",
 				"kind": "type",
 				"source": "./utils/bundledLanguages.js",
 				"importedName": "LanguageInfo"
+			},
+			{
+				"name": "LinkMode",
+				"kind": "type",
+				"source": "remend",
+				"importedName": "LinkMode"
+			},
+			{
+				"name": "LinkSafetyConfig",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "LinkSafetyConfig"
+			},
+			{
+				"name": "LinkSafetyModalProps",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "LinkSafetyModalProps"
 			},
 			{
 				"name": "MathPlugin",
@@ -126,6 +202,12 @@
 				"importedName": "MermaidInstance"
 			},
 			{
+				"name": "MermaidOptions",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "MermaidOptions"
+			},
+			{
 				"name": "Plugin",
 				"kind": "type",
 				"source": "./utils/parse-incomplete-markdown.js",
@@ -136,6 +218,24 @@
 				"kind": "type",
 				"source": "./plugins.js",
 				"importedName": "PluginConfig"
+			},
+			{
+				"name": "RemendHandler",
+				"kind": "type",
+				"source": "remend",
+				"importedName": "RemendHandler"
+			},
+			{
+				"name": "RemendOptions",
+				"kind": "type",
+				"source": "remend",
+				"importedName": "RemendOptions"
+			},
+			{
+				"name": "StreamdownContextType",
+				"kind": "type",
+				"source": "./context.svelte.js",
+				"importedName": "StreamdownContextType"
 			},
 			{
 				"name": "StreamdownProps",
@@ -192,6 +292,12 @@
 				"importedName": "cjk"
 			},
 			{
+				"name": "cn",
+				"kind": "value",
+				"source": "./theme.js",
+				"importedName": "cn"
+			},
+			{
 				"name": "code",
 				"kind": "value",
 				"source": "./plugins.js",
@@ -228,6 +334,12 @@
 				"importedName": "createMermaidPlugin"
 			},
 			{
+				"name": "defaultIcons",
+				"kind": "value",
+				"source": "./icon-context.js",
+				"importedName": "defaultIcons"
+			},
+			{
 				"name": "defaultTranslations",
 				"kind": "value",
 				"source": "./translations.js",
@@ -238,6 +350,12 @@
 				"kind": "value",
 				"source": "./markdown.js",
 				"importedName": "defaultUrlTransform"
+			},
+			{
+				"name": "detectTextDirection",
+				"kind": "value",
+				"source": "./utils/detectDirection.js",
+				"importedName": "detectTextDirection"
 			},
 			{
 				"name": "extractTableDataFromElement",
@@ -270,10 +388,28 @@
 				"importedName": "hasTable"
 			},
 			{
+				"name": "IconContext",
+				"kind": "value",
+				"source": "./icon-context.js",
+				"importedName": "IconContext"
+			},
+			{
+				"name": "IconProvider",
+				"kind": "value",
+				"source": "./IconProvider.svelte",
+				"importedName": "default"
+			},
+			{
 				"name": "IncompleteMarkdownParser",
 				"kind": "value",
 				"source": "./utils/parse-incomplete-markdown.js",
 				"importedName": "IncompleteMarkdownParser"
+			},
+			{
+				"name": "isPathRelativeUrl",
+				"kind": "value",
+				"source": "./utils/index.js",
+				"importedName": "isPathRelativeUrl"
 			},
 			{
 				"name": "lex",
@@ -324,6 +460,30 @@
 				"importedName": "parseIncompleteMarkdown"
 			},
 			{
+				"name": "parseUrl",
+				"kind": "value",
+				"source": "./utils/index.js",
+				"importedName": "parseUrl"
+			},
+			{
+				"name": "PluginContext",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "PluginContext"
+			},
+			{
+				"name": "PluginProvider",
+				"kind": "value",
+				"source": "./PluginProvider.svelte",
+				"importedName": "default"
+			},
+			{
+				"name": "save",
+				"kind": "value",
+				"source": "./utils/index.js",
+				"importedName": "save"
+			},
+			{
 				"name": "shadcnTheme",
 				"kind": "value",
 				"source": "./theme.js",
@@ -334,6 +494,12 @@
 				"kind": "value",
 				"source": "./Streamdown.svelte",
 				"importedName": "default"
+			},
+			{
+				"name": "StreamdownContext",
+				"kind": "value",
+				"source": "./context.svelte.js",
+				"importedName": "StreamdownContext"
 			},
 			{
 				"name": "tableDataToCSV",
@@ -360,10 +526,58 @@
 				"importedName": "theme"
 			},
 			{
+				"name": "transformUrl",
+				"kind": "value",
+				"source": "./utils/index.js",
+				"importedName": "transformUrl"
+			},
+			{
+				"name": "useCjkPlugin",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "useCjkPlugin"
+			},
+			{
+				"name": "useCodePlugin",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "useCodePlugin"
+			},
+			{
+				"name": "useCustomRenderer",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "useCustomRenderer"
+			},
+			{
+				"name": "useIcons",
+				"kind": "value",
+				"source": "./icon-context.js",
+				"importedName": "useIcons"
+			},
+			{
 				"name": "useIsCodeFenceIncomplete",
 				"kind": "value",
 				"source": "./incomplete-code.js",
 				"importedName": "useIsCodeFenceIncomplete"
+			},
+			{
+				"name": "useMathPlugin",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "useMathPlugin"
+			},
+			{
+				"name": "useMermaidPlugin",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "useMermaidPlugin"
+			},
+			{
+				"name": "usePlugins",
+				"kind": "value",
+				"source": "./plugin-context.js",
+				"importedName": "usePlugins"
 			},
 			{
 				"name": "useStreamdown",
@@ -372,7 +586,200 @@
 				"importedName": "useStreamdown"
 			}
 		],
-		"plugins": []
+		"plugins": [
+			{
+				"packageName": "@streamdown/cjk",
+				"packageVersion": "1.0.3",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "packages/streamdown-cjk/index.ts",
+				"defaultEntry": "cjk",
+				"createEntry": "createCjkPlugin",
+				"exportedSymbols": [
+					{
+						"name": "CjkPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "CjkPlugin"
+					},
+					{
+						"name": "cjk",
+						"kind": "value",
+						"source": null,
+						"importedName": "cjk"
+					},
+					{
+						"name": "createCjkPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createCjkPlugin"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/code",
+				"packageVersion": "1.1.1",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "packages/streamdown-code/index.ts",
+				"defaultEntry": "code",
+				"createEntry": "createCodePlugin",
+				"exportedSymbols": [
+					{
+						"name": "CodeHighlighterPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "CodeHighlighterPlugin"
+					},
+					{
+						"name": "CodePluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "CodePluginOptions"
+					},
+					{
+						"name": "HighlightOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "HighlightOptions"
+					},
+					{
+						"name": "HighlightResult",
+						"kind": "type",
+						"source": null,
+						"importedName": "HighlightResult"
+					},
+					{
+						"name": "ThemeInput",
+						"kind": "type",
+						"source": null,
+						"importedName": "ThemeInput"
+					},
+					{
+						"name": "code",
+						"kind": "value",
+						"source": null,
+						"importedName": "code"
+					},
+					{
+						"name": "createCodePlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createCodePlugin"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/math",
+				"packageVersion": "1.0.2",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "packages/streamdown-math/index.ts",
+				"defaultEntry": "math",
+				"createEntry": "createMathPlugin",
+				"exportedSymbols": [
+					{
+						"name": "MathPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "MathPlugin"
+					},
+					{
+						"name": "MathPluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "MathPluginOptions"
+					},
+					{
+						"name": "createMathPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createMathPlugin"
+					},
+					{
+						"name": "math",
+						"kind": "value",
+						"source": null,
+						"importedName": "math"
+					}
+				]
+			},
+			{
+				"packageName": "@streamdown/mermaid",
+				"packageVersion": "1.0.2",
+				"exports": [
+					{
+						"subpath": ".",
+						"target": {
+							"types": "./dist/index.d.ts",
+							"import": "./dist/index.js"
+						}
+					}
+				],
+				"entryFile": "packages/streamdown-mermaid/index.ts",
+				"defaultEntry": "mermaid",
+				"createEntry": "createMermaidPlugin",
+				"exportedSymbols": [
+					{
+						"name": "DiagramPlugin",
+						"kind": "type",
+						"source": null,
+						"importedName": "DiagramPlugin"
+					},
+					{
+						"name": "MermaidConfig",
+						"kind": "type",
+						"source": "mermaid",
+						"importedName": "MermaidConfig"
+					},
+					{
+						"name": "MermaidInstance",
+						"kind": "type",
+						"source": null,
+						"importedName": "MermaidInstance"
+					},
+					{
+						"name": "MermaidPluginOptions",
+						"kind": "type",
+						"source": null,
+						"importedName": "MermaidPluginOptions"
+					},
+					{
+						"name": "createMermaidPlugin",
+						"kind": "value",
+						"source": null,
+						"importedName": "createMermaidPlugin"
+					},
+					{
+						"name": "mermaid",
+						"kind": "value",
+						"source": null,
+						"importedName": "mermaid"
+					}
+				]
+			}
+		]
 	},
 	"streamdownProps": [
 		{
@@ -838,6 +1245,13 @@
 			"default": null
 		},
 		{
+			"name": "remend",
+			"optional": true,
+			"type": "RemendOptions",
+			"source": "src/lib/context.svelte.ts",
+			"default": null
+		},
+		{
 			"name": "renderHtml",
 			"optional": true,
 			"type": "boolean|((token:Tokens.HTML|Tokens.Tag)=>string)",
@@ -1069,6 +1483,24 @@
 			]
 		},
 		{
+			"subpath": "./detect-direction",
+			"target": {
+				"types": "./dist/utils/detectDirection.d.ts",
+				"import": "./dist/utils/detectDirection.js"
+			},
+			"entryFile": null,
+			"props": []
+		},
+		{
+			"subpath": "./icon-context",
+			"target": {
+				"types": "./dist/icon-context.d.ts",
+				"import": "./dist/icon-context.js"
+			},
+			"entryFile": null,
+			"props": []
+		},
+		{
 			"subpath": "./math",
 			"target": {
 				"types": "./dist/Elements/Math.svelte.d.ts",
@@ -1122,6 +1554,24 @@
 					"default": null
 				}
 			]
+		},
+		{
+			"subpath": "./plugin-context",
+			"target": {
+				"types": "./dist/plugin-context.d.ts",
+				"import": "./dist/plugin-context.js"
+			},
+			"entryFile": null,
+			"props": []
+		},
+		{
+			"subpath": "./utils",
+			"target": {
+				"types": "./dist/utils/index.d.ts",
+				"import": "./dist/utils/index.js"
+			},
+			"entryFile": null,
+			"props": []
 		}
 	]
 }

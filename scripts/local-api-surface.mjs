@@ -4,6 +4,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parse as parseSvelte } from 'svelte/compiler';
 import ts from 'typescript';
+import { listStandalonePluginPackages } from './lib/workspace-packages.mjs';
 
 const scriptFile = fileURLToPath(import.meta.url);
 const repoRoot = resolve(dirname(scriptFile), '..');
@@ -505,6 +506,40 @@ function collectSubpathExports(packageJson) {
 		});
 }
 
+function inferWorkspaceEntryFile(packageDir) {
+	const candidates = [join(packageDir, 'index.ts'), join(packageDir, 'src', 'index.ts')];
+	return candidates.find((candidate) => existsSync(candidate)) ?? null;
+}
+
+function collectPluginEntryPoints() {
+	return listStandalonePluginPackages(repoRoot).map(({ dir, packageJson }) => {
+		const entryFile = inferWorkspaceEntryFile(dir);
+		if (!entryFile) {
+			throw new Error(`Unable to infer entry file for ${packageJson.name}`);
+		}
+
+		const packageExports = extractExports(entryFile);
+		const runtimeEntries = packageExports
+			.filter((entry) => entry.kind === 'value' && !entry.source)
+			.map((entry) => entry.name)
+			.sort((left, right) => left.localeCompare(right));
+		const defaultEntry = runtimeEntries.find((entry) => !entry.startsWith('create')) ?? null;
+		const createEntry =
+			runtimeEntries.find((entry) => entry.startsWith('create') && entry.endsWith('Plugin')) ??
+			null;
+
+		return {
+			packageName: packageJson.name,
+			packageVersion: packageJson.version,
+			exports: collectPackageExports(packageJson),
+			entryFile: relativePath(entryFile),
+			defaultEntry,
+			createEntry,
+			exportedSymbols: packageExports
+		};
+	});
+}
+
 export function generateLocalApiSurfaceSnapshot() {
 	const packageJson = readJson(join(repoRoot, 'package.json'));
 
@@ -522,7 +557,7 @@ export function generateLocalApiSurfaceSnapshot() {
 		},
 		exports: {
 			streamdown: extractExports(entryFile),
-			plugins: []
+			plugins: collectPluginEntryPoints()
 		},
 		streamdownProps: extractStreamdownProps(),
 		pluginConfig: extractPluginConfigEntries(),

@@ -1,0 +1,27 @@
+{
+  "name": "@streamdown/mermaid",
+  "version": "1.0.2",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup index.ts --format esm --dts --clean",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "mermaid": "^11.11.0"
+  },
+  "description": "Standalone mermaid plugin package used by the svelte-streamdown workspace.",
+  "license": "MIT"
+}

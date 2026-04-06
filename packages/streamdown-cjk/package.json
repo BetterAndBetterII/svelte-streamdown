@@ -1,0 +1,29 @@
+{
+  "name": "@streamdown/cjk",
+  "version": "1.0.3",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup index.ts --format esm --dts --clean",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "remark-cjk-friendly": "^2.0.1",
+    "remark-cjk-friendly-gfm-strikethrough": "^2.0.1",
+    "unist-util-visit": "^5.1.0"
+  },
+  "description": "Standalone CJK plugin package used by the svelte-streamdown workspace.",
+  "license": "MIT"
+}

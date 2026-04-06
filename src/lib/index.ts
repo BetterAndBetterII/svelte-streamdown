@@ -1,11 +1,37 @@
 export { default as Streamdown } from './Streamdown.svelte';
-export { useStreamdown, type StreamdownProps } from './context.svelte.js';
-export { hasIncompleteCodeFence, hasTable, useIsCodeFenceIncomplete } from './incomplete-code.js';
+export {
+	StreamdownContext,
+	useStreamdown,
+	type AnimateOptions,
+	type BlockProps,
+	type ControlsConfig,
+	type IconMap,
+	type LinkSafetyConfig,
+	type LinkSafetyModalProps,
+	type MermaidOptions,
+	type StreamdownContextType,
+	type StreamdownProps
+} from './context.svelte.js';
+export { default as IconProvider } from './IconProvider.svelte';
+export { default as PluginProvider } from './PluginProvider.svelte';
+export { useIsCodeFenceIncomplete, hasIncompleteCodeFence, hasTable } from './incomplete-code.js';
+export {
+	defaultIcons,
+	IconContext,
+	type IconComponent,
+	useIcons
+} from './icon-context.js';
 export { defaultUrlTransform, type AllowElement, type UrlTransform } from './markdown.js';
-export type { AllowedTags } from './security/types.js';
-export { normalizeHtmlIndentation } from './security/html.js';
-export { theme, shadcnTheme, mergeTheme, type Theme } from './theme.js';
 export { type Extension, type StreamdownToken, lex, parseBlocks } from './marked/index.js';
+export {
+	PluginContext,
+	useCjkPlugin,
+	useCodePlugin,
+	useCustomRenderer,
+	useMathPlugin,
+	useMermaidPlugin,
+	usePlugins
+} from './plugin-context.js';
 export {
 	cjk,
 	code,
@@ -30,7 +56,9 @@ export {
 	type PluginConfig,
 	type ThemeInput
 } from './plugins.js';
-
+export type { AllowedTags } from './security/types.js';
+export { normalizeHtmlIndentation } from './security/html.js';
+export { cn, theme, shadcnTheme, mergeTheme, type Theme } from './theme.js';
 export {
 	parseIncompleteMarkdown,
 	type Plugin,
@@ -41,6 +69,13 @@ export {
 	createLanguageSet,
 	type LanguageInfo
 } from './utils/bundledLanguages.js';
+export { detectTextDirection } from './utils/detectDirection.js';
+export {
+	parseUrl,
+	save,
+	transformUrl,
+	isPathRelativeUrl
+} from './utils/index.js';
 export {
 	defaultTranslations,
 	mergeTranslations,
@@ -53,3 +88,4 @@ export {
 	tableDataToTSV,
 	type TableData
 } from './utils/table.js';
+export type { LinkMode, RemendHandler, RemendOptions } from 'remend';

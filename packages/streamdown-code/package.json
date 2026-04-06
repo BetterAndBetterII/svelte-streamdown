@@ -1,0 +1,27 @@
+{
+  "name": "@streamdown/code",
+  "version": "1.1.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup index.ts --format esm --dts --clean",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "shiki": "^3.13.0"
+  },
+  "description": "Standalone code highlighter plugin package for svelte-streamdown workspace parity.",
+  "license": "MIT"
+}

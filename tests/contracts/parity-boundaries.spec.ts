@@ -256,18 +256,18 @@ describe('parity boundary documentation', () => {
 			['api-03', 'different_by_design'],
 			['api-04', 'different_by_design'],
 			['api-05', 'different_by_design'],
-			['api-06', 'different_by_design'],
+			['api-06', 'done'],
 			['api-07', 'different_by_design'],
-			['api-08', 'different_by_design'],
+			['api-08', 'done'],
 			['prop-11', 'done'],
-			['prop-12', 'different_by_design'],
+			['prop-12', 'done'],
 			['prop-17', 'done'],
 			['prop-20', 'different_by_design'],
 			['plugin-01', 'done'],
-			['plugin-02', 'different_by_design'],
-			['plugin-03', 'different_by_design'],
-			['plugin-04', 'different_by_design'],
-			['plugin-05', 'different_by_design'],
+			['plugin-02', 'done'],
+			['plugin-03', 'done'],
+			['plugin-04', 'done'],
+			['plugin-05', 'done'],
 			['plugin-06', 'done'],
 			['parser-02', 'done'],
 			['parser-03', 'different_by_design'],
@@ -359,16 +359,13 @@ describe('parity boundary documentation', () => {
 		expect(backlogIds).toHaveLength(0);
 	});
 
-	test('keeps package/export backlog items out of the implement bucket once they are accepted drift', () => {
+	test('removes the resolved package/export backlog items from the unresolved bucket', () => {
 		const backlogRows = collectRemainingBacklogRows(readDoc('docs/reference-tests-inventory.md'));
-		const packageBoundaryRows = backlogRows.filter(
-			(row) => row.category === 'package/export boundaries'
-		);
-
-		const acceptedDriftFiles = new Set([
+		const resolvedFiles = new Set([
 			'packages/remend/__tests__/custom-handlers.test.ts',
 			'packages/remend/__tests__/utils.test.ts',
 			'packages/streamdown/__tests__/detect-direction.test.ts',
+			'packages/streamdown/__tests__/plugin-context.test.tsx',
 			'packages/streamdown/__tests__/icon-context.test.tsx',
 			'packages/streamdown/__tests__/utils.test.ts',
 			'packages/streamdown-cjk/__tests__/index.test.ts',
@@ -377,30 +374,21 @@ describe('parity boundary documentation', () => {
 			'packages/streamdown-mermaid/__tests__/index.test.ts'
 		]);
 
-		for (const row of packageBoundaryRows) {
-			if (acceptedDriftFiles.has(row.referenceFile)) {
-				expect(row.nextAction, `Unexpected next action for ${row.referenceFile}`).toBe(
-					'accepted drift'
-				);
-			}
+		for (const sourceFile of resolvedFiles) {
+			expect(
+				backlogRows.find((row) => row.referenceFile === sourceFile),
+				`Resolved package surface should not remain in backlog: ${sourceFile}`
+			).toBeUndefined();
 		}
-
-		expect(
-			packageBoundaryRows
-				.filter((row) => acceptedDriftFiles.has(row.referenceFile))
-				.some((row) => row.nextAction === 'implement')
-		).toBe(false);
 	});
 
-	test('keeps plugin accepted-drift backlog items out of the implement bucket once they are classified drift', () => {
+	test('removes the resolved plugin-context backlog item once provider helpers ship', () => {
 		const backlogRows = collectRemainingBacklogRows(readDoc('docs/reference-tests-inventory.md'));
 		const pluginContextRow = backlogRows.find(
 			(row) => row.referenceFile === 'packages/streamdown/__tests__/plugin-context.test.tsx'
 		);
 
-		expect(pluginContextRow).toBeDefined();
-		expect(pluginContextRow?.category).toBe('plugins');
-		expect(pluginContextRow?.nextAction).toBe('accepted drift');
+		expect(pluginContextRow).toBeUndefined();
 	});
 
 	test('keeps performance accepted-drift backlog items out of the implement bucket once they are classified drift', () => {
@@ -427,21 +415,12 @@ describe('parity boundary documentation', () => {
 
 	test('documents every targeted accepted-drift row with explicit rationale and generated local evidence', () => {
 		const targetFiles = [
-			'packages/remend/__tests__/custom-handlers.test.ts',
-			'packages/remend/__tests__/utils.test.ts',
-			'packages/streamdown/__tests__/detect-direction.test.ts',
-			'packages/streamdown/__tests__/plugin-context.test.tsx',
-			'packages/streamdown/__tests__/icon-context.test.tsx',
-			'packages/streamdown/__tests__/utils.test.ts',
 			'packages/streamdown/__tests__/code-block-memo.test.tsx',
+			'packages/streamdown/__tests__/katex-lazy-load.test.tsx',
 			'packages/streamdown/__tests__/components-memo.test.tsx',
 			'packages/streamdown/__tests__/components-rerender.test.tsx',
 			'packages/streamdown/__tests__/memo-comparators.test.tsx',
-			'packages/streamdown/__tests__/use-deferred-render.test.tsx',
-			'packages/streamdown-cjk/__tests__/index.test.ts',
-			'packages/streamdown-code/__tests__/index.test.ts',
-			'packages/streamdown-math/__tests__/index.test.ts',
-			'packages/streamdown-mermaid/__tests__/index.test.ts'
+			'packages/streamdown/__tests__/use-deferred-render.test.tsx'
 		];
 		const inventoryRows = collectInventoryRows(readDoc('docs/reference-tests-inventory.md'));
 		const statusRows = collectMigrationStatusRows(readDoc('docs/test-migration-status.md'));

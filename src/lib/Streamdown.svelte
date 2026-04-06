@@ -1,4 +1,5 @@
 <script lang="ts" generics="Source extends Record<string, any> = Record<string, any>">
+	import remend from 'remend';
 	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 	import Block from './Block.svelte';
 	import {
@@ -9,6 +10,8 @@
 		type MermaidOptions,
 		type StreamdownProps
 	} from './context.svelte.js';
+	import { IconContext } from './icon-context.js';
+	import { PluginContext } from './plugin-context.js';
 	import { getThemeName, type ThemeInput } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
 	import {
@@ -161,6 +164,7 @@
 		shikiThemes,
 		mermaid,
 		plugins,
+		remend: remendOptions,
 		parseIncompleteMarkdown = true,
 		parseMarkdownIntoBlocksFn,
 		mode = 'streaming',
@@ -429,6 +433,8 @@
 			return components;
 		}
 	});
+	PluginContext.provide(() => plugins ?? null);
+	IconContext.provide(() => icons);
 
 	const id = $props.id();
 	let previousIsAnimating = $state<boolean | undefined>(undefined);
@@ -463,8 +469,15 @@
 		parseMarkdownIntoBlocksFn ??
 			((markdown: string) => parseBlocksWithFootnotes(markdown, streamdown.extensions).blocks)
 	);
+	const normalizedContent = $derived.by(() => {
+		if (!(resolvedMode === 'streaming' && parseIncompleteMarkdown && remendOptions)) {
+			return preprocessedContent;
+		}
+
+		return remend(preprocessedContent, remendOptions);
+	});
 	const rawBlocks = $derived(
-		resolvedStatic ? [preprocessedContent] : splitBlocks(preprocessedContent)
+		resolvedStatic ? [normalizedContent] : splitBlocks(normalizedContent)
 	);
 	const blockIsIncomplete = $derived(
 		rawBlocks.map(
@@ -477,7 +490,7 @@
 	);
 	const parsedDocument = $derived.by(() => {
 		return {
-			footnotes: lexWithFootnotes(preprocessedContent, streamdown.extensions).footnotes
+			footnotes: lexWithFootnotes(normalizedContent, streamdown.extensions).footnotes
 		};
 	});
 
@@ -485,7 +498,10 @@
 		return rawBlocks.map((raw, index) => {
 			const isIncomplete = blockIsIncomplete[index] ?? false;
 			const markdown =
-				resolvedStatic || !parseIncompleteMarkdown || isIncomplete
+				resolvedStatic ||
+				!parseIncompleteMarkdown ||
+				isIncomplete ||
+				(resolvedMode === 'streaming' && remendOptions)
 					? raw
 					: repairIncompleteMarkdown(raw);
 			const parsed = lexWithFootnotes(markdown, streamdown.extensions);

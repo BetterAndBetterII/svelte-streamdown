@@ -36,6 +36,7 @@ type LocalSnapshot = {
 	packageSubpaths: string[];
 	rootExports: ExportEntry[];
 	streamdownProps: PropEntry[];
+	pluginPackages: PluginPackageEntry[];
 	pluginConfigKeys: string[];
 };
 
@@ -94,14 +95,20 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 	packageSubpaths: {
 		// api-07, drift-02
 		missingFromLocal: ['./styles.css'],
-		extraInLocal: ['./code', './math', './mermaid']
+		extraInLocal: [
+			'./code',
+			'./detect-direction',
+			'./icon-context',
+			'./math',
+			'./mermaid',
+			'./plugin-context',
+			'./utils'
+		]
 	},
 	rootExports: {
 		// api-02, api-03, api-04, api-05, api-06
 		missingFromLocal: [
-			'AnimateOptions',
 			'Block',
-			'BlockProps',
 			'BundledLanguage',
 			'BundledTheme',
 			'CodeBlock',
@@ -111,21 +118,13 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 			'CodeBlockHeader',
 			'CodeBlockSkeleton',
 			'Components',
-			'ControlsConfig',
 			'createAnimatePlugin',
 			'defaultRehypePlugins',
 			'defaultRemarkPlugins',
-			'detectTextDirection',
 			'escapeMarkdownTableCell',
 			'ExtraProps',
-			'IconMap',
-			'LinkSafetyConfig',
-			'LinkSafetyModalProps',
 			'MermaidErrorComponentProps',
-			'MermaidOptions',
 			'parseMarkdownIntoBlocks',
-			'StreamdownContext',
-			'StreamdownContextType',
 			'TableCopyDropdown',
 			'TableCopyDropdownProps',
 			'TableDownloadButton',
@@ -136,23 +135,44 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		],
 		// drift-01
 		extraInLocal: [
+			'cn',
+			'defaultIcons',
 			'Extension',
 			'HighlightResult',
 			'HighlightToken',
+			'IconComponent',
+			'IconContext',
+			'IconProvider',
 			'IncompleteMarkdownParser',
+			'isPathRelativeUrl',
 			'LanguageInfo',
 			'lex',
+			'LinkMode',
 			'mergeTheme',
 			'mergeTranslations',
 			'MermaidInstance',
 			'parseBlocks',
 			'parseIncompleteMarkdown',
+			'parseUrl',
 			'Plugin',
+			'PluginContext',
+			'PluginProvider',
+			'RemendHandler',
+			'RemendOptions',
+			'save',
 			'shadcnTheme',
 			'StreamdownToken',
 			'theme',
 			'Theme',
+			'transformUrl',
 			'useStreamdown',
+			'useCjkPlugin',
+			'useCodePlugin',
+			'useCustomRenderer',
+			'useIcons',
+			'useMathPlugin',
+			'useMermaidPlugin',
+			'usePlugins',
 			'bundledLanguagesInfo',
 			'cjk',
 			'code',
@@ -176,8 +196,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		missingFromLocal: [
 			'rehypePlugins',
 			'remarkPlugins',
-			'remarkRehypeOptions',
-			'remend'
+			'remarkRehypeOptions'
 		],
 		// api-01, prop-19, prop-22, prop-24
 		extraInLocal: [
@@ -309,29 +328,7 @@ const approvedApiSurfaceDiffs: ApiSurfaceDiffs = sortApiSurfaceDiffs({
 		optionalMismatches: []
 	},
 	pluginPackages: {
-		// plugin-02, plugin-03, plugin-04, plugin-05
-		missingFromLocal: [
-			{
-				packageName: '@streamdown/cjk',
-				defaultEntry: 'cjk',
-				createEntry: 'createCjkPlugin'
-			},
-			{
-				packageName: '@streamdown/code',
-				defaultEntry: 'code',
-				createEntry: 'createCodePlugin'
-			},
-			{
-				packageName: '@streamdown/math',
-				defaultEntry: 'math',
-				createEntry: 'createMathPlugin'
-			},
-			{
-				packageName: '@streamdown/mermaid',
-				defaultEntry: 'mermaid',
-				createEntry: 'createMermaidPlugin'
-			}
-		]
+		missingFromLocal: []
 	},
 	pluginConfig: {
 		// plugin-01
@@ -499,6 +496,11 @@ function parseLocalSnapshot(raw: unknown): LocalSnapshot {
 			'localSnapshot.streamdownProps',
 			parsePropEntry
 		).sort(comparePropEntries),
+		pluginPackages: parseArray(
+			exports.plugins,
+			'localSnapshot.exports.plugins',
+			parsePluginPackageEntry
+		).sort(comparePluginPackages),
 		pluginConfigKeys: parsePluginConfigKeys(root.pluginConfig, 'localSnapshot.pluginConfig')
 	};
 }
@@ -578,6 +580,7 @@ function collectApiSurfaceDiffs(
 	const localRootExports = new Map(local.rootExports.map((entry) => [entry.name, entry]));
 	const referenceProps = new Map(reference.streamdownProps.map((entry) => [entry.name, entry]));
 	const localProps = new Map(local.streamdownProps.map((entry) => [entry.name, entry]));
+	const localPluginPackages = new Map(local.pluginPackages.map((entry) => [entry.packageName, entry]));
 
 	const rootExportKindMismatches: ExportDiff[] = [];
 	for (const [name, referenceEntry] of referenceRootExports) {
@@ -650,7 +653,16 @@ function collectApiSurfaceDiffs(
 			optionalMismatches: propOptionalMismatches.sort(comparePropOptionalDiffs)
 		},
 		pluginPackages: {
-			missingFromLocal: [...reference.pluginPackages].sort(comparePluginPackages)
+			missingFromLocal: reference.pluginPackages
+				.filter((referenceEntry) => {
+					const localEntry = localPluginPackages.get(referenceEntry.packageName);
+					return (
+						!localEntry ||
+						localEntry.defaultEntry !== referenceEntry.defaultEntry ||
+						localEntry.createEntry !== referenceEntry.createEntry
+					);
+				})
+				.sort(comparePluginPackages)
 		},
 		pluginConfig: {
 			missingFromLocal: listDifference(reference.pluginConfigKeys, new Set(local.pluginConfigKeys))

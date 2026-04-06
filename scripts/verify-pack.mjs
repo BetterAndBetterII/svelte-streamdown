@@ -1,9 +1,11 @@
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, posix } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
-const repoRoot = new URL('..', import.meta.url);
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
 const REQUIRED_ROOT_FILES = ['LICENSE', 'README.md', 'package.json'];
 const ALLOWED_TOP_LEVEL_DIRECTORIES = new Set(['dist']);
@@ -31,9 +33,9 @@ const FORBIDDEN_PACK_ENTRY_PATTERNS = [
 	}
 ];
 
-function runCommand(command, args, label) {
+function runCommand(command, args, label, cwd = repoRoot) {
 	const result = spawnSync(command, args, {
-		cwd: repoRoot,
+		cwd,
 		encoding: 'utf8',
 		stdio: 'pipe'
 	});
@@ -239,11 +241,16 @@ function assertExports(packFiles, packageJson) {
 	return exportEntries;
 }
 
-function main() {
+function verifyPackagePack(workspacePackage) {
 	const packDestination = createPackDestination();
+	const { dir: packageRoot, packageJson, relativeDir } = workspacePackage;
+	const packArgs =
+		relativeDir === '.'
+			? ['pack', '--pack-destination', packDestination]
+			: ['--filter', packageJson.name, 'pack', '--pack-destination', packDestination];
 
 	try {
-		runCommand('pnpm', ['pack', '--pack-destination', packDestination], 'pnpm pack');
+		runCommand('pnpm', packArgs, 'pnpm pack', repoRoot);
 
 		const tarballPath = findTarball(packDestination);
 		const packFiles = new Set(listTarballFiles(tarballPath));
@@ -257,24 +264,42 @@ function main() {
 		assertMetadataPath(packFiles, tarballPackageJson, 'main');
 		assertMetadataPath(packFiles, tarballPackageJson, 'module');
 
-		console.log(
-			JSON.stringify(
-				{
-					tarball: tarballPath.split('/').pop(),
-					fileCount: packFiles.size,
-					exportsChecked: exportEntries.map((entry) => entry.specifier),
-					requiredRootFiles: REQUIRED_ROOT_FILES
-				},
-				null,
-				2
-			)
-		);
+		return {
+			name: packageJson.name,
+			path: relativeDir,
+			tarball: tarballPath.split('/').pop(),
+			fileCount: packFiles.size,
+			exportsChecked: exportEntries.map((entry) => entry.specifier),
+			requiredRootFiles: REQUIRED_ROOT_FILES
+		};
 	} finally {
 		rmSync(packDestination, {
 			force: true,
 			recursive: true
 		});
 	}
+}
+
+function main() {
+	const workspacePackages = [
+		{
+			dir: repoRoot,
+			relativeDir: '.',
+			packageJson: JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'))
+		},
+		...listWorkspacePackages(repoRoot)
+	];
+	const results = workspacePackages.map(verifyPackagePack);
+
+	console.log(
+		JSON.stringify(
+			{
+				packages: results
+			},
+			null,
+			2
+		)
+	);
 }
 
 main();

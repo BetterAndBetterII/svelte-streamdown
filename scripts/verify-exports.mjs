@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { basename, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listWorkspacePackages } from './lib/workspace-packages.mjs';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 const fixtureTemplateDirectory = join(repoRoot, 'tests', 'pack-smoke');
@@ -110,10 +111,10 @@ function parseExportEntries(packageJson) {
 	});
 }
 
-function assertBuildOutputExists(exportEntries) {
+function assertBuildOutputExists(packageRoot, exportEntries) {
 	for (const entry of exportEntries) {
 		for (const packagePath of entry.allPaths) {
-			const absolutePath = join(repoRoot, packagePath);
+			const absolutePath = join(packageRoot, packagePath);
 
 			if (!existsSync(absolutePath)) {
 				throw new Error(
@@ -211,46 +212,66 @@ function runPackSmoke(fixtureDirectory, tarballPath) {
 	);
 }
 
-function main() {
-	if (!existsSync(fixtureTemplateDirectory)) {
-		throw new Error(`Missing pack smoke fixture template at ${fixtureTemplateDirectory}`);
-	}
-
-	const packageJson = readJson(join(repoRoot, 'package.json'));
-	const exportEntries = parseExportEntries(packageJson);
+function verifyPackageExports(workspacePackage) {
 	const packDestination = createPackDestination();
 	const fixtureDirectory = join(packDestination, 'pack-smoke');
+	const { dir: packageRoot, packageJson, relativeDir } = workspacePackage;
+	const exportEntries = parseExportEntries(packageJson);
+	const packArgs =
+		relativeDir === '.'
+			? ['pack', '--pack-destination', packDestination]
+			: ['--filter', packageJson.name, 'pack', '--pack-destination', packDestination];
 
 	try {
-		runCommand('pnpm', ['pack', '--pack-destination', packDestination], 'pnpm pack');
-
-		assertBuildOutputExists(exportEntries);
+		runCommand('pnpm', packArgs, 'pnpm pack', repoRoot);
+		assertBuildOutputExists(packageRoot, exportEntries);
 
 		const tarballPath = findTarball(packDestination);
-
 		prepareFixture(fixtureDirectory, tarballPath, packageJson.name, exportEntries);
 		runPackSmoke(fixtureDirectory, tarballPath);
 
-		console.log(
-			JSON.stringify(
-				{
-					tarball: basename(tarballPath),
-					exportsChecked: exportEntries.map((entry) => entry.specifier),
-					runtimeImportsSmoked: exportEntries
-						.filter((entry) => entry.runtimePaths.length > 0)
-						.map((entry) => entry.specifier),
-					fixture: 'tests/pack-smoke'
-				},
-				null,
-				2
-			)
-		);
+		return {
+			name: packageJson.name,
+			path: relativeDir,
+			tarball: basename(tarballPath),
+			exportsChecked: exportEntries.map((entry) => entry.specifier),
+			runtimeImportsSmoked: exportEntries
+				.filter((entry) => entry.runtimePaths.length > 0)
+				.map((entry) => entry.specifier)
+		};
 	} finally {
 		rmSync(packDestination, {
 			force: true,
 			recursive: true
 		});
 	}
+}
+
+function main() {
+	if (!existsSync(fixtureTemplateDirectory)) {
+		throw new Error(`Missing pack smoke fixture template at ${fixtureTemplateDirectory}`);
+	}
+
+	const workspacePackages = [
+		{
+			dir: repoRoot,
+			relativeDir: '.',
+			packageJson: readJson(join(repoRoot, 'package.json'))
+		},
+		...listWorkspacePackages(repoRoot)
+	];
+	const results = workspacePackages.map(verifyPackageExports);
+
+	console.log(
+		JSON.stringify(
+			{
+				fixture: 'tests/pack-smoke',
+				packages: results
+			},
+			null,
+			2
+		)
+	);
 }
 
 main();

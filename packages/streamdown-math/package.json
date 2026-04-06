@@ -1,0 +1,30 @@
+{
+  "name": "@streamdown/math",
+  "version": "1.0.2",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup index.ts --format esm --dts --clean",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "katex": "^0.16.22",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "unified": "^11.0.5"
+  },
+  "description": "Standalone math plugin package used by the svelte-streamdown workspace.",
+  "license": "MIT"
+}
