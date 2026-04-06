@@ -20,6 +20,11 @@ import { handleIncompleteSetextHeading } from "./setext-heading-handler.js";
 import { handleSingleTildeEscape } from "./single-tilde-handler.js";
 import { handleIncompleteStrikethrough } from "./strikethrough-handler.js";
 
+export {
+  IncompleteMarkdownParser,
+  parseIncompleteMarkdown,
+  type Plugin,
+} from "./incomplete-markdown.js";
 export type { LinkMode } from "./link-image-handler.js";
 // biome-ignore lint/performance/noBarrelFile: "Re-exports utility functions for public API convenience"
 export {

@@ -688,6 +688,21 @@ describe('API surface parity contract', () => {
 		expect(referenceSnapshot.referenceCommit).toBe(FROZEN_REFERENCE_COMMIT);
 	});
 
+	test('keeps the root remend subpath aligned with the standalone remend package contract', async () => {
+		const [standaloneRemend, rootRemend] = await Promise.all([
+			import('remend'),
+			import('../../src/lib/remend.js')
+		]);
+
+		expect(rootRemend.default).toBe(standaloneRemend.default);
+		expect(rootRemend.parseIncompleteMarkdown).toBe(standaloneRemend.parseIncompleteMarkdown);
+		expect(rootRemend.IncompleteMarkdownParser).toBe(standaloneRemend.IncompleteMarkdownParser);
+		expect(rootRemend.isWithinCodeBlock).toBe(standaloneRemend.isWithinCodeBlock);
+		expect(rootRemend.isWithinLinkOrImageUrl).toBe(standaloneRemend.isWithinLinkOrImageUrl);
+		expect(rootRemend.isWithinMathBlock).toBe(standaloneRemend.isWithinMathBlock);
+		expect(rootRemend.isWordChar).toBe(standaloneRemend.isWordChar);
+	});
+
 	test('only differs from the reference snapshot through the tracked allowlist', () => {
 		expect(collectApiSurfaceDiffs(referenceSnapshot, localSnapshot)).toStrictEqual(
 			approvedApiSurfaceDiffs

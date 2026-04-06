@@ -19,26 +19,52 @@ function createPackArgs(pkg, packDestination, packageName) {
 		: ['--filter', packageName, 'pack', '--pack-destination', packDestination];
 }
 
-function verifyPackage(pkg) {
+function packWorkspacePackage(pkg, packDestination) {
 	const packageJson = readJson(join(pkg.dir, 'package.json'));
-	const exportEntries = parseExportEntries(packageJson);
+
+	runCommand(
+		'pnpm',
+		createPackArgs(pkg, packDestination, packageJson.name),
+		'pnpm pack',
+		repoRoot
+	);
+
+	return {
+		exportEntries: parseExportEntries(packageJson),
+		packageJson,
+		tarballPath: findTarball(packDestination)
+	};
+}
+
+function verifyPackage(pkg) {
 	const packDestination = createPackDestination(`${pkg.id}-export-verify-`);
+	const tempDirectories = [packDestination];
 	const fixtureDirectory = join(packDestination, 'pack-smoke');
 
 	try {
-		runCommand(
-			'pnpm',
-			createPackArgs(pkg, packDestination, packageJson.name),
-			'pnpm pack',
-			repoRoot
-		);
+		const { exportEntries, packageJson, tarballPath } = packWorkspacePackage(pkg, packDestination);
 		assertBuildOutputExists(pkg.dir, exportEntries);
 
-		const tarballPath = findTarball(packDestination);
+		const tarballPaths = [tarballPath];
+
+		if (pkg.dir === repoRoot) {
+			for (const dependencyPkg of getPublishablePackages()) {
+				if (dependencyPkg.dir === repoRoot) {
+					continue;
+				}
+
+				const dependencyDestination = createPackDestination(
+					`${dependencyPkg.id}-export-verify-dependency-`
+				);
+				tempDirectories.push(dependencyDestination);
+				tarballPaths.push(packWorkspacePackage(dependencyPkg, dependencyDestination).tarballPath);
+			}
+		}
+
 		prepareSmokeFixture({
 			fixtureTemplateDirectory: pkg.smokeFixtureDir,
 			fixtureDirectory,
-			tarballPaths: [tarballPath],
+			tarballPaths,
 			entryContent: createSmokeEntry([
 				{
 					packageName: packageJson.name,
@@ -46,7 +72,7 @@ function verifyPackage(pkg) {
 				}
 			])
 		});
-		runPackSmoke(fixtureDirectory, [tarballPath], repoRoot);
+		runPackSmoke(fixtureDirectory, tarballPaths, repoRoot);
 
 		return {
 			package: packageJson.name,
@@ -58,7 +84,9 @@ function verifyPackage(pkg) {
 			fixture: 'tests/pack-smoke'
 		};
 	} finally {
-		cleanupDirectory(packDestination);
+		for (const directory of tempDirectories) {
+			cleanupDirectory(directory);
+		}
 	}
 }
 

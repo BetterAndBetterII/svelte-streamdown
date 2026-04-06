@@ -1,3 +1,8 @@
+export {
+	IncompleteMarkdownParser,
+	parseIncompleteMarkdown,
+	type Plugin
+} from "./incomplete-markdown.js";
 export type { LinkMode } from "./link-image-handler.js";
 export { isWithinCodeBlock, isWithinLinkOrImageUrl, isWithinMathBlock, isWordChar, } from "./utils.js";
 /**

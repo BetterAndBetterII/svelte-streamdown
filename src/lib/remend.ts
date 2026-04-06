@@ -1,5 +1,10 @@
 export {
+	default,
 	IncompleteMarkdownParser,
-	parseIncompleteMarkdown,
-	type Plugin
-} from './utils/parse-incomplete-markdown.js';
+	isWithinCodeBlock,
+	isWithinLinkOrImageUrl,
+	isWithinMathBlock,
+	isWordChar,
+	parseIncompleteMarkdown
+} from 'remend';
+export type { LinkMode, Plugin, RemendHandler, RemendOptions } from 'remend';

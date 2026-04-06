@@ -281,6 +281,7 @@ Subpath exports:
 - `svelte-streamdown/code`
 - `svelte-streamdown/math`
 - `svelte-streamdown/mermaid`
+- `svelte-streamdown/remend` (delegates to the standalone `remend` package contract)
 
 ## Development
 

@@ -100,12 +100,18 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
+					include: [
+						'src/**/*.{test,spec}.{js,ts}',
+						'tests/**/*.{test,spec}.{js,ts}',
+						'packages/**/*.{test,spec}.{js,ts}'
+					],
 					exclude: [
 						'src/**/*.svelte.{test,spec}.{js,ts}',
 						'tests/**/*.svelte.{test,spec}.{js,ts}',
+						'packages/**/*.svelte.{test,spec}.{js,ts}',
 						'tests/playwright/**',
-						'tests/pack-smoke/**'
+						'tests/pack-smoke/**',
+						'packages/**/dist/**'
 					]
 				}
 			}

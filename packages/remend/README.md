@@ -11,12 +11,19 @@ pnpm add remend
 ## Usage
 
 ```ts
-import remend, { isWordChar, type RemendHandler } from 'remend';
+import remend, {
+  IncompleteMarkdownParser,
+  isWordChar,
+  parseIncompleteMarkdown,
+  type RemendHandler
+} from 'remend';
 import { findMatchingOpeningBracket } from 'remend/utils';
 
 const repaired = remend('Hello **world');
+const parsed = parseIncompleteMarkdown('Hello **world');
 const isWord = isWordChar('a');
 const bracketIndex = findMatchingOpeningBracket('[abc]', 4);
+const parser = new IncompleteMarkdownParser();
 
 const handler: RemendHandler = {
   name: 'demo',
@@ -24,4 +31,4 @@ const handler: RemendHandler = {
 };
 ```
 
-This package exposes the standalone parser contract used by the Streamdown-style workspace split, including custom handlers and utility helpers.
+This package exposes the standalone parser contract used by the Streamdown-style workspace split, including incomplete-markdown parser helpers, custom handlers, and utility helpers. The root `svelte-streamdown/remend` subpath delegates to this package so both import surfaces stay aligned.
