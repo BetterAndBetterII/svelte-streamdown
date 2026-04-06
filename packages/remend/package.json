@@ -17,12 +17,18 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/utils.ts --format esm --dts --clean",
-    "prepack": "pnpm run build"
+    "build": "tsup --config tsup.config.ts",
+    "prepack": "pnpm build"
   },
   "description": "Self-healing markdown parser contract for svelte-streamdown workspace parity.",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BetterAndBetterII/svelte-streamdown.git",
+    "directory": "packages/remend"
+  }
 }

@@ -3,10 +3,10 @@
 	"version": "3.0.1",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "pnpm build:packages && vite build && pnpm run prepack",
+		"build": "pnpm build:packages && vite build && pnpm package:root",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
-		"prepack": "svelte-kit sync && svelte-package && publint",
+		"prepack": "pnpm build:packages && pnpm package:root",
 		"check": "pnpm build:packages && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "pnpm build:packages && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
@@ -34,7 +34,9 @@
 		"verify:dependency-policy": "node scripts/verify-dependency-policy.mjs",
 		"release:metadata": "node scripts/release-metadata.mjs",
 		"verify:release-metadata": "node scripts/verify-release-metadata.mjs",
-		"build:packages": "pnpm -r --filter './packages/*' build"
+		"build:packages": "pnpm -r --filter './packages/*' build",
+		"package:root": "svelte-kit sync && svelte-package && publint",
+		"verify:workspace-smoke": "node scripts/verify-workspace-smoke.mjs"
 	},
 	"files": [
 		"dist",
@@ -87,6 +89,10 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250906.0",
 		"@playwright/test": "^1.55.0",
+		"@streamdown/cjk": "workspace:*",
+		"@streamdown/code": "workspace:*",
+		"@streamdown/math": "workspace:*",
+		"@streamdown/mermaid": "workspace:*",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/package": "^2.0.0",
@@ -131,11 +137,7 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^3.2.3",
 		"vitest-browser-svelte": "^0.1.0",
-		"wrangler": "^4.34.0",
-		"@streamdown/cjk": "workspace:*",
-		"@streamdown/code": "workspace:*",
-		"@streamdown/math": "workspace:*",
-		"@streamdown/mermaid": "workspace:*"
+		"wrangler": "^4.34.0"
 	},
 	"license": "MIT",
 	"repository": {
@@ -165,10 +167,10 @@
 		"remark-gfm": "^4.0.1",
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
+		"remend": "workspace:*",
 		"shiki": "^3.13.0",
 		"tailwind-merge": "^3.3.1",
-		"unified": "^11.0.5",
-		"remend": "workspace:*"
+		"unified": "^11.0.5"
 	},
 	"packageManager": "pnpm@10.32.1",
 	"volta": {

@@ -1,0 +1,7 @@
+{
+  "extends": "../../config/tsconfig.package.json",
+  "include": [
+    "src/**/*.ts",
+    "../../src/lib/utils/parse-incomplete-markdown.ts"
+  ]
+}

@@ -286,9 +286,32 @@ Subpath exports:
 
 ```bash
 pnpm install
+pnpm build:packages
 pnpm check
 pnpm test
 ```
+
+## Workspace Baseline
+
+The repository now keeps a pnpm workspace baseline for publishable packages:
+
+- repo root: `svelte-streamdown`
+- `packages/remend`: streaming markdown repair utilities prepared for standalone packing
+
+Shared package conventions live in:
+
+- `pnpm-workspace.yaml`
+- `config/tsconfig.package.json`
+- `config/tsup-package.mjs`
+- `scripts/lib/publishable-packages.mjs`
+
+Validation entrypoints for the workspace split:
+
+- `pnpm verify:pack`
+- `pnpm verify:exports`
+- `pnpm verify:workspace-smoke`
+
+See `docs/workspace-baseline.md` for the repo layout, local linking workflow, and packaging rules.
 
 See [CONTRIBUTING.md](https://github.com/BetterAndBetterII/svelte-streamdown/blob/master/CONTRIBUTING.md) for the regression intake workflow, parity fixture naming convention, and bug-fix PR expectations.
 

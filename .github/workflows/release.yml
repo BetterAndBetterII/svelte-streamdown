@@ -65,6 +65,9 @@ jobs:
       - name: Verify packed export surface
         run: pnpm verify:exports
 
+      - name: Verify workspace pack smoke
+        run: pnpm verify:workspace-smoke
+
       - name: Verify dependency policy
         run: pnpm verify:dependency-policy
 

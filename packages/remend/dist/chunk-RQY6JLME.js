@@ -162,27 +162,6 @@ var isHorizontalRule = (text, markerIndex, marker) => {
   return markerCount >= 3 && !hasNonWhitespaceNonMarker;
 };
 
-export {
-  boldPattern,
-  italicPattern,
-  boldItalicPattern,
-  singleAsteriskPattern,
-  singleUnderscorePattern,
-  inlineCodePattern,
-  strikethroughPattern,
-  whitespaceOrMarkersPattern,
-  listItemPattern,
-  inlineTripleBacktickPattern,
-  fourOrMoreAsterisksPattern,
-  halfCompleteUnderscorePattern,
-  halfCompleteTildePattern,
-  doubleTildeGlobalPattern,
-  isWordChar,
-  isWithinCodeBlock,
-  findMatchingOpeningBracket,
-  findMatchingClosingBracket,
-  isWithinMathBlock,
-  isWithinLinkOrImageUrl,
-  isWithinHtmlTag,
-  isHorizontalRule
-};
+export { boldItalicPattern, boldPattern, doubleTildeGlobalPattern, findMatchingClosingBracket, findMatchingOpeningBracket, fourOrMoreAsterisksPattern, halfCompleteTildePattern, halfCompleteUnderscorePattern, inlineCodePattern, inlineTripleBacktickPattern, isHorizontalRule, isWithinCodeBlock, isWithinHtmlTag, isWithinLinkOrImageUrl, isWithinMathBlock, isWordChar, italicPattern, listItemPattern, singleAsteriskPattern, singleUnderscorePattern, strikethroughPattern, whitespaceOrMarkersPattern };
+//# sourceMappingURL=chunk-RQY6JLME.js.map
+//# sourceMappingURL=chunk-RQY6JLME.js.map
