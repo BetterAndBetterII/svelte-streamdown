@@ -56,13 +56,24 @@ describe('streaming block segmentation parity', () => {
 	});
 
 	test('treats void html tags as self-contained blocks instead of merging later content into them', () => {
-		const breakMarkdown = '<br>\n\nSome text after the break.';
-		expect(parseBlocks(breakMarkdown).join('')).toContain('Some text after the break.');
+		const expectVoidHtmlSplit = (
+			markdown: string,
+			expectedVoidBlock: string,
+			expectedFollowingBlock: string
+		) => {
+			const blocks = parseBlocks(markdown);
 
-		const imageMarkdown = '<img src="test.png">\n\nParagraph after image.';
-		expect(parseBlocks(imageMarkdown).join('')).toContain('Paragraph after image.');
+			expect(blocks).toHaveLength(2);
+			expect(blocks[0].trim()).toBe(expectedVoidBlock);
+			expect(blocks[1].trim()).toBe(expectedFollowingBlock);
+		};
 
-		const ruleMarkdown = '<hr>\n\nContent after hr.';
-		expect(parseBlocks(ruleMarkdown).join('')).toContain('Content after hr.');
+		expectVoidHtmlSplit('<br>\n\nSome text after the break.', '<br>', 'Some text after the break.');
+		expectVoidHtmlSplit(
+			'<img src="test.png">\n\nParagraph after image.',
+			'<img src="test.png">',
+			'Paragraph after image.'
+		);
+		expectVoidHtmlSplit('<hr>\n\nContent after hr.', '<hr>', 'Content after hr.');
 	});
 });
