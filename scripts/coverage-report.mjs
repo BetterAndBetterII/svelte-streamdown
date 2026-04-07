@@ -314,9 +314,7 @@ function main() {
 				'--silent=passed-only',
 				'--coverage.enabled=true',
 				'--coverage.provider=v8',
-				'--coverage.reporter=text-summary',
 				'--coverage.reporter=json-summary',
-				'--coverage.reporter=html',
 				`--coverage.reportsDirectory=${relative(repoRoot, batchReportsDirectory)}`,
 				...(suite.sourceInclude ?? coverageSourceInclude).map(
 					(pattern) => `--coverage.include=${pattern}`
