@@ -1,7 +1,7 @@
 import { render } from 'vitest-browser-svelte';
 import { expect, vi } from 'vitest';
 import Streamdown from '../../../../src/lib/Streamdown.svelte';
-import { math } from '../../../../src/lib/index.js';
+import { createMathPlugin, math } from '../../../../src/lib/index.js';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
 const tinyGifDataUri = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -153,6 +153,7 @@ describeInBrowser('remaining parity closeout evidence', () => {
 	testInBrowser(
 		'renders mermaid, math, table wrappers, and hydrated image controls on the public browser surface',
 		async () => {
+			const inlineMath = createMathPlugin({ singleDollarTextMath: true });
 			const initialize = vi.fn();
 			const renderDiagram = vi.fn().mockResolvedValue({
 				svg: '<svg width="120" height="80"><text>Parity graph</text></svg>'
@@ -178,7 +179,7 @@ describeInBrowser('remaining parity closeout evidence', () => {
 				].join('\n'),
 				mode: 'static',
 				plugins: {
-					math,
+					math: inlineMath,
 					mermaid: {
 						name: 'mermaid',
 						type: 'diagram',

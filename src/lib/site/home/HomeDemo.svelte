@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { BROWSER } from 'esm-env';
 	import { onDestroy, onMount } from 'svelte';
 	import Streamdown from '$lib/Streamdown.svelte';
-	import { cjk, code, math, mermaid } from '$lib/index.js';
+	import { code, type PluginConfig } from '$lib/plugins.js';
 	import { demoMarkdown } from './content.js';
 
 	const speed = 100;
@@ -11,6 +12,20 @@
 	let isAnimating = $state(false);
 	let host = $state<HTMLDivElement | null>(null);
 	let timer: ReturnType<typeof setInterval> | null = null;
+	let plugins = $state<PluginConfig>({ code });
+
+	const loadInteractivePlugins = async (): Promise<PluginConfig | null> => {
+		if (!BROWSER) {
+			return null;
+		}
+
+		const [{ cjk }, { math, mermaid }] = await Promise.all([
+			import('$lib/plugins/cjk-shared.js'),
+			import('$lib/plugins.js')
+		]);
+
+		return { code, cjk, math, mermaid };
+	};
 
 	function stopDemo() {
 		if (timer) {
@@ -42,6 +57,12 @@
 	}
 
 	onMount(() => {
+		void loadInteractivePlugins().then((loadedPlugins) => {
+			if (loadedPlugins) {
+				plugins = loadedPlugins;
+			}
+		});
+
 		if (!host) {
 			return;
 		}
@@ -92,7 +113,7 @@
 					animated
 					caret="block"
 					isAnimating={isAnimating}
-					plugins={{ code, mermaid, math, cjk }}
+					{plugins}
 				/>
 			</div>
 		</div>

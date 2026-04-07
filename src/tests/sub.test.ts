@@ -1,6 +1,9 @@
 import { expect, describe, test } from 'vitest';
 import { lex } from '../lib/marked/index.js';
+import { createMarkedMathExtensions } from '../lib/marked/marked-math.js';
 import { parseIncompleteMarkdown } from '../lib/utils/parse-incomplete-markdown.js';
+
+const singleDollarMathExtensions = createMarkedMathExtensions({ singleDollarTextMath: true });
 
 // Helper functions
 function getTokensByType(tokens: any[], type: string) {
@@ -303,7 +306,7 @@ describe('tokenization', () => {
 	});
 
 	test('should parse subscript with math expressions', () => {
-		const tokens = lex('Math: $H_2O$ and text H~2~O.');
+		const tokens = lex('Math: $H_2O$ and text H~2~O.', singleDollarMathExtensions);
 		const paragraphToken = getFirstTokenByType(tokens, 'paragraph');
 
 		expect(paragraphToken).toBeDefined();

@@ -1,16 +1,12 @@
 import type { Tokens } from 'marked';
+import { createMarkedMathExtensions } from './marked/marked-math.js';
+import type { Extension } from './marked/index.js';
 export { cjk, createCjkPlugin, type CjkPlugin } from './plugins/cjk-shared.js';
 import {
 	createCodePlugin as createSharedCodePlugin,
-	getThemeName
-} from '@streamdown-svelte/plugin-core';
-import {
 	createMathPlugin as createSharedMathPlugin,
-	math as sharedMath
-} from '@streamdown-svelte/plugin-core';
-import {
 	createMermaidPlugin as createSharedMermaidPlugin,
-	mermaid as sharedMermaid
+	getThemeName
 } from '@streamdown-svelte/plugin-core';
 import type {
 	CodeHighlighterPlugin,
@@ -157,6 +153,22 @@ export function applyPluginMarkdownTransforms(
 	});
 }
 
+export function resolveParserExtensions(
+	extensions: Extension[] | undefined,
+	plugins: PluginConfig | undefined
+): Extension[] | undefined {
+	const singleDollarTextMath = getMathPluginOptions(plugins?.math).singleDollarTextMath;
+	if (!singleDollarTextMath) {
+		return extensions;
+	}
+
+	if (extensions?.some((extension) => extension.name === 'math')) {
+		return extensions;
+	}
+
+	return [...createMarkedMathExtensions({ singleDollarTextMath: true }), ...(extensions ?? [])];
+}
+
 export function createCodePlugin(options: CodePluginOptions = {}): CodeHighlighterPlugin {
 	return createSharedCodePlugin({
 		themes: options.themes,
@@ -172,6 +184,6 @@ export function createMermaidPlugin(options: MermaidPluginOptions = {}): Diagram
 	return createSharedMermaidPlugin(options);
 }
 
-export const code = createCodePlugin();
-export const math = sharedMath;
-export const mermaid = sharedMermaid;
+export const code = /* @__PURE__ */ createCodePlugin();
+export const math = /* @__PURE__ */ createMathPlugin();
+export const mermaid = /* @__PURE__ */ createMermaidPlugin();

@@ -1,6 +1,10 @@
 import { expect, describe, test } from 'vitest';
-import { lex } from '../lib/marked/index.js';
+import { lex as lexMarkdown } from '../lib/marked/index.js';
+import { createMarkedMathExtensions } from '../lib/marked/marked-math.js';
 import { parseIncompleteMarkdown } from '../lib/utils/parse-incomplete-markdown.js';
+
+const singleDollarMathExtensions = createMarkedMathExtensions({ singleDollarTextMath: true });
+const lex = (markdown: string) => lexMarkdown(markdown, singleDollarMathExtensions);
 
 // Helper functions
 function getTokensByType(tokens: any[], type: string) {

@@ -1,6 +1,9 @@
 import { expect, describe, test } from 'vitest';
 import { lex } from '../lib/marked/index.js';
+import { createMarkedMathExtensions } from '../lib/marked/marked-math.js';
 import { parseIncompleteMarkdown } from '../lib/utils/parse-incomplete-markdown.js';
+
+const singleDollarMathExtensions = createMarkedMathExtensions({ singleDollarTextMath: true });
 
 // Helper functions
 function getTokensByType(tokens: any[], type: string) {
@@ -167,7 +170,7 @@ describe('tokenization', () => {
 	});
 
 	test('should parse alert with math expressions inside', () => {
-		const tokens = lex('> [!NOTE]\n> The formula is $E = mc^2$.');
+		const tokens = lex('> [!NOTE]\n> The formula is $E = mc^2$.', singleDollarMathExtensions);
 		const alertToken = getFirstTokenByType(tokens, 'alert');
 
 		expect(alertToken).toBeDefined();

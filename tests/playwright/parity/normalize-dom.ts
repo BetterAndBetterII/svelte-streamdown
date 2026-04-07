@@ -82,9 +82,7 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 				return value.length > 0 ? value : null;
 			}
 
-			const normalizedValue = value
-				.replace(/\s+/g, ' ')
-				.replace(/\$([^$\n]*[=^\\][^$\n]*)\$/g, '$math$');
+			const normalizedValue = value.replace(/\s+/g, ' ');
 			return normalizedValue.trim().length > 0 ? normalizedValue : null;
 		};
 		const canonicalBlockMath = '$$math$$';

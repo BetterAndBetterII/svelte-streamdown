@@ -1,6 +1,9 @@
 import { expect, describe, test } from 'vitest';
 import { lex } from '../lib/marked/index.js';
+import { createMarkedMathExtensions } from '../lib/marked/marked-math.js';
 import { parseIncompleteMarkdown } from '../lib/utils/parse-incomplete-markdown.js';
+
+const singleDollarMathExtensions = createMarkedMathExtensions({ singleDollarTextMath: true });
 
 // Helper functions
 function getTokensByType(tokens: any[], type: string) {
@@ -289,7 +292,7 @@ describe('tokenization', () => {
 	});
 
 	test('should parse superscript with math expressions', () => {
-		const tokens = lex('Math: $x^2$ and text x^2^.');
+		const tokens = lex('Math: $x^2$ and text x^2^.', singleDollarMathExtensions);
 		const paragraphToken = getFirstTokenByType(tokens, 'paragraph');
 
 		expect(paragraphToken).toBeDefined();

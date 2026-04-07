@@ -1,6 +1,7 @@
 import { render } from 'vitest-browser-svelte';
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 import Streamdown from '../../../../src/lib/Streamdown.svelte';
+import { createMathPlugin } from '../../../../src/lib/index.js';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
 describeInBrowser('ported streamdown remaining-coverage regressions', () => {
@@ -21,7 +22,7 @@ describeInBrowser('ported streamdown remaining-coverage regressions', () => {
 
 	testInBrowser(
 		'preserves whitespace-only animation tokens and skips animated spans inside inline math',
-		() => {
+		async () => {
 			const textScreen = render(Streamdown, {
 				content: 'A B ',
 				animated: {
@@ -49,13 +50,19 @@ describeInBrowser('ported streamdown remaining-coverage regressions', () => {
 					sep: 'char',
 					stagger: 20
 				},
-				isAnimating: true
+				isAnimating: true,
+				plugins: {
+					math: createMathPlugin({ singleDollarTextMath: true })
+				}
 			});
 
 			const mathNode = mathScreen.container.querySelector(
 				'[data-streamdown-inline-math], [data-streamdown-block-math]'
 			);
 			expect(mathNode).toBeTruthy();
+			await vi.waitFor(() => {
+				expect(mathNode?.querySelector('.katex')).toBeTruthy();
+			});
 			expect(mathNode?.querySelector('[data-streamdown-animate]')).toBeNull();
 		}
 	);

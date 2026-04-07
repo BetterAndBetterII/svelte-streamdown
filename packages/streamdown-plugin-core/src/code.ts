@@ -1,6 +1,9 @@
-import type { HighlighterCore, ThemeRegistration } from 'shiki';
-import { createHighlighter } from 'shiki';
+import type { ThemeRegistration } from 'shiki';
+import type { HighlighterCore } from 'shiki/core';
+import { createHighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+import githubDark from '@shikijs/themes/github-dark';
+import githubLight from '@shikijs/themes/github-light';
 import type {
 	CodeHighlighterPlugin,
 	HighlightResult,
@@ -11,6 +14,10 @@ import type {
 const jsEngine = createJavaScriptRegexEngine({ forgiving: true });
 const DEFAULT_THEMES = ['github-light', 'github-dark'] as const;
 const PLAINTEXT_LANGUAGE = 'text';
+const BUILTIN_THEME_REGISTRATIONS: Record<string, ThemeRegistration> = {
+	'github-dark': githubDark,
+	'github-light': githubLight
+};
 
 const themeName = (theme: ThemeInput): string =>
 	typeof theme === 'string' ? theme : (theme.name ?? 'custom-theme');
@@ -45,6 +52,17 @@ const toPlaintextTokens = (code: string): HighlightResult => ({
 		}
 	])
 });
+
+const resolveThemeRegistration = (
+	theme: ThemeInput,
+	additionalThemes: Record<string, ThemeRegistration>
+): ThemeRegistration | null => {
+	if (typeof theme !== 'string') {
+		return theme;
+	}
+
+	return additionalThemes[theme] ?? BUILTIN_THEME_REGISTRATIONS[theme] ?? null;
+};
 
 type Highlighter = HighlighterCore;
 
@@ -106,7 +124,7 @@ class PluginHighlighterRuntime {
 			return this.highlighter;
 		}
 
-		this.highlighter = createHighlighter({
+		this.highlighter = createHighlighterCore({
 			themes: [],
 			langs: [],
 			engine: jsEngine
@@ -130,9 +148,15 @@ class PluginHighlighterRuntime {
 			return null;
 		}
 
+		const themeRegistration = resolveThemeRegistration(theme, this.additionalThemes);
+		if (!themeRegistration) {
+			this.loadedThemes.set(resolvedThemeName, false);
+			return null;
+		}
+
 		const loadingPromise = (async () => {
 			const highlighter = await this.loadHighlighter();
-			await highlighter.loadTheme(theme as never);
+			await highlighter.loadTheme(themeRegistration as never);
 		})()
 			.then(() => {
 				this.loadedThemes.set(resolvedThemeName, true);

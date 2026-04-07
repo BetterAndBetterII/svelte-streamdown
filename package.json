@@ -177,6 +177,7 @@
 		"@shikijs/themes": "^3.17.1",
 		"@streamdown-svelte/plugin-core": "workspace:*",
 		"clsx": "^2.1.1",
+		"esm-env": "^1.2.2",
 		"katex": "^0.16.22",
 		"marked": "^16.2.1",
 		"mermaid": "^11.11.0",

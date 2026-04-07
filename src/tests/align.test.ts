@@ -1,6 +1,9 @@
 import { expect, describe, test } from 'vitest';
 import { lex } from '../lib/marked/index.js';
+import { createMarkedMathExtensions } from '../lib/marked/marked-math.js';
 import { parseIncompleteMarkdown } from '../lib/utils/parse-incomplete-markdown.js';
+
+const singleDollarMathExtensions = createMarkedMathExtensions({ singleDollarTextMath: true });
 
 // Helper functions
 function getTokensByType(tokens: any[], type: string) {
@@ -124,7 +127,7 @@ describe('tokenization', () => {
 	});
 
 	test('should parse alignment block with math expressions inside', () => {
-		const tokens = lex('[center]\nThe formula is $E = mc^2$.\n[/center]');
+		const tokens = lex('[center]\nThe formula is $E = mc^2$.\n[/center]', singleDollarMathExtensions);
 		const alignToken = getFirstTokenByType(tokens, 'align');
 
 		expect(alignToken).toBeDefined();

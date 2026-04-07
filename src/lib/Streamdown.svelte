@@ -14,6 +14,7 @@
 	import { parseBlocks } from './marked/index.js';
 	import { hasIncompleteCodeFence } from './streaming.js';
 	import { mergeTranslations } from './translations.js';
+	import { resolveParserExtensions } from './plugins.js';
 	import {
 		buildFootnoteEntries,
 		buildParsedBlocks,
@@ -128,6 +129,7 @@
 	const resolvedMermaid = $derived<MermaidOptions | undefined>(mermaid);
 
 	const allowedTagNames = $derived(allowedTags ? Object.keys(allowedTags) : []);
+	const resolvedExtensions = $derived.by(() => resolveParserExtensions(extensions, plugins) ?? []);
 
 	const preprocessedContent = $derived.by(() =>
 		preprocessStreamdownContent({
@@ -148,7 +150,7 @@
 			dir: () => dir,
 			sources: () => sources,
 			inlineCitationsMode: () => inlineCitationsMode,
-			extensions: () => extensions
+			extensions: () => resolvedExtensions
 		},
 		security: {
 			defaultOrigin: () => defaultOrigin,

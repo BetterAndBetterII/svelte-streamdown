@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import Streamdown from '$lib/Streamdown.svelte';
-	import { code } from '$lib/index.js';
+	import { code } from '$lib/plugins.js';
 	import HomeDemo from './HomeDemo.svelte';
 	import SiteHeader from '$lib/site/SiteHeader.svelte';
 	import {

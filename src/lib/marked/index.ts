@@ -236,13 +236,16 @@ type LexerWithFootnotes = Lexer & {
 const filterOutFootnoteExtensions = (extensions: Extension[]) =>
 	extensions.filter(({ name }) => name !== 'footnote' && name !== 'footnoteRef');
 
-const buildInlineLexerOptions = (extensions: Extension[], includeFootnotes: boolean) =>
-	parseExtensions(
+const buildInlineLexerOptions = (extensions: Extension[], includeFootnotes: boolean) => {
+	const resolvedExtensions = includeFootnotes ? extensions : filterOutFootnoteExtensions(extensions);
+	const hasCustomMathExtension = resolvedExtensions.some(({ name }) => name === 'math');
+
+	return parseExtensions(
 		markedHr,
 		markedTable,
 		...(includeFootnotes ? markedFootnote({ preferContext: false }) : []),
 		markedAlert,
-		...markedMath,
+		...(hasCustomMathExtension ? [] : markedMath),
 		...markedCjk,
 		markedSub,
 		markedSup,
@@ -252,8 +255,9 @@ const buildInlineLexerOptions = (extensions: Extension[], includeFootnotes: bool
 		markedAlign,
 		markedCitations,
 		markedMdx,
-		...(includeFootnotes ? extensions : filterOutFootnoteExtensions(extensions))
+		...resolvedExtensions
 	);
+};
 
 const buildBlockLexerOptions = (extensions: Extension[], includeFootnotes: boolean) =>
 	parseExtensions(

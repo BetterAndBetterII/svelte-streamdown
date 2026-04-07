@@ -1,7 +1,7 @@
 import { render } from 'vitest-browser-svelte';
 import { expect, vi } from 'vitest';
 import Streamdown from '../../../../src/lib/Streamdown.svelte';
-import { math, parseBlocks } from '../../../../src/lib/index.js';
+import { createMathPlugin, math, parseBlocks } from '../../../../src/lib/index.js';
 import { describeInBrowser, testInBrowser } from '../../../helpers/index.js';
 
 describeInBrowser('ported streamdown math rendering', () => {
@@ -18,9 +18,10 @@ describeInBrowser('ported streamdown math rendering', () => {
 	});
 
 	testInBrowser('renders inline and block math with the local math plugin contract', async () => {
+		const inlineMath = createMathPlugin({ singleDollarTextMath: true });
 		const screen = render(Streamdown, {
 			content: 'Inline $E = mc^2$ plus:\n\n$$\nx = \\\\frac{-b \\\\pm \\\\sqrt{b^2 - 4ac}}{2a}\n$$',
-			plugins: { math }
+			plugins: { math: inlineMath }
 		});
 
 		await vi.waitFor(() => {
@@ -29,6 +30,20 @@ describeInBrowser('ported streamdown math rendering', () => {
 				screen.container.querySelector('[data-streamdown-block-math] .katex-display')
 			).toBeTruthy();
 		});
+	});
+
+	testInBrowser('renders inline math immediately while streaming is active', async () => {
+		const inlineMath = createMathPlugin({ singleDollarTextMath: true });
+		const screen = render(Streamdown, {
+			content: 'Inline $E = mc^2$ while streaming',
+			isAnimating: true,
+			plugins: { math: inlineMath }
+		});
+
+		await vi.waitFor(() => {
+			expect(screen.container.querySelector('[data-streamdown-inline-math] .katex')).toBeTruthy();
+		});
+		expect(screen.container.textContent).not.toContain('$E = mc^2$');
 	});
 
 	testInBrowser('keeps matrix equations intact when preceded by text', () => {

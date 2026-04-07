@@ -61,13 +61,8 @@ describeInNode('ported streamdown dollar-sign handling', () => {
 			const mathTokens = (paragraph!.tokens || []).filter(
 				(t: { type: string }) => t.type === 'math'
 			) as any[];
-			// With default singleDollarTextMath=false, $x = y$ IS parsed as inline math
-			// because the tokenizer recognizes paired non-currency dollars.
-			// The upstream test expects 0 because React Streamdown defaults to singleDollarTextMath:false
-			// which prevents rendering, but our tokenizer still parses it.
-			// This is a known contract difference — local tokenizer parses paired single-dollar math.
-			expect(mathTokens.length).toBe(1);
-			expect(mathTokens[0].text).toBe('x = y');
+			expect(mathTokens.length).toBe(0);
+			expect(paragraph!.text).toContain('$x = y$');
 		});
 
 		testInNode('double dollar block math is still parsed', () => {

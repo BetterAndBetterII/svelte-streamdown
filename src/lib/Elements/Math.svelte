@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { BROWSER } from 'esm-env';
 	import { onMount, untrack } from 'svelte';
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { MathToken } from '$lib/marked/index.js';
@@ -18,6 +19,14 @@
 	const streamdown = useStreamdown();
 	const mathPluginOptions = $derived(getMathPluginOptions(streamdown.plugins?.math));
 	let katexInstance = $state<typeof import('katex') | null>(null);
+	const loadKatex = async (): Promise<typeof import('katex')['default'] | null> => {
+		if (!BROWSER) {
+			return null;
+		}
+
+		const mod = await import('katex');
+		return mod.default;
+	};
 	const escapeHtml = (value: string): string =>
 		value
 			.replaceAll('&', '&amp;')
@@ -27,18 +36,16 @@
 			.replaceAll("'", '&#39;');
 
 	onMount(() => {
-		import('katex').then((mod) => {
-			katexInstance = mod.default;
+		void loadKatex().then((instance) => {
+			if (instance) {
+				katexInstance = instance;
+			}
 		});
 	});
 
 	let inner = $state<HTMLElement | null>(null);
 	const html = $derived.by(() => {
 		const code = token.text;
-		if (streamdown.isAnimating && token.isInline) {
-			return escapeHtml(`$${code}$`);
-		}
-
 		if (!katexInstance) {
 			return '';
 		}

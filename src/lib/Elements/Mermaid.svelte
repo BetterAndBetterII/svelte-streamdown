@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { BROWSER } from 'esm-env';
 	import { onMount, tick } from 'svelte';
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { Tokens } from 'marked';
@@ -37,6 +38,14 @@
 	let error = $state<string | null>(null);
 	let retryCount = $state(0);
 	let shouldRender = $state(false);
+	const loadMermaidLibrary = async (): Promise<any | null> => {
+		if (!BROWSER) {
+			return null;
+		}
+
+		const mod = await import('mermaid');
+		return mod.default;
+	};
 
 	onMount(() => {
 		const requestIdleCallbackWrapper =
@@ -116,7 +125,7 @@
 		void (async () => {
 			if (!mermaidPlugin) {
 				try {
-					mermaid = (await import('mermaid')).default;
+					mermaid = await loadMermaidLibrary();
 				} catch (err) {
 					error = err instanceof Error ? err.message : 'Mermaid library not available';
 				}

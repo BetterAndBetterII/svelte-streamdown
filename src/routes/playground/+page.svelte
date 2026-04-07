@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { BROWSER } from 'esm-env';
 	import SiteHeader from '$lib/site/SiteHeader.svelte';
 	import Streamdown from '$lib/Streamdown.svelte';
-	import { cjk, code, math, mermaid } from '$lib/index.js';
 	import type { AnimateOptions } from '$lib/context.svelte.js';
-	import type { CustomRenderer } from '$lib/plugins.js';
+	import { code, type CustomRenderer, type PluginConfig } from '$lib/plugins.js';
 	import { onDestroy, onMount } from 'svelte';
 	import {
 		listParityFixtures,
@@ -66,8 +66,14 @@
 
 	let streamTimer: ReturnType<typeof setInterval> | null = null;
 	let streamIndex = 0;
+	let interactivePlugins = $state<Partial<PluginConfig>>({});
 
 	const tokens = $derived(markdown.split(' ').map((token) => `${token} `));
+	const activePlugins = $derived({
+		code,
+		renderers,
+		...interactivePlugins
+	});
 	const animatedOptions = $derived.by((): false | AnimateOptions => {
 		if (!animated) {
 			return false;
@@ -160,6 +166,14 @@
 	});
 
 	onMount(() => {
+		if (BROWSER) {
+			void Promise.all([import('$lib/plugins/cjk-shared.js'), import('$lib/plugins.js')]).then(
+				([{ cjk }, { math, mermaid }]) => {
+					interactivePlugins = { cjk, math, mermaid };
+				}
+			);
+		}
+
 		applyFixture(new URL(window.location.href).searchParams.get('fixture'));
 	});
 </script>
@@ -363,7 +377,7 @@
 						isAnimating={isStreaming}
 						animated={animatedOptions}
 						caret={caret === 'none' ? undefined : caret}
-						plugins={{ code, mermaid, math, cjk, renderers }}
+						plugins={activePlugins}
 					/>
 				</div>
 			</div>
