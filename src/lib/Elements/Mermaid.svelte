@@ -4,6 +4,7 @@
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { Tokens } from 'marked';
 	import type { MermaidConfig } from 'mermaid';
+	import { cn } from '$lib/theme.js';
 	import { usePanzoom } from '$lib/utils/panzoom.svelte';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
 	import { isTestMode } from '$lib/utils/runtime-env.js';
@@ -164,10 +165,22 @@
 	});
 	const showCopy = $derived(streamdown.controls.code && streamdown.codeControls.copy);
 	const actionButtonDisabled = $derived(streamdown.isAnimating);
-	const showActionBar = $derived(
-		!!(mermaidPlugin || mermaid) &&
-			controls.enabled &&
-			(controls.download || controls.fullscreen || controls.panZoom || showCopy)
+	const showHeaderActions = $derived(
+		controls.enabled && (controls.download || controls.fullscreen || showCopy)
+	);
+	const showPanzoomControls = $derived(controls.enabled && controls.panZoom && !!renderedSvg);
+	const panzoomControlsClass = $derived(
+		cn(
+			'absolute z-10 flex flex-col gap-1 rounded-md border border-border bg-background/80 p-1 supports-[backdrop-filter]:bg-background/70 supports-[backdrop-filter]:backdrop-blur-sm',
+			panzoom.expanded ? 'bottom-4 left-4' : 'bottom-2 left-2'
+		)
+	);
+	const mermaidSurfaceClass = $derived(
+		cn(
+			streamdown.theme.mermaid.base,
+			'my-0 rounded-none border-0 bg-transparent',
+			panzoom.expanded ? 'min-h-0' : null
+		)
 	);
 	const copy = useCopy({
 		get content() {
@@ -284,107 +297,120 @@
 <div bind:this={container} data-streamdown-mermaid={id}>
 	<div
 		style={streamdown.isMounted ? streamdown.animationBlockStyle : ''}
-		class={streamdown.theme.mermaid.base}
+		class={streamdown.theme.code.base}
 		data-expanded={panzoom.expanded ? 'true' : 'false'}
 	>
-		<span class={streamdown.theme.code.language}>mermaid</span>
-		{#if showActionBar}
-			<div class={streamdown.theme.mermaid.buttons}>
-				{#if controls.download}
-					<MermaidDownload
-						{id}
-						chart={chartSource}
-						renderSvg={() => renderSvgMarkup(chartSource)}
-					/>
-				{/if}
-				{#if showCopy}
-					<button
-						class={streamdown.theme.components.button}
-						title={streamdown.translations.copyCode}
-						type="button"
-						onclick={() => {
-							if (!actionButtonDisabled) {
-								void copy.copy();
-							}
-						}}
-						disabled={actionButtonDisabled}
-						data-panzoom-ignore
-					>
-						{#if copy.isCopied}
-							{@render resolveIcon(streamdown.icons, 'check', checkIcon)()}
-						{:else}
-							{@render resolveIcon(streamdown.icons, 'copy', copyIcon)()}
-						{/if}
-					</button>
-				{/if}
-				{#if controls.fullscreen}
-					<button
-						class={streamdown.theme.components.button}
-						title={panzoom.expanded
-							? streamdown.translations.exitFullscreen
-							: streamdown.translations.viewFullscreen}
-						type="button"
-						onclick={() => panzoom.toggleExpand()}
-						disabled={actionButtonDisabled}
-						data-panzoom-ignore
-					>
-						{@render resolveIcon(streamdown.icons, 'fullscreen', fullscreenIcon)()}
-					</button>
-				{/if}
-				{#if controls.panZoom && renderedSvg}
-					<button
-						class={streamdown.theme.components.button}
-						title="Zoom in"
-						type="button"
-						onclick={() => panzoom.zoomIn()}
-						data-panzoom-ignore
-					>
-						{@render resolveIcon(streamdown.icons, 'zoomIn', zoomInIcon)()}
-					</button>
-					<button
-						class={streamdown.theme.components.button}
-						title="Zoom out"
-						type="button"
-						onclick={() => panzoom.zoomOut()}
-						data-panzoom-ignore
-					>
-						{@render resolveIcon(streamdown.icons, 'zoomOut', zoomOutIcon)()}
-					</button>
-					<button
-						class={streamdown.theme.components.button}
-						title="Reset zoom and pan"
-						type="button"
-						onclick={() => panzoom.zoomToFit()}
-						data-panzoom-ignore
-					>
-						{@render resolveIcon(streamdown.icons, 'fitView', fitViewIcon)()}
-					</button>
-				{/if}
-			</div>
-		{/if}
-
-		{#if renderedSvg}
-			<div {@attach panzoom.attach} role="application">
-				<div data-mermaid-svg aria-label="Mermaid chart" role="img">
-					{@html renderedSvg}
-				</div>
-			</div>
-		{:else if error}
-			{#if MermaidErrorComponent}
-				<MermaidErrorComponent chart={chartSource} {error} {id} retry={retryRender} />
+		<div data-streamdown="code-block-header" class={streamdown.theme.code.header}>
+			<span class={streamdown.theme.code.language}>mermaid</span>
+			{#if showHeaderActions}
+				<div data-streamdown="code-block-actions" class={streamdown.theme.code.buttons}>
+					{#if controls.download}
+						<MermaidDownload
+							{id}
+							chart={chartSource}
+							renderSvg={() => renderSvgMarkup(chartSource)}
+						/>
+					{/if}
+					{#if showCopy}
+						<button
+							class={streamdown.theme.components.button}
+							title={streamdown.translations.copyCode}
+							type="button"
+							onclick={() => {
+								if (!actionButtonDisabled) {
+									void copy.copy();
+								}
+							}}
+							disabled={actionButtonDisabled}
+							data-panzoom-ignore
+						>
+							{#if copy.isCopied}
+								{@render resolveIcon(streamdown.icons, 'check', checkIcon)()}
 			{:else}
-				<div class="rounded-md bg-red-50 p-4" data-streamdown-mermaid-error>
-					<p class="font-mono text-sm text-red-700">Mermaid Error: {error}</p>
-					<details class="mt-2">
-						<summary class="cursor-pointer text-xs text-red-600">Show Code</summary>
-						<pre class="mt-2 overflow-x-auto rounded bg-red-100 p-2 text-xs text-red-800">
+								{@render resolveIcon(streamdown.icons, 'copy', copyIcon)()}
+							{/if}
+						</button>
+					{/if}
+					{#if controls.fullscreen}
+						<button
+							class={streamdown.theme.components.button}
+							title={panzoom.expanded
+								? streamdown.translations.exitFullscreen
+								: streamdown.translations.viewFullscreen}
+							type="button"
+							onclick={() => panzoom.toggleExpand()}
+							disabled={actionButtonDisabled}
+							data-panzoom-ignore
+							>
+								{@render resolveIcon(streamdown.icons, 'fullscreen', fullscreenIcon)()}
+							</button>
+						{/if}
+					</div>
+				{/if}
+			</div>
+
+		<div
+			data-streamdown="code-block-body"
+			data-language="mermaid"
+			class={streamdown.theme.code.container}
+			style="height: fit-content; width: 100%;"
+		>
+			<div class={mermaidSurfaceClass}>
+				{#if showPanzoomControls}
+					<div class={panzoomControlsClass}>
+						<button
+							class={streamdown.theme.components.button}
+							title="Zoom in"
+							type="button"
+							onclick={() => panzoom.zoomIn()}
+							data-panzoom-ignore
+						>
+							{@render resolveIcon(streamdown.icons, 'zoomIn', zoomInIcon)()}
+						</button>
+						<button
+							class={streamdown.theme.components.button}
+							title="Zoom out"
+							type="button"
+							onclick={() => panzoom.zoomOut()}
+							data-panzoom-ignore
+						>
+							{@render resolveIcon(streamdown.icons, 'zoomOut', zoomOutIcon)()}
+						</button>
+						<button
+							class={streamdown.theme.components.button}
+							title="Reset zoom and pan"
+							type="button"
+							onclick={() => panzoom.zoomToFit()}
+							data-panzoom-ignore
+						>
+							{@render resolveIcon(streamdown.icons, 'fitView', fitViewIcon)()}
+						</button>
+					</div>
+				{/if}
+				{#if renderedSvg}
+					<div {@attach panzoom.attach} role="application">
+						<div data-mermaid-svg aria-label="Mermaid chart" role="img">
+							{@html renderedSvg}
+						</div>
+					</div>
+				{:else if error}
+					{#if MermaidErrorComponent}
+						<MermaidErrorComponent chart={chartSource} {error} {id} retry={retryRender} />
+					{:else}
+						<div class="rounded-md bg-red-50 p-4" data-streamdown-mermaid-error>
+							<p class="font-mono text-sm text-red-700">Mermaid Error: {` ${error}`}</p>
+							<details class="mt-2">
+								<summary class="cursor-pointer text-xs text-red-600">Show Code</summary>
+								<pre class="mt-2 overflow-x-auto rounded bg-red-100 p-2 text-xs text-red-800">
 {chartSource}</pre>
-					</details>
-				</div>
-			{/if}
-		{:else}
-			<div data-mermaid-placeholder></div>
-		{/if}
+							</details>
+						</div>
+					{/if}
+				{:else}
+					<div data-mermaid-placeholder></div>
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>
 

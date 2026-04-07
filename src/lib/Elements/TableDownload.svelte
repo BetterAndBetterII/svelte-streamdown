@@ -129,13 +129,13 @@
 </script>
 
 {#if popover.isOpen}
-	<dialog
+	<div
 		id={'table-download-popover'}
+		role="dialog"
 		aria-modal="false"
 		transition:scale|global={{ start: 0.95, duration: 100 }}
 		{@attach clickOutside.attachment}
 		{@attach popover.popoverAttachment}
-		open
 		style:width="fit-content !important"
 		style:min-width="fit-content !important"
 		class={streamdown.theme.components.popover}
@@ -165,7 +165,7 @@
 						: streamdown.translations.tableFormatTsv}
 			</button>
 		{/each}
-	</dialog>
+	</div>
 {/if}
 
 {#if buttonModes.length > 0}

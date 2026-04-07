@@ -76,6 +76,9 @@
 	setContext(STREAMDOWN_BLOCK_CONTEXT, {
 		get isIncompleteCodeFence() {
 			return isIncompleteCodeFence;
+		},
+		get rawBlock() {
+			return block;
 		}
 	});
 </script>

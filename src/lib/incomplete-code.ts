@@ -5,6 +5,7 @@ export const STREAMDOWN_BLOCK_CONTEXT = 'STREAMDOWN_BLOCK';
 
 type StreamdownBlockContext = {
 	isIncompleteCodeFence: boolean;
+	rawBlock?: string;
 };
 
 const TABLE_DELIMITER_PATTERN = /^\|?[ \t]*:?-{1,}:?[ \t]*(\|[ \t]*:?-{1,}:?[ \t]*)*\|?$/;
@@ -30,4 +31,8 @@ export function useIsCodeFenceIncomplete(): boolean {
 	return Boolean(
 		getContext<StreamdownBlockContext | undefined>(STREAMDOWN_BLOCK_CONTEXT)?.isIncompleteCodeFence
 	);
+}
+
+export function useStreamdownBlockRaw(): string | undefined {
+	return getContext<StreamdownBlockContext | undefined>(STREAMDOWN_BLOCK_CONTEXT)?.rawBlock;
 }

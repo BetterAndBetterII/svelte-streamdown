@@ -54,9 +54,7 @@ export const preserveStreamingFootnoteLiterals = ({
 	tokens.map((token) => {
 		if (
 			mode === 'streaming' &&
-			isAnimating &&
-			token.type === 'footnoteRef' &&
-			token.content.lines.join('\n').trim().length === 0
+			token.type === 'footnoteRef'
 		) {
 			return {
 				type: 'text',

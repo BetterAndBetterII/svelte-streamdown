@@ -21,7 +21,7 @@
 			data-footnote-ref
 			data-streamdown-footnote-ref={id}
 			class={streamdown.theme.footnoteRef.base}
-			aria-describedby="footnote-label"
+			aria-describedby="user-content-footnote-label"
 			style={streamdown.animationBlockStyle}
 		>
 			{token.label.replace('^', '')}

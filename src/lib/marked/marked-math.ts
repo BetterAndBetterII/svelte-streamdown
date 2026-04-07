@@ -2,7 +2,8 @@ import type { Extension } from './index.js';
 
 // Math parsing rules
 // Block math: supports both newline format ($$\nmath\n$$) and single-line format ($$math$$)
-const blockRule = /^(\$\$)(?:\n((?:\\[\s\S]|[^\\])+?)\n\1(?:\n|$)|([^$\n]+?)\1(?=\s|$|$))/;
+const blockRule =
+	/^(\$\$)(?:\n((?:\\[\s\S]|[^\\]|\\(?=\n))*?)(?:\n\1|\1)(?:\n|$)|([^$\n]*?)\1(?=\s|$|$))/;
 // Inline math: handles both single ($) and double ($$) dollar delimiters
 // Avoids matching currency by checking context and requiring proper content
 const inlineRule = /^(\${1,2})(?!\$)((?:[^$\n]|\\\$)*?)\1(?!\d)/;
@@ -35,7 +36,7 @@ export const createMarkedMathExtensions = (options: MarkedMathOptions = {}): Ext
 
 				if (match) {
 					// match[2] is multiline format, match[3] is single-line format
-					const content = (match[2] || match[3]).trim();
+					const content = (match[2] ?? match[3] ?? '').trim();
 					return {
 						type: 'math',
 						isInline: false,

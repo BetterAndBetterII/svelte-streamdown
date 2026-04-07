@@ -113,6 +113,21 @@
 				!resolvedLink.isIncomplete
 		)
 	);
+	const splitMailtoLabel = $derived.by(() => {
+		if (!token.href.startsWith('mailto:')) {
+			return null;
+		}
+
+		const text = typeof token.text === 'string' ? token.text : '';
+		if (!text.startsWith('mailto:')) {
+			return null;
+		}
+
+		return {
+			prefix: 'mailto:',
+			label: text.slice('mailto:'.length)
+		};
+	});
 	const customModal = $derived(
 		streamdown.linkSafety?.renderModal as Snippet<[LinkSafetyModalProps]> | undefined
 	);
@@ -160,6 +175,7 @@
 
 {#if resolvedLink.state === 'anchor'}
 	{#if shouldIntercept}
+		{#if splitMailtoLabel}{splitMailtoLabel.prefix}{/if}
 		<button
 			type="button"
 			data-streamdown="link"
@@ -167,7 +183,7 @@
 			data-incomplete={resolvedLink.isIncomplete ? 'true' : undefined}
 			class={`${streamdown.theme.link.base} appearance-none border-none bg-transparent p-0 text-left`}
 			onclick={(event) => void handleInterceptedClick(event)}
-		>{@render children()}</button>{#if customModal}{@render customModal(modalProps)}{:else}<LinkSafetyModal {...modalProps} />{/if}
+		>{#if splitMailtoLabel}{splitMailtoLabel.label}{:else}{@render children()}{/if}</button>{#if customModal}{@render customModal(modalProps)}{:else}<LinkSafetyModal {...modalProps} />{/if}
 	{:else}
 		<Slot
 			props={{
@@ -190,7 +206,7 @@
 				href={resolvedLink.href}
 				target={resolvedLink.target}
 				rel={resolvedLink.rel}
-			>{@render children()}</a>
+			>{#if splitMailtoLabel}{splitMailtoLabel.prefix}{splitMailtoLabel.label}{:else}{@render children()}{/if}</a>
 		</Slot>
 	{/if}
 {:else if resolvedLink.state === 'literal'}

@@ -76,6 +76,7 @@ const computedStyleProperties = [
 	'text-transform',
 	'box-shadow',
 	'opacity',
+	'top',
 	'overflow-x',
 	'overflow-y'
 ] as const;
@@ -134,7 +135,77 @@ test.describe('rendering style probes', () => {
 			await Promise.all([lightContext.close(), darkContext.close()]);
 		}
 	});
+
+	for (const colorScheme of ['light', 'dark'] as const) {
+		test(`renders table shell surfaces with visible border and background in ${colorScheme} mode`, async ({
+			browser
+		}) => {
+			const context = await createParityContext(browser, colorScheme);
+			const page = await context.newPage();
+
+			try {
+				await openStyleProbePage(page, `${localBaseUrl}${styleProbeRoute}`);
+				const snapshot = (await readStyleProbeSnapshot(page)) as StyleProbeSnapshot;
+
+				expectVisibleSurface(snapshot.tableWrapper, 'table wrapper');
+				expectVisibleSurface(snapshot.tableToolbar, 'table toolbar');
+			} finally {
+				await context.close();
+			}
+		});
+	}
+
+	for (const colorScheme of ['light', 'dark'] as const) {
+		test(`renders code actions in a sticky shell in ${colorScheme} mode`, async ({ browser }) => {
+			const context = await createParityContext(browser, colorScheme);
+			const page = await context.newPage();
+
+			try {
+				await openStyleProbePage(page, `${localBaseUrl}${styleProbeRoute}`);
+				const snapshot = (await readStyleProbeSnapshot(page)) as StyleProbeSnapshot;
+
+				expect(snapshot.codeActionsShell.styles.position).toBe('sticky');
+				expect(snapshot.codeActionsShell.styles.top).not.toBe('auto');
+				expect(snapshot.codeActionsShell.styles.top).not.toBe('');
+				expect(snapshot.codeActionsShell.styles['background-color']).toBe('rgba(0, 0, 0, 0)');
+				expectVisibleSurface(snapshot.codeActions, 'code actions');
+			} finally {
+				await context.close();
+			}
+		});
+	}
 });
+
+type StyleProbeElementSnapshot = {
+	label: string;
+	tag: string;
+	className: string;
+	title: string | null;
+	role: string | null;
+	href: string | null;
+	text: string;
+	childElementCount: number;
+	styles: Record<(typeof computedStyleProperties)[number], string>;
+};
+
+type StyleProbeSnapshot = {
+	tableWrapper: StyleProbeElementSnapshot;
+	tableToolbar: StyleProbeElementSnapshot;
+	codeActionsShell: StyleProbeElementSnapshot;
+	codeActions: StyleProbeElementSnapshot;
+} & Record<string, unknown>;
+
+function expectVisibleSurface(element: StyleProbeElementSnapshot, label: string): void {
+	expect
+		.soft(element.styles['border-top-width'], `Expected ${label} to keep a visible top border.`)
+		.not.toBe('0px');
+	expect
+		.soft(
+			element.styles['background-color'],
+			`Expected ${label} to keep a non-transparent background.`
+		)
+		.not.toBe('rgba(0, 0, 0, 0)');
+}
 
 async function createParityContext(browser: Browser, colorScheme: 'light' | 'dark') {
 	return browser.newContext({
@@ -165,6 +236,9 @@ async function openStyleProbePage(page: Page, url: string): Promise<void> {
 	await expect(page.locator(`${renderedSelector} [data-streamdown="table-wrapper"]`)).toHaveCount(
 		1
 	);
+	await expect(page.locator(`${renderedSelector} [data-streamdown="table-toolbar"]`)).toHaveCount(
+		1
+	);
 	await expect(page.locator(`${renderedSelector} [data-streamdown="code-block"]`)).toHaveCount(1);
 	expect(
 		await page.locator(`${renderedSelector} button[title="Copy Code"]`).count()
@@ -173,9 +247,12 @@ async function openStyleProbePage(page: Page, url: string): Promise<void> {
 		await page.locator(`${renderedSelector} button[title="Download file"]`).count()
 	).toBeGreaterThan(0);
 	await expect(page.locator(`${renderedSelector} [data-streamdown="table"] thead`)).toHaveCount(1);
-	await expect(
-		page.locator(`${renderedSelector} [data-streamdown="code-block-actions"] button`)
-	).toHaveCount(2);
+	expect(
+		await page.locator(`${renderedSelector} [data-streamdown="code-block-actions"] button`).count()
+	).toBeGreaterThanOrEqual(2);
+	expect(
+		await page.locator(`${renderedSelector} [data-streamdown="code-block-actions-shell"]`).count()
+	).toBeGreaterThanOrEqual(1);
 	await expect(page.locator(`${renderedSelector} button[title="Copy table"]`)).toHaveCount(1);
 	await expect(page.locator(`${renderedSelector} button[title="Download table"]`)).toHaveCount(1);
 	await expect(page.locator(`${renderedSelector} button[title="Reset zoom and pan"]`)).toHaveCount(
@@ -188,7 +265,7 @@ async function openStyleProbePage(page: Page, url: string): Promise<void> {
 	await expect(page.locator(`${renderedSelector} [aria-label="Mermaid chart"] svg`)).toHaveCount(1);
 }
 
-async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
+async function readStyleProbeSnapshot(page: Page): Promise<StyleProbeSnapshot> {
 	return page.locator(renderedSelector).evaluate(
 		(root, properties) => {
 			const normalizeText = (value: string | null | undefined): string =>
@@ -201,6 +278,9 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 
 			const readElement = (element: Element, label: string) => {
 				const style = getComputedStyle(element);
+				const styles = Object.fromEntries(
+					properties.map((property) => [property, style.getPropertyValue(property)])
+				) as Record<(typeof computedStyleProperties)[number], string>;
 				return {
 					label,
 					tag: element.tagName.toLowerCase(),
@@ -213,9 +293,7 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 					href: element.getAttribute('href'),
 					text: normalizeProbeText(element.textContent, label),
 					childElementCount: element.childElementCount,
-					styles: Object.fromEntries(
-						properties.map((property) => [property, style.getPropertyValue(property)])
-					)
+					styles
 				};
 			};
 
@@ -246,12 +324,8 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 				let current = zoomButton.parentElement;
 				while (current) {
 					const hasMermaidSvg = current.querySelector('[aria-label="Mermaid chart"] svg');
-					const style = getComputedStyle(current);
-					const hasSurface =
-						style.getPropertyValue('border-top-width') !== '0px' ||
-						style.getPropertyValue('background-color') !== 'rgba(0, 0, 0, 0)';
-
-					if (hasMermaidSvg && hasSurface) {
+					const hasFullscreenButton = current.querySelector('button[title="View fullscreen"]');
+					if (hasMermaidSvg && hasFullscreenButton) {
 						return current;
 					}
 
@@ -267,15 +341,12 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 				paragraph: query('p', 'paragraph'),
 				link: query('[data-streamdown="link"]', 'link'),
 				inlineCode: query('p code', 'inlineCode'),
-				strong: query('p strong', 'strong'),
+				strong: query('p [data-streamdown-strong]', 'strong'),
 				emphasis: query('p em', 'emphasis'),
 				deleted: query('p del', 'deleted'),
 				blockquote: query('blockquote', 'blockquote'),
 				blockquoteInlineCode: query('blockquote code', 'blockquoteInlineCode'),
-				tableToolbar: readElement(
-					querySelectorParent(root, 'button[title="Copy table"]'),
-					'tableToolbar'
-				),
+				tableToolbar: query('[data-streamdown="table-toolbar"]', 'tableToolbar'),
 				tableCopyButton: query('button[title="Copy table"]', 'tableCopyButton'),
 				tableDownloadButton: query('button[title="Download table"]', 'tableDownloadButton'),
 				tableWrapper: query('[data-streamdown="table-wrapper"]', 'tableWrapper'),
@@ -284,9 +355,10 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 				tableHeaderCell: query('[data-streamdown="table"] th', 'tableHeaderCell'),
 				tableDataCell: query('[data-streamdown="table"] td', 'tableDataCell'),
 				tableInlineCode: query('[data-streamdown="table"] code', 'tableInlineCode'),
-				tableStrong: query('[data-streamdown="table"] strong', 'tableStrong'),
+				tableStrong: query('[data-streamdown="table"] [data-streamdown-strong]', 'tableStrong'),
 				codeBlockShell: query('[data-streamdown="code-block"]', 'codeBlockShell'),
 				codeBlockHeader: query('[data-streamdown="code-block-header"]', 'codeBlockHeader'),
+				codeActionsShell: query('[data-streamdown="code-block-actions-shell"]', 'codeActionsShell'),
 				codeLanguage: query('[data-streamdown="code-block-header"] span', 'codeLanguage'),
 				codeActions: query('[data-streamdown="code-block-actions"]', 'codeActions'),
 				codeCopyButton: query('button[title="Copy Code"]', 'codeCopyButton'),
@@ -299,10 +371,7 @@ async function readStyleProbeSnapshot(page: Page): Promise<unknown> {
 					querySelectorParent(root, 'button[title="Reset zoom and pan"]'),
 					'mermaidActionBar'
 				),
-				mermaidActionButton: query(
-					'button[title="Reset zoom and pan"]',
-					'mermaidActionButton'
-				),
+				mermaidActionButton: query('button[title="Reset zoom and pan"]', 'mermaidActionButton'),
 				mermaidZoomInButton: query('button[title="Zoom in"]', 'mermaidZoomInButton'),
 				mermaidZoomOutButton: query('button[title="Zoom out"]', 'mermaidZoomOutButton'),
 				mermaidFullscreenButton: queryWithin(

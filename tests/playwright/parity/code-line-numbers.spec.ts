@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
-import { buildParityRoute } from '../../../apps/parity-shared/query.ts';
+import { buildParityRoute } from '../../../apps/parity-shared/query.js';
 
 const localBaseUrl = process.env.PARITY_LOCAL_URL ?? 'http://127.0.0.1:4174';
 const renderedSelector = '[data-parity-rendered]';

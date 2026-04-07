@@ -286,8 +286,7 @@
 			(block, index) =>
 				resolvedMode === 'streaming' &&
 				isAnimating &&
-				index === rawBlocks.length - 1 &&
-				hasIncompleteCodeFence(block)
+				index === rawBlocks.length - 1
 		)
 	);
 	const parsedDocument = $derived.by(() => {

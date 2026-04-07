@@ -79,13 +79,13 @@
 </script>
 
 {#if popover.isOpen}
-	<dialog
+	<div
 		id={'mermaid-download-popover'}
+		role="dialog"
 		aria-modal="false"
 		transition:scale|global={{ start: 0.95, duration: 100 }}
 		{@attach clickOutside.attachment}
 		{@attach popover.popoverAttachment}
-		open
 		style:width="fit-content !important"
 		style:min-width="fit-content !important"
 		class={streamdown.theme.components.popover}
@@ -118,7 +118,7 @@
 						: streamdown.translations.mermaidFormatMmd}
 			</button>
 		{/each}
-	</dialog>
+	</div>
 {/if}
 
 <button

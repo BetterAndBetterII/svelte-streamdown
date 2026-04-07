@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import Link from './Link.svelte';
 	import Image from './Image.svelte';
@@ -20,6 +21,7 @@
 		extractCodeFenceMeta,
 		findCustomRenderer
 	} from '$lib/plugins.js';
+	import { STREAMDOWN_BLOCK_CONTEXT } from '$lib/incomplete-code.js';
 	let {
 		token,
 		children,
@@ -107,6 +109,58 @@
 	const listHasTaskItems = $derived(
 		token.type === 'list' && token.tokens.some((item) => item.task)
 	);
+	const rawBlock = $derived(
+		getContext<{ rawBlock?: string } | undefined>(STREAMDOWN_BLOCK_CONTEXT)?.rawBlock
+	);
+	const isRecoveredInlineFormatting = $derived.by(() => {
+		if (!isIncomplete) {
+			return false;
+		}
+
+		if (token.type !== 'strong' && token.type !== 'em' && token.type !== 'del') {
+			return false;
+		}
+
+		if (typeof token.raw !== 'string' || token.raw.length === 0) {
+			return false;
+		}
+
+		return !rawBlock?.includes(token.raw);
+	});
+	const isRecoveredDelimitedFormatting = $derived.by(() => {
+		if (!isIncomplete || typeof rawBlock !== 'string') {
+			return false;
+		}
+
+		const text = 'text' in token && typeof token.text === 'string' ? token.text : null;
+		if (!text || text.length === 0) {
+			return false;
+		}
+
+		if (token.type === 'strong') {
+			return rawBlock.includes(`**${text}`) && !rawBlock.includes(`**${text}**`);
+		}
+
+		if (token.type === 'em') {
+			return (
+				(rawBlock.includes(`*${text}`) && !rawBlock.includes(`*${text}*`)) ||
+				(rawBlock.includes(`_${text}`) && !rawBlock.includes(`_${text}_`))
+			);
+		}
+
+		if (token.type === 'del') {
+			return rawBlock.includes(`~~${text}`) && !rawBlock.includes(`~~${text}~~`);
+		}
+
+		return false;
+	});
+	const isIncompleteTableBlock = $derived.by(() => {
+		if (streamdown.mode !== 'streaming' || typeof rawBlock !== 'string') {
+			return false;
+		}
+
+		return /(^|\n)\|/.test(rawBlock);
+	});
 
 	// Only apply animation on block level elements. Leaves text elements to be animated by their text children.
 	const style = $derived(streamdown.isMounted ? streamdown.animationBlockStyle : '');
@@ -356,24 +410,33 @@
 		render={streamdown.snippets.strong}
 		component={StrongComponent}
 	>
-		<strong data-streamdown-strong={id} class={streamdown.theme.strong.base}>{@render children()}</strong>
+		<!-- Upstream streamdown styles strong tokens with span rather than semantic strong. -->
+		<span data-streamdown-strong={id} class={streamdown.theme.strong.base}>{@render children()}</span>
 	</Slot>
 {:else if token.type === 'em'}
-	<Slot
-		props={{ children, token, class: streamdown.theme.em.base }}
-		render={streamdown.snippets.em}
-		component={EmComponent}
-	>
-		<em data-streamdown-em={id} class={streamdown.theme.em.base}>{@render children()}</em>
-	</Slot>
+	{#if isRecoveredInlineFormatting || isRecoveredDelimitedFormatting || isIncompleteTableBlock}
+		<span data-streamdown-em={id}>{@render children()}</span>
+	{:else}
+		<Slot
+			props={{ children, token, class: streamdown.theme.em.base }}
+			render={streamdown.snippets.em}
+			component={EmComponent}
+		>
+			<em data-streamdown-em={id} class={streamdown.theme.em.base}>{@render children()}</em>
+		</Slot>
+	{/if}
 {:else if token.type === 'del'}
-	<Slot
-		props={{ children, token, class: streamdown.theme.del.base }}
-		render={streamdown.snippets.del}
-		component={DelComponent}
-	>
-		<del data-streamdown-del={id} class={streamdown.theme.del.base}>{@render children()}</del>
-	</Slot>
+	{#if isRecoveredInlineFormatting || isRecoveredDelimitedFormatting || isIncompleteTableBlock}
+		<span data-streamdown-del={id}>{@render children()}</span>
+	{:else}
+		<Slot
+			props={{ children, token, class: streamdown.theme.del.base }}
+			render={streamdown.snippets.del}
+			component={DelComponent}
+		>
+			<del data-streamdown-del={id} class={streamdown.theme.del.base}>{@render children()}</del>
+		</Slot>
+	{/if}
 {:else if token.type === 'hr'}
 	<Slot
 		props={{ children, token, class: streamdown.theme.hr.base, style }}

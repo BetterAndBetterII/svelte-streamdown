@@ -51,8 +51,9 @@
 			return '';
 		}
 		const config: KatexOptions = {
-			output: 'html',
+			output: 'htmlAndMathml',
 			displayMode: !token.isInline,
+			throwOnError: false,
 			errorColor: mathPluginOptions.errorColor,
 			...(typeof streamdown.katexConfig === 'function'
 				? streamdown.katexConfig(token.isInline)
@@ -66,8 +67,9 @@
 		try {
 			return katexInstance.renderToString(code, config);
 		} catch (error) {
+			const message = error instanceof Error ? error.message : 'KaTeX render failed';
 			return untrack(() => {
-				return inner?.innerHTML || escapeHtml(code);
+				return `<span title="${escapeHtml(`ParseError: ${message}`)}">${inner?.innerHTML || escapeHtml(code)}</span>`;
 			});
 		}
 	});

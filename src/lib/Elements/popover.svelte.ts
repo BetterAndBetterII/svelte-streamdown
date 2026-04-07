@@ -4,7 +4,7 @@ import { setContext } from 'svelte';
 
 export class Popover {
 	isOpen = $state(false);
-	content = $state<HTMLDialogElement>();
+	content = $state<HTMLElement>();
 	reference = $state<HTMLButtonElement>();
 
 	constructor() {
@@ -37,12 +37,17 @@ export class Popover {
 		});
 	};
 
-	popoverAttachment = (node: HTMLDialogElement) => {
+	popoverAttachment = (node: HTMLElement) => {
 		this.content = node;
+		const target = node.ownerDocument.body;
+		if (node.parentElement !== target) {
+			target.appendChild(node);
+		}
 		void this.place(node);
 		const off = autoUpdate(this.reference!, node, () => this.place(node));
 		return () => {
 			off();
+			node.remove();
 		};
 	};
 }

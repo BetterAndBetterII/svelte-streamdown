@@ -48,7 +48,7 @@
 		return pluginThemes.find((theme) => getThemeName(theme) === activeThemeName) ?? activeThemeName;
 	});
 	const showLineNumbers = $derived(streamdown.lineNumbers && fence.showLineNumbers);
-	const incomplete = $derived(Boolean(isIncomplete || block?.isIncompleteCodeFence));
+	const incomplete = $derived(Boolean(block ? block.isIncompleteCodeFence : isIncomplete));
 	const buttonDisabled = $derived(streamdown.isAnimating || incomplete);
 	const showCodeActions = $derived(
 		streamdown.controls.code && (streamdown.codeControls.copy || streamdown.codeControls.download)
@@ -109,7 +109,7 @@
 	});
 
 	const renderedLines = $derived.by(() => {
-		if (incomplete) {
+		if (token.text.length === 0) {
 			return null;
 		}
 
@@ -135,7 +135,9 @@
 >
 	<div data-streamdown="code-block-header" class={streamdown.theme.code.header}>
 		<span class={streamdown.theme.code.language}>{displayLanguage}</span>
-		{#if showCodeActions}
+	</div>
+	{#if showCodeActions}
+		<div data-streamdown="code-block-actions-shell" class={streamdown.theme.code.actions}>
 			<div data-streamdown="code-block-actions" class={streamdown.theme.code.buttons}>
 				{#if streamdown.codeControls.download}
 					<button
@@ -169,8 +171,8 @@
 					</button>
 				{/if}
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
 	<div
 		data-streamdown="code-block-body"
 		data-language={language}
