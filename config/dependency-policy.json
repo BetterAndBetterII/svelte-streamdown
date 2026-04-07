@@ -124,7 +124,7 @@
 						"reviewBy": "if the Vitest UI dependency graph changes"
 					},
 					{
-						"id": "1115969",
+						"id": "1116102",
 						"module": "defu",
 						"reason": "Transitive via unenv@2.0.0-rc.20 in the pinned Wrangler and adapter-cloudflare dev toolchain; removal requires a coordinated Cloudflare dependency upgrade outside the current parity ticket scope.",
 						"reviewBy": "if the Wrangler or adapter-cloudflare version changes"
