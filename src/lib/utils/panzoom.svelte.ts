@@ -43,8 +43,8 @@ export const usePanzoom = (opts: PanzoomOptions = {}) => {
 	const isEnabled = () => resolveFlag(opts.enabled, true);
 	const isMouseWheelEnabled = () => resolveFlag(opts.activateMouseWheel, false);
 
-	let node: HTMLElement | SVGSVGElement | null = null; // element we transform
-	let eventTarget: HTMLElement | null = null; // element we listen on (parent container if available)
+	let node = $state<HTMLElement | SVGSVGElement | null>(null); // element we transform
+	let eventTarget = $state<HTMLElement | null>(null); // element we listen on (parent container if available)
 	let createdWrapper: HTMLElement | null = null; // wrapper we created if no parent existed
 	const listeners = new Set<() => void>();
 
@@ -95,6 +95,40 @@ export const usePanzoom = (opts: PanzoomOptions = {}) => {
 
 	onDestroy(() => {
 		destroy();
+	});
+
+	$effect(() => {
+		const enabled = isEnabled();
+		const currentNode = node as HTMLElement | null;
+		const interactionTarget = (eventTarget ?? currentNode) as HTMLElement | null;
+
+		if (!interactionTarget && !currentNode) {
+			return;
+		}
+
+		if (interactionTarget) {
+			interactionTarget.style.userSelect = enabled ? 'none' : '';
+			interactionTarget.style.touchAction = enabled ? 'none' : '';
+			interactionTarget.style.cursor = enabled ? 'grab' : '';
+			(interactionTarget.style as any).overscrollBehavior = enabled ? 'contain' : '';
+		}
+
+		if (!enabled && currentNode) {
+			currentNode.style.cursor = '';
+		}
+
+		return () => {
+			if (interactionTarget) {
+				interactionTarget.style.userSelect = '';
+				interactionTarget.style.touchAction = '';
+				interactionTarget.style.cursor = '';
+				(interactionTarget.style as any).overscrollBehavior = '';
+			}
+
+			if (currentNode) {
+				currentNode.style.cursor = '';
+			}
+		};
 	});
 
 	function normalize() {
@@ -389,13 +423,6 @@ export const usePanzoom = (opts: PanzoomOptions = {}) => {
 			add('touchstart', onTouchStart as any, { passive: false });
 			addWindow('keydown', onKeyDown as any, { passive: true });
 
-			// prevent text selection/scrolling while interacting
-			const t = (eventTarget ?? node) as HTMLElement;
-			const enabled = isEnabled();
-			t.style.userSelect = enabled ? 'none' : '';
-			t.style.touchAction = enabled ? 'none' : '';
-			t.style.cursor = enabled ? 'grab' : '';
-			(t.style as any).overscrollBehavior = enabled ? 'contain' : '';
 			// For SVG root, use fill-box so translation math stays in CSS px space
 			const n = node;
 			if (typeof SVGSVGElement !== 'undefined' && target instanceof SVGSVGElement) {
