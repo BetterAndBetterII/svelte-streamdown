@@ -14,7 +14,7 @@ export default defineConfig({
 	assetsInclude: ['**/*.md'],
 	resolve: {
 		alias: {
-			'@streamdown/plugin-core': resolve(repoRoot, 'packages/streamdown-plugin-core/src/index.ts'),
+			'@streamdown-svelte/plugin-core': resolve(repoRoot, 'packages/streamdown-plugin-core/src/index.ts'),
 			$lib: resolve(repoRoot, 'src/lib'),
 			'svelte-streamdown': resolve(repoRoot, 'src/lib/index.ts')
 		}

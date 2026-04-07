@@ -1,3 +1,3 @@
-# @streamdown/math
+# @streamdown-svelte/math
 
-Standalone math plugin package used by the `svelte-streamdown` workspace.
+Standalone math plugin package used by the `streamdown-svelte` workspace.

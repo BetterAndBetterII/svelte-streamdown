@@ -11,10 +11,10 @@
 
   ```svelte
   <script>
-  	import { Streamdown } from 'svelte-streamdown';
-  	import Code from 'svelte-streamdown/code';
-  	import Mermaid from 'svelte-streamdown/mermaid';
-  	import Math from 'svelte-streamdown/math';
+  	import { Streamdown } from 'streamdown-svelte';
+  	import Code from 'streamdown-svelte/code';
+  	import Mermaid from 'streamdown-svelte/mermaid';
+  	import Math from 'streamdown-svelte/math';
   </script>
 
   <Streamdown content={markdown} components={{ code: Code, mermaid: Mermaid, math: Math }} />
@@ -37,7 +37,7 @@
 
   ```svelte
   <script>
-  	import { Streamdown } from 'svelte-streamdown';
+  	import { Streamdown } from 'streamdown-svelte';
   	import nord from '@shikijs/themes/nord';
 
   	// Pass pre-imported theme objects
@@ -81,7 +81,7 @@
 
 ```svelte
 <script>
-	import { Streamdown, type LanguageInfo } from 'svelte-streamdown';
+	import { Streamdown, type LanguageInfo } from 'streamdown-svelte';
 
 	// Add extra languages - automatically merged with defaults
 	const extraLanguages: LanguageInfo[] = [
@@ -102,7 +102,7 @@ Import themes from `@shikijs/themes` and pass them as a record:
 
 ```svelte
 <script>
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import nord from '@shikijs/themes/nord';
 	import draculaSoft from '@shikijs/themes/dracula-soft';
 
@@ -123,7 +123,7 @@ When using custom themes, you need to handle the dark/light switching yourself:
 
 ```svelte
 <script>
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import tokyoNight from '@shikijs/themes/tokyo-night';
 	import catppuccinLatte from '@shikijs/themes/catppuccin-latte';
 

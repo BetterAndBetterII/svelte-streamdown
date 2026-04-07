@@ -5,10 +5,10 @@ import remarkStringify from 'remark-stringify';
 import { unified, type Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 import { expect } from 'vitest';
-import { cjk, createCjkPlugin } from '@streamdown/cjk';
+import { cjk, createCjkPlugin } from '@streamdown-svelte/cjk';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
 
-describeInNode('ported standalone @streamdown/cjk package', () => {
+describeInNode('ported standalone @streamdown-svelte/cjk package', () => {
 	testInNode('exposes the plugin arrays and splits autolinks at CJK punctuation', async () => {
 		expect(cjk.name).toBe('cjk');
 		expect(cjk.type).toBe('cjk');

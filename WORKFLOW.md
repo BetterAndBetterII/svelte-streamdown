@@ -1,7 +1,7 @@
 ---
 tracker:
   kind: github_project
-  project_owner: 'BetterAndBetterII'
+  project_owner: 'PacificStudio'
   project_number: 23
   project_field_status: 'Status'
   active_states:
@@ -25,7 +25,7 @@ workspace:
   root: '/home/yuzhong/agent-workspace/svelte-streamdown/workspaces'
 hooks:
   after_create: |
-    git clone --depth 1 https://github.com/BetterAndBetterII/svelte-streamdown.git .
+    git clone --depth 1 https://github.com/PacificStudio/streamdown-svelte.git .
     if command -v pnpm >/dev/null 2>&1; then
       pnpm install --frozen-lockfile
     else

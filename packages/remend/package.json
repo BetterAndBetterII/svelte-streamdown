@@ -24,11 +24,11 @@
     "build": "tsup --config tsup.config.ts",
     "prepack": "pnpm build"
   },
-  "description": "Self-healing markdown parser contract for svelte-streamdown workspace parity.",
+  "description": "Self-healing markdown parser contract for the streamdown-svelte workspace.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BetterAndBetterII/svelte-streamdown.git",
+    "url": "git+https://github.com/PacificStudio/streamdown-svelte.git",
     "directory": "packages/remend"
   }
 }

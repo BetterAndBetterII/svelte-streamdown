@@ -1,9 +1,9 @@
 import type { BundledLanguage } from 'shiki';
 import { expect, vi } from 'vitest';
-import { code, createCodePlugin } from '@streamdown/code';
+import { code, createCodePlugin } from '@streamdown-svelte/code';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
 
-describeInNode('ported standalone @streamdown/code package', () => {
+describeInNode('ported standalone @streamdown-svelte/code package', () => {
 	testInNode('exposes the default plugin contract and highlights asynchronously', async () => {
 		expect(code.name).toBe('shiki');
 		expect(code.type).toBe('code-highlighter');

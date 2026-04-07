@@ -3,4 +3,4 @@ export {
 	createLanguageSet,
 	supportedLanguages,
 	type LanguageInfo
-} from '@streamdown/plugin-core';
+} from '@streamdown-svelte/plugin-core';

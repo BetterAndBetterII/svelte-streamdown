@@ -1,1 +1,1 @@
-export { CjkPlugin, cjk, createCjkPlugin } from '@streamdown/plugin-core';
+export { CjkPlugin, cjk, createCjkPlugin } from '@streamdown-svelte/plugin-core';

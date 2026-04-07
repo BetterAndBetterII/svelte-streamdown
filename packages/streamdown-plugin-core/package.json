@@ -1,5 +1,5 @@
 {
-  "name": "@streamdown/plugin-core",
+  "name": "@streamdown-svelte/plugin-core",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,6 +32,6 @@
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0"
   },
-  "description": "Shared Streamdown plugin implementation core for the workspace.",
+  "description": "Shared Streamdown plugin implementation core for the streamdown-svelte workspace.",
   "license": "MIT"
 }

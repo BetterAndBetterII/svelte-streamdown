@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1249" height="371.2" viewBox="0 0 1249 371.2" role="img" aria-labelledby="title desc">
+	<title>Benchmark Comparison by Suite</title>
+	<desc>linux 6.17.0-14-generic (x64) | Intel(R) Core(TM) Ultra 9 285K | 24 logical cores | Node v22.22.1 | pnpm 10.32.1</desc>
+	<rect width="1249" height="371.2" fill="#f8fafc" />
+	<text x="24" y="52.8" text-anchor="start" fill="#020617" font-size="28" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">Benchmark Comparison by Suite</tspan></text>
+	<text x="24" y="86.6" text-anchor="start" fill="#334155" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">linux 6.17.0-14-generic (x64) | Intel(R) Core(TM) Ultra 9 285K | 24 logical cores | Node v22.22.1 |</tspan><tspan x="24" dy="18">pnpm 10.32.1</tspan></text>
+	<text x="24" y="127.39999999999999" text-anchor="start" fill="#64748b" font-size="13" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">Geometric mean throughput delta for each benchmark area.</tspan></text>
+	
+		<line x1="339.95868142751044" y1="131.2" x2="339.95868142751044" y2="315.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="339.95868142751044" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">-273.3%</text>
+
+		<line x1="495.03606250639564" y1="131.2" x2="495.03606250639564" y2="315.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="495.03606250639564" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">-136.6%</text>
+
+		<line x1="650" y1="131.2" x2="650" y2="315.2" stroke="#0f172a" stroke-width="2" />
+		<text x="650" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+0%</text>
+
+		<line x1="804.9639374936044" y1="131.2" x2="804.9639374936044" y2="315.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="804.9639374936044" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+136.6%</text>
+
+		<line x1="960.0413185724896" y1="131.2" x2="960.0413185724896" y2="315.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="960.0413185724896" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+273.3%</text>
+	
+		<text x="324" y="164.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="324" dy="0">Stream Render</tspan></text>
+		<rect x="650" y="151.2" width="310" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="972" y="164.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+273.3% (3.73x)</text>
+		<text x="1233" y="164.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">5/5 wins</text>
+
+		<text x="324" y="210.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="324" dy="0">Table Utilities</tspan></text>
+		<rect x="650" y="197.2" width="39.565034635633005" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="701.565034635633" y="210.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+34.9% (1.35x)</text>
+		<text x="1233" y="210.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">9/9 wins</text>
+
+		<text x="324" y="256.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="324" dy="0">Remend Parser</tspan></text>
+		<rect x="646.2746722480861" y="243.2" width="3.7253277519139094" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="634.2746722480861" y="256.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-3.3% (0.97x)</text>
+		<text x="1233" y="256.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">4/9 wins</text>
+
+		<text x="324" y="302.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="324" dy="0">Parse Blocks</tspan></text>
+		<rect x="644.180660610477" y="289.2" width="5.819339389522921" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="632.180660610477" y="302.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-5.1% (0.95x)</text>
+		<text x="1233" y="302.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1/8 wins</text>
+	<text x="24" y="351.2" fill="#64748b" font-size="12" font-family="ui-sans-serif, system-ui, sans-serif">Green = local faster, red = reference faster. Metric uses throughput delta: ((local hz / reference hz) - 1) * 100.</text>
+</svg>

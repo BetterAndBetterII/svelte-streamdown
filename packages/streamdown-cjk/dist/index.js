@@ -4,7 +4,7 @@
 import {
   cjk,
   createCjkPlugin
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";
 export {
   cjk,
   createCjkPlugin

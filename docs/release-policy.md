@@ -60,9 +60,9 @@ The reviewed production license decisions in [docs/dependency-policy.md](./depen
 
 Trusted releases may be cut only by:
 
-- the repository owner `BetterAndBetterII`; or
+- the repository owner `PacificStudio`; or
 - a future maintainer explicitly added to this document in a reviewed PR, provided that maintainer has both:
-  - GitHub permission to run the release workflow on `BetterAndBetterII/svelte-streamdown`
+  - GitHub permission to run the release workflow on `PacificStudio/streamdown-svelte`
   - npm permission to publish `svelte-streamdown`
 
 Authority to merge code is not, by itself, authority to publish a release.

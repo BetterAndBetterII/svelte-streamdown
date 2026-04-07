@@ -1,5 +1,5 @@
 {
-  "name": "@streamdown/cjk",
+  "name": "@streamdown-svelte/cjk",
   "version": "1.0.3",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,11 +20,11 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@streamdown/plugin-core": "workspace:*",
+    "@streamdown-svelte/plugin-core": "workspace:*",
     "remark-cjk-friendly": "^2.0.1",
     "remark-cjk-friendly-gfm-strikethrough": "^2.0.1",
     "unist-util-visit": "^5.1.0"
   },
-  "description": "Standalone CJK plugin package used by the svelte-streamdown workspace.",
+  "description": "Standalone CJK plugin package used by the streamdown-svelte workspace.",
   "license": "MIT"
 }

@@ -4,4 +4,4 @@ export {
 	cjk,
 	createCjkPlugin,
 	type CjkPlugin
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";

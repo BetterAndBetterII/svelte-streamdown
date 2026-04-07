@@ -1,8 +1,8 @@
 import { expect } from 'vitest';
-import { createMathPlugin, math } from '@streamdown/math';
+import { createMathPlugin, math } from '@streamdown-svelte/math';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
 
-describeInNode('ported standalone @streamdown/math package', () => {
+describeInNode('ported standalone @streamdown-svelte/math package', () => {
 	testInNode('exposes the default plugin contract and option plumbing', () => {
 		expect(math.name).toBe('katex');
 		expect(math.type).toBe('math');

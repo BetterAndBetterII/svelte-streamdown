@@ -4,7 +4,7 @@
 import {
   createMathPlugin,
   math
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";
 export {
   createMathPlugin,
   math

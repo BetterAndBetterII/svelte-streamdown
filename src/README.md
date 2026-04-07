@@ -2,17 +2,19 @@
 
 Svelte port of [Vercel Streamdown](https://streamdown.ai/) for rendering AI-generated markdown with streaming-friendly parsing, hardened HTML handling, extensible plugins, and Svelte-native customization hooks.
 
+The published package name is `streamdown-svelte`. Thanks to the earlier `svelte-streamdown` groundwork - this repository continues building on that foundation.
+
 ## Installation
 
 ```bash
-pnpm add svelte-streamdown
+pnpm add streamdown-svelte
 ```
 
 ## Quick Start
 
 ```svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 
 	let content = `# Hello
 
@@ -30,10 +32,10 @@ If your app uses Tailwind v4, add Streamdown's published files as a source so Ta
 
 ```css
 @import 'tailwindcss';
-@source "../node_modules/svelte-streamdown/dist/**/*.{js,svelte,ts}";
+@source "../node_modules/streamdown-svelte/dist/**/*.{js,svelte,ts}";
 ```
 
-If your stylesheet lives elsewhere, adjust the relative path from that file to `node_modules/svelte-streamdown/dist`. Without `@source`, built-in code blocks, tables, alerts, and theme classes can render unstyled in production builds.
+If your stylesheet lives elsewhere, adjust the relative path from that file to `node_modules/streamdown-svelte/dist`. Without `@source`, built-in code blocks, tables, alerts, and theme classes can render unstyled in production builds.
 
 ### Shiki themes
 
@@ -55,7 +57,7 @@ You can also pass imported Shiki theme objects directly:
 
 ````svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import vitesseDark from '@shikijs/themes/vitesse-dark';
 	import vitesseLight from '@shikijs/themes/vitesse-light';
 
@@ -69,7 +71,7 @@ When you want to switch custom themes by name at runtime, register them once wit
 
 ````svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import vitesseDark from '@shikijs/themes/vitesse-dark';
 	import vitesseLight from '@shikijs/themes/vitesse-light';
 
@@ -97,7 +99,7 @@ Math and Mermaid are opt-in plugins. The minimal consumer setup is:
 
 ```svelte
 <script lang="ts">
-	import { Streamdown, createMathPlugin, createMermaidPlugin } from 'svelte-streamdown';
+	import { Streamdown, createMathPlugin, createMermaidPlugin } from 'streamdown-svelte';
 
 	let content = `
 $$E = mc^2$$
@@ -133,7 +135,7 @@ Streamdown's built-in math component imports the default KaTeX stylesheet for re
 
 ## Streaming Performance
 
-`svelte-streamdown` now keeps a parser cache around the active markdown stream. During streaming updates it reuses the latest document split and memoizes lexed results for stable block content, while the actively changing tail block stays transient so the cache does not grow without bound across token-by-token updates.
+`streamdown-svelte` now keeps a parser cache around the active markdown stream. During streaming updates it reuses the latest document split and memoizes lexed results for stable block content, while the actively changing tail block stays transient so the cache does not grow without bound across token-by-token updates.
 
 This closes the markdown parse-caching gap raised in `beynar/svelte-streamdown#18`. The remaining accepted performance drift versus the React reference is narrower: React-specific `memo` comparators and deferred-render internals are still framework-specific and documented separately in `docs/parity-matrix.md`.
 
@@ -148,7 +150,7 @@ Code blocks work out of the box. Math, Mermaid, custom code-fence renderers, and
 		createCodePlugin,
 		createMathPlugin,
 		createMermaidPlugin
-	} from 'svelte-streamdown';
+	} from 'streamdown-svelte';
 
 	let content = `
 \`\`\`ts
@@ -181,7 +183,7 @@ Raw HTML is processed through Streamdown's security layer. You can allow specifi
 
 ```svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 
 	let content = `
 [Docs](https://example.com/docs)
@@ -211,7 +213,7 @@ Use snippets when you want to replace the markup for a markdown token while keep
 
 ```svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 
 	let content = `## Custom heading`;
 </script>
@@ -233,7 +235,7 @@ Use `components` when you want to replace selected built-in Svelte components di
 
 ```svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import InlineCode from './InlineCode.svelte';
 
 	let content = 'Use `pnpm test` to run the suite.';
@@ -255,7 +257,7 @@ Uppercase tags in markdown can be rendered with `mdxComponents`:
 
 ```svelte
 <script lang="ts">
-	import { Streamdown } from 'svelte-streamdown';
+	import { Streamdown } from 'streamdown-svelte';
 	import Card from './Card.svelte';
 
 	let content = `
@@ -274,7 +276,7 @@ Streamdown exposes marked extension hooks through the `extensions` prop and rend
 
 ```svelte
 <script lang="ts">
-	import { Streamdown, type Extension } from 'svelte-streamdown';
+	import { Streamdown, type Extension } from 'streamdown-svelte';
 
 	const callout: Extension = {
 		name: 'callout',
@@ -382,10 +384,10 @@ Root exports include:
 
 Subpath exports:
 
-- `svelte-streamdown/code`
-- `svelte-streamdown/math`
-- `svelte-streamdown/mermaid`
-- `svelte-streamdown/remend` (delegates to the standalone `remend` package contract)
+- `streamdown-svelte/code`
+- `streamdown-svelte/math`
+- `streamdown-svelte/mermaid`
+- `streamdown-svelte/remend` (delegates to the standalone `remend` package contract)
 
 ## Development
 
@@ -447,6 +449,16 @@ Typical `compare-report.md` output looks like this:
 - Geometric mean throughput: 1.32x (+31.8%)
 ```
 
+Example charts from the current workspace snapshot are checked into `docs/benchmarks/` so the README can show a stable preview. These numbers are machine-dependent and should be treated as an example, not a canonical baseline.
+
+#### By Suite
+
+![Benchmark comparison by suite](docs/benchmarks/compare-by-suite.svg)
+
+#### By Scenario
+
+![Benchmark comparison by scenario](docs/benchmarks/compare-by-scenario.svg)
+
 ## Workspace Baseline
 
 The repository now keeps a pnpm workspace baseline for publishable packages:
@@ -469,7 +481,7 @@ Validation entrypoints for the workspace split:
 
 See `docs/workspace-baseline.md` for the repo layout, local linking workflow, and packaging rules.
 
-See [CONTRIBUTING.md](https://github.com/BetterAndBetterII/svelte-streamdown/blob/master/CONTRIBUTING.md) for the regression intake workflow, parity fixture naming convention, and bug-fix PR expectations.
+See [CONTRIBUTING.md](https://github.com/PacificStudio/streamdown-svelte/blob/master/CONTRIBUTING.md) for the regression intake workflow, parity fixture naming convention, and bug-fix PR expectations.
 
 ## License
 

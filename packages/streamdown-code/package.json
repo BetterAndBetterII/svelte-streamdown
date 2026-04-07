@@ -1,5 +1,5 @@
 {
-  "name": "@streamdown/code",
+  "name": "@streamdown-svelte/code",
   "version": "1.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,9 +20,9 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@streamdown/plugin-core": "workspace:*",
+    "@streamdown-svelte/plugin-core": "workspace:*",
     "shiki": "^3.13.0"
   },
-  "description": "Standalone code highlighter plugin package for svelte-streamdown workspace parity.",
+  "description": "Standalone code highlighter plugin package for the streamdown-svelte workspace.",
   "license": "MIT"
 }

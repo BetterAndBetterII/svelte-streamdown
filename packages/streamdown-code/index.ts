@@ -1,6 +1,6 @@
 "use client";
 
-import { bundledLanguagesInfo } from "@streamdown/plugin-core";
+import { bundledLanguagesInfo } from "@streamdown-svelte/plugin-core";
 import {
 	createCodePlugin as createSharedCodePlugin,
 	type CodeHighlighterPlugin,
@@ -8,7 +8,7 @@ import {
 	type HighlightResult,
 	type HighlightToken,
 	type ThemeInput
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";
 
 export type {
 	CodeHighlighterPlugin,

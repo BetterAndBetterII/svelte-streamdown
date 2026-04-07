@@ -46,8 +46,8 @@
 	--card-foreground: oklch(0.145 0 0);
 	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.205 0 0);
-	--primary-foreground: oklch(0.985 0 0);
+	--primary: oklch(57.61% 0.2508 258.23);
+	--primary-foreground: oklch(1 0 0);
 	--secondary: oklch(0.97 0 0);
 	--secondary-foreground: oklch(0.205 0 0);
 	--muted: oklch(0.97 0 0);
@@ -81,8 +81,8 @@
 	--card-foreground: oklch(0.985 0 0);
 	--popover: oklch(0.205 0 0);
 	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.922 0 0);
-	--primary-foreground: oklch(0.205 0 0);
+	--primary: oklch(57.61% 0.2508 258.23);
+	--primary-foreground: oklch(1 0 0);
 	--secondary: oklch(0.269 0 0);
 	--secondary-foreground: oklch(0.985 0 0);
 	--muted: oklch(0.269 0 0);
@@ -106,4 +106,42 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+	* {
+		@apply min-w-0 border-border outline-ring/50;
+	}
+
+	html {
+		text-rendering: optimizelegibility;
+	}
+
+	body {
+		@apply min-h-dvh bg-background text-foreground;
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		@apply text-muted-foreground;
+	}
+
+	button:not(:disabled),
+	[role='button']:not(:disabled) {
+		@apply cursor-pointer;
+	}
+}
+
+.bg-dashed {
+	background-image: linear-gradient(
+		45deg,
+		var(--border) 12.5%,
+		transparent 12.5%,
+		transparent 50%,
+		var(--border) 50%,
+		var(--border) 62.5%,
+		transparent 62.5%,
+		transparent 100%
+	);
+	background-size: 0.25rem 0.25rem;
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@streamdown/mermaid",
+  "name": "@streamdown-svelte/mermaid",
   "version": "1.0.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,9 +20,9 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@streamdown/plugin-core": "workspace:*",
+    "@streamdown-svelte/plugin-core": "workspace:*",
     "mermaid": "^11.11.0"
   },
-  "description": "Standalone mermaid plugin package used by the svelte-streamdown workspace.",
+  "description": "Standalone mermaid plugin package used by the streamdown-svelte workspace.",
   "license": "MIT"
 }

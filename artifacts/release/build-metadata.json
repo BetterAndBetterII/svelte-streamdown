@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-04T15:21:56.593Z",
+  "generatedAt": "2026-04-07T14:19:20.235Z",
   "package": {
-    "name": "svelte-streamdown",
-    "version": "3.0.1"
+    "name": "streamdown-svelte",
+    "version": "3.0.2"
   },
   "source": {
-    "repository": "BetterAndBetterII/svelte-streamdown",
-    "commitSha": "f252ece41036e61f47f6b7882684c3acba59861b",
+    "repository": "PacificStudio/streamdown-svelte",
+    "commitSha": "140712a119f03afef8d00d5399cc4017a15d5c10",
     "ref": null,
     "refName": null,
     "eventName": null,

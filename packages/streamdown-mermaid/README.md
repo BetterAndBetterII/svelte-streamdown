@@ -1,3 +1,3 @@
-# @streamdown/mermaid
+# @streamdown-svelte/mermaid
 
-Standalone mermaid plugin package used by the `svelte-streamdown` workspace.
+Standalone mermaid plugin package used by the `streamdown-svelte` workspace.

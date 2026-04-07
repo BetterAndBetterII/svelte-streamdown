@@ -1,3 +1,3 @@
-# @streamdown/cjk
+# @streamdown-svelte/cjk
 
-Standalone CJK plugin package used by the `svelte-streamdown` workspace.
+Standalone CJK plugin package used by the `streamdown-svelte` workspace.

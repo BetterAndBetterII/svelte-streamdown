@@ -322,43 +322,167 @@ function clamp(value, min, max) {
 }
 
 /**
+ * @param {string} text
+ * @param {number} fontSize
+ * @returns {number}
+ */
+function estimateTextWidth(text, fontSize) {
+	return text.length * fontSize * 0.58;
+}
+
+/**
+ * @param {string} text
+ * @param {number} maxCharsPerLine
+ * @returns {string[]}
+ */
+function wrapText(text, maxCharsPerLine) {
+	const normalized = String(text).trim().replace(/\s+/g, ' ');
+	if (!normalized) {
+		return [''];
+	}
+
+	const words = normalized.split(' ');
+	const lines = [];
+	let currentLine = '';
+
+	for (const word of words) {
+		if (!currentLine) {
+			currentLine = word;
+			continue;
+		}
+
+		if (`${currentLine} ${word}`.length <= maxCharsPerLine) {
+			currentLine += ` ${word}`;
+			continue;
+		}
+
+		lines.push(currentLine);
+		currentLine = word;
+	}
+
+	if (currentLine) {
+		lines.push(currentLine);
+	}
+
+	return lines;
+}
+
+/**
+ * @param {{
+ *   x: number;
+ *   y: number;
+ *   lines: string[];
+ *   fontSize: number;
+ *   fill: string;
+ *   anchor?: 'start' | 'middle' | 'end';
+ *   fontFamily: string;
+ *   fontWeight?: string;
+ * }} input
+ * @returns {string}
+ */
+function renderTextLines({ x, y, lines, fontSize, fill, anchor = 'start', fontFamily, fontWeight }) {
+	const baselineOffset = lines.length === 1 ? 0 : ((lines.length - 1) * fontSize * 1.2) / 2;
+	return `<text x="${x}" y="${y - baselineOffset}" text-anchor="${anchor}" fill="${fill}" font-size="${fontSize}"${fontWeight ? ` font-weight="${fontWeight}"` : ''} font-family="${fontFamily}">${lines
+		.map((line, index) => `<tspan x="${x}" dy="${index === 0 ? 0 : fontSize * 1.2}">${escapeXml(line)}</tspan>`)
+		.join('')}</text>`;
+}
+
+/**
  * @param {BarChartInput} input
  * @returns {string}
  */
 export function renderBarChartSvg({ title, subtitle, caption, rows }) {
-	const leftGutter = 340;
-	const rightGutter = 220;
+	const labelFontSize = 15;
+	const valueFontSize = 14;
+	const detailFontSize = 13;
+	const titleFontSize = 28;
+	const subtitleFontSize = 15;
+	const captionFontSize = 13;
+	const leftLabelMaxChars = 42;
+	const titleLines = wrapText(title, 48);
+	const subtitleLines = wrapText(subtitle, 100);
+	const captionLines = wrapText(caption, 110);
+	const preparedRows = rows.map((row) => ({
+		...row,
+		labelLines: wrapText(row.label, leftLabelMaxChars),
+		valueText: `${formatDeltaPercent(row.value)} (${number.format(row.ratio)}x)`
+	}));
+	const maxLabelWidth = Math.max(
+		0,
+		...preparedRows.map((row) =>
+			Math.max(...row.labelLines.map((line) => estimateTextWidth(line, labelFontSize)))
+		)
+	);
+	const maxValueWidth = Math.max(
+		0,
+		...preparedRows.map((row) => estimateTextWidth(row.valueText, valueFontSize))
+	);
+	const maxDetailWidth = Math.max(
+		0,
+		...preparedRows.map((row) => estimateTextWidth(row.detail, detailFontSize))
+	);
+	const valueDetailGap = 18;
+	const leftGutter = Math.max(340, Math.ceil(maxLabelWidth + 72));
 	const chartWidth = 620;
-	const topGutter = 120;
-	const rowGap = 14;
-	const rowHeight = 26;
+	const rightGutter = Math.max(
+		240,
+		Math.ceil(maxValueWidth + valueDetailGap + maxDetailWidth + 88)
+	);
+	const topGutter =
+		36 +
+		titleLines.length * titleFontSize * 1.2 +
+		subtitleLines.length * subtitleFontSize * 1.2 +
+		captionLines.length * captionFontSize * 1.2 +
+		28;
+	const rowGap = 18;
+	const minRowHeight = 28;
+	const barHeight = 24;
 	const footerHeight = 56;
 	const width = leftGutter + chartWidth + rightGutter;
-	const height = topGutter + rows.length * (rowHeight + rowGap) + footerHeight;
+	const rowLayouts = [];
+	let currentY = topGutter;
+	for (const row of preparedRows) {
+		const rowHeight = Math.max(minRowHeight, row.labelLines.length * labelFontSize * 1.2);
+		rowLayouts.push({ row, y: currentY, rowHeight });
+		currentY += rowHeight + rowGap;
+	}
+	const height = currentY - rowGap + footerHeight;
 	const centerX = leftGutter + chartWidth / 2;
-	const maxAbs = Math.max(5, ...rows.map((row) => Math.abs(row.value)));
+	const maxAbs = Math.max(5, ...preparedRows.map((row) => Math.abs(row.value)));
 	const pixelsPerPercent = chartWidth / 2 / maxAbs;
 	const axisTicks = [-maxAbs, -maxAbs / 2, 0, maxAbs / 2, maxAbs].map((value) =>
 		Math.round(value * 10) / 10
 	);
 
-	const svgRows = rows
-		.map((row, index) => {
-			const y = topGutter + index * (rowHeight + rowGap);
+	const svgRows = rowLayouts
+		.map(({ row, y, rowHeight }) => {
 			const barWidth = Math.abs(row.value) * pixelsPerPercent;
 			const barX = row.value >= 0 ? centerX : centerX - barWidth;
-			const labelY = y + rowHeight / 2 + 1;
-			const valueText = `${formatDeltaPercent(row.value)} (${number.format(row.ratio)}x)`;
-			const valueX =
-				row.value >= 0 ? clamp(barX + barWidth + 12, centerX + 12, width - 12) : clamp(barX - 12, 180, centerX - 12);
-			const valueAnchor = row.value >= 0 ? 'start' : 'end';
+			const centerY = y + rowHeight / 2 + 1;
 			const detailX = width - 16;
+			const detailLeftX = detailX - estimateTextWidth(row.detail, detailFontSize);
+			const valueWidth = estimateTextWidth(row.valueText, valueFontSize);
+			const positiveValueMaxX = detailLeftX - valueDetailGap - valueWidth;
+			const valueX =
+				row.value >= 0
+					? clamp(barX + barWidth + 12, centerX + 12, positiveValueMaxX)
+					: clamp(barX - 12, 180, centerX - 12);
+			const valueAnchor = row.value >= 0 ? 'start' : 'end';
+			const barY = y + (rowHeight - barHeight) / 2;
 
 			return `
-		<text x="${leftGutter - 16}" y="${labelY}" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif">${escapeXml(row.label)}</text>
-		<rect x="${barX}" y="${y}" width="${Math.max(barWidth, 1)}" height="${rowHeight}" rx="6" fill="${row.value >= 0 ? '#16a34a' : '#dc2626'}" opacity="0.9" />
-		<text x="${valueX}" y="${labelY}" text-anchor="${valueAnchor}" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">${escapeXml(valueText)}</text>
-		<text x="${detailX}" y="${labelY}" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">${escapeXml(row.detail)}</text>`;
+		${renderTextLines({
+			x: leftGutter - 16,
+			y: centerY,
+			lines: row.labelLines,
+			fontSize: labelFontSize,
+			fill: '#0f172a',
+			anchor: 'end',
+			fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+		})}
+		<rect x="${barX}" y="${barY}" width="${Math.max(barWidth, 1)}" height="${barHeight}" rx="6" fill="${row.value >= 0 ? '#16a34a' : '#dc2626'}" opacity="0.9" />
+		<text x="${valueX}" y="${centerY}" text-anchor="${valueAnchor}" fill="#0f172a" font-size="${valueFontSize}" font-family="ui-monospace, SFMono-Regular, monospace">${escapeXml(row.valueText)}</text>
+		<text x="${detailX}" y="${centerY}" text-anchor="end" fill="#475569" font-size="${detailFontSize}" font-family="ui-monospace, SFMono-Regular, monospace">${escapeXml(row.detail)}</text>`;
 		})
 		.join('\n');
 
@@ -376,9 +500,41 @@ export function renderBarChartSvg({ title, subtitle, caption, rows }) {
 	<title>${escapeXml(title)}</title>
 	<desc>${escapeXml(subtitle)}</desc>
 	<rect width="${width}" height="${height}" fill="#f8fafc" />
-	<text x="24" y="40" fill="#020617" font-size="28" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif">${escapeXml(title)}</text>
-	<text x="24" y="68" fill="#334155" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif">${escapeXml(subtitle)}</text>
-	<text x="24" y="92" fill="#64748b" font-size="13" font-family="ui-sans-serif, system-ui, sans-serif">${escapeXml(caption)}</text>
+	${renderTextLines({
+		x: 24,
+		y: 36 + (titleLines.length * titleFontSize * 1.2) / 2,
+		lines: titleLines,
+		fontSize: titleFontSize,
+		fill: '#020617',
+		fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+		fontWeight: '700'
+	})}
+	${renderTextLines({
+		x: 24,
+		y:
+			36 +
+			titleLines.length * titleFontSize * 1.2 +
+			8 +
+			(subtitleLines.length * subtitleFontSize * 1.2) / 2,
+		lines: subtitleLines,
+		fontSize: subtitleFontSize,
+		fill: '#334155',
+		fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+	})}
+	${renderTextLines({
+		x: 24,
+		y:
+			36 +
+			titleLines.length * titleFontSize * 1.2 +
+			8 +
+			subtitleLines.length * subtitleFontSize * 1.2 +
+			6 +
+			(captionLines.length * captionFontSize * 1.2) / 2,
+		lines: captionLines,
+		fontSize: captionFontSize,
+		fill: '#64748b',
+		fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+	})}
 	${axisLines}
 	${svgRows}
 	<text x="24" y="${height - 20}" fill="#64748b" font-size="12" font-family="ui-sans-serif, system-ui, sans-serif">Green = local faster, red = reference faster. Metric uses throughput delta: ((local hz / reference hz) - 1) * 100.</text>

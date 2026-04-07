@@ -1,11 +1,11 @@
 {
 	"schemaVersion": 1,
 	"local": {
-		"repository": "https://github.com/BetterAndBetterII/svelte-streamdown.git",
+		"repository": "https://github.com/PacificStudio/streamdown-svelte.git",
 		"commit": null,
 		"package": {
-			"name": "svelte-streamdown",
-			"version": "3.0.1",
+			"name": "streamdown-svelte",
+			"version": "3.0.2",
 			"entryFile": "src/lib/index.ts",
 			"exports": [
 				{

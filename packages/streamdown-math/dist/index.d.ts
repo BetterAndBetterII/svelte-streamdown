@@ -1,1 +1,1 @@
-export { MathPlugin, MathPluginOptions, createMathPlugin, math } from '@streamdown/plugin-core';
+export { MathPlugin, MathPluginOptions, createMathPlugin, math } from '@streamdown-svelte/plugin-core';

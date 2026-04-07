@@ -3,15 +3,15 @@ export { cjk, createCjkPlugin, type CjkPlugin } from './plugins/cjk-shared.js';
 import {
 	createCodePlugin as createSharedCodePlugin,
 	getThemeName
-} from '@streamdown/plugin-core';
+} from '@streamdown-svelte/plugin-core';
 import {
 	createMathPlugin as createSharedMathPlugin,
 	math as sharedMath
-} from '@streamdown/plugin-core';
+} from '@streamdown-svelte/plugin-core';
 import {
 	createMermaidPlugin as createSharedMermaidPlugin,
 	mermaid as sharedMermaid
-} from '@streamdown/plugin-core';
+} from '@streamdown-svelte/plugin-core';
 import type {
 	CodeHighlighterPlugin,
 	CodePluginOptions,

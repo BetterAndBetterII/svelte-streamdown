@@ -1,6 +1,6 @@
 {
-	"name": "svelte-streamdown",
-	"version": "3.0.1",
+	"name": "streamdown-svelte",
+	"version": "3.0.2",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "pnpm build:packages && vite build && pnpm package:root",
@@ -108,10 +108,10 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250906.0",
 		"@playwright/test": "^1.55.0",
-		"@streamdown/cjk": "workspace:*",
-		"@streamdown/code": "workspace:*",
-		"@streamdown/math": "workspace:*",
-		"@streamdown/mermaid": "workspace:*",
+		"@streamdown-svelte/cjk": "workspace:*",
+		"@streamdown-svelte/code": "workspace:*",
+		"@streamdown-svelte/math": "workspace:*",
+		"@streamdown-svelte/mermaid": "workspace:*",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/package": "^2.0.0",
@@ -158,7 +158,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/BetterAndBetterII/svelte-streamdown.git"
+		"url": "git+https://github.com/PacificStudio/streamdown-svelte.git"
 	},
 	"keywords": [
 		"svelte"
@@ -175,7 +175,7 @@
 		"@floating-ui/dom": "^1.7.4",
 		"@shikijs/langs": "^3.17.1",
 		"@shikijs/themes": "^3.17.1",
-		"@streamdown/plugin-core": "workspace:*",
+		"@streamdown-svelte/plugin-core": "workspace:*",
 		"clsx": "^2.1.1",
 		"katex": "^0.16.22",
 		"marked": "^16.2.1",

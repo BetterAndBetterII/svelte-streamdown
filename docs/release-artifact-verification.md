@@ -94,7 +94,7 @@ Must record:
 
 ### 3. Verify the GitHub attestation
 
-- Run `gh attestation verify ./artifacts/release/<package-name>-<package-version>.tgz --repo BetterAndBetterII/svelte-streamdown`.
+- Run `gh attestation verify ./artifacts/release/<package-name>-<package-version>.tgz --repo PacificStudio/streamdown-svelte`.
 - Confirm the verified subject digest matches `provenance-metadata.json.subject.sha256`.
 - Confirm the attestation signer workflow is `.github/workflows/release.yml`.
 

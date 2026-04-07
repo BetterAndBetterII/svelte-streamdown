@@ -1,13 +1,12 @@
 import { onDestroy } from 'svelte';
-
-const isTestMode = import.meta.env.MODE === 'test';
+import { isTestMode } from './runtime-env.js';
 
 export const useCopy = (opts: { content: string; timeout?: number }) => {
 	let isCopied = $state(false);
 	let timeoutId: number | undefined;
 	const copy = async () => {
 		if (typeof window === 'undefined' || !navigator?.clipboard?.writeText) {
-			if (!isTestMode) {
+			if (!isTestMode()) {
 				console.error('Clipboard API not available');
 			}
 			return;
@@ -22,7 +21,7 @@ export const useCopy = (opts: { content: string; timeout?: number }) => {
 				isCopied = false;
 			}, opts.timeout ?? 2000);
 		} catch (error) {
-			if (!isTestMode) {
+			if (!isTestMode()) {
 				console.error('Failed to copy to clipboard:', error);
 			}
 		}

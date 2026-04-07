@@ -127,7 +127,7 @@ print(fibonacci(10))
 
 \`\`\`bash
 # Install Streamdown
-npm install streamdown @streamdown/code @streamdown/math @streamdown/mermaid
+npm install streamdown-svelte @streamdown-svelte/code @streamdown-svelte/math @streamdown-svelte/mermaid
 \`\`\`
 
 ---

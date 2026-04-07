@@ -5,4 +5,4 @@ export {
 	math,
 	type MathPlugin,
 	type MathPluginOptions
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";

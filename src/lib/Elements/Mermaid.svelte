@@ -5,6 +5,7 @@
 	import type { MermaidConfig } from 'mermaid';
 	import { usePanzoom } from '$lib/utils/panzoom.svelte';
 	import { useCopy } from '$lib/utils/copy.svelte.js';
+	import { isTestMode } from '$lib/utils/runtime-env.js';
 	import {
 		checkIcon,
 		copyIcon,
@@ -121,7 +122,7 @@
 				}
 			}
 
-			if (import.meta.env.MODE === 'test') {
+			if (isTestMode()) {
 				shouldRender = true;
 				return;
 			}

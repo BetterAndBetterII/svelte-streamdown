@@ -105,4 +105,28 @@ describe('benchmark report helpers', () => {
 		expect(markdown).toContain('![Benchmark comparison by suite](./compare-by-suite.svg)');
 		expect(markdown).toContain('Parse Blocks / single block');
 	});
+
+	it('wraps long chart labels instead of clipping them off-canvas', () => {
+		const svg = renderBarChartSvg({
+			title: 'Benchmark Comparison by Scenario',
+			subtitle:
+				'linux 6.17.0-14-generic (x64) | Intel(R) Core(TM) Ultra 9 285K | 24 logical cores | Node v22.22.1 | pnpm 10.32.1',
+			caption: 'Per-scenario throughput delta, sorted from best improvement to worst regression.',
+			rows: [
+				{
+					label:
+						'Table Utilities - Table data edge cases / table with special chars (Markdown)',
+					value: 40,
+					ratio: 1.4,
+					detail: '2.89M hz vs 2.07M hz'
+				}
+			]
+		});
+
+		const widthMatch = svg.match(/<svg[^>]*width="([\d.]+)"/);
+		expect(svg).toContain('<tspan');
+		expect(svg).toContain('table with special chars');
+		expect(widthMatch).not.toBeNull();
+		expect(Number(widthMatch?.[1])).toBeGreaterThan(1350);
+	});
 });

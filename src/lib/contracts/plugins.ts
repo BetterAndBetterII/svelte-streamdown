@@ -13,7 +13,7 @@ import type {
 	MermaidInstance,
 	MermaidPluginOptions,
 	ThemeInput
-} from '@streamdown/plugin-core';
+} from '@streamdown-svelte/plugin-core';
 
 export type {
 	CodeHighlighterPlugin,

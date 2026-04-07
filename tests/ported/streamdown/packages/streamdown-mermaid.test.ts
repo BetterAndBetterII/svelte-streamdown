@@ -1,5 +1,5 @@
 import { expect, vi } from 'vitest';
-import { createMermaidPlugin, mermaid } from '@streamdown/mermaid';
+import { createMermaidPlugin, mermaid } from '@streamdown-svelte/mermaid';
 import { describeInNode, testInNode } from '../../../helpers/index.js';
 
 vi.mock('mermaid', () => ({
@@ -11,7 +11,7 @@ vi.mock('mermaid', () => ({
 	}
 }));
 
-describeInNode('ported standalone @streamdown/mermaid package', () => {
+describeInNode('ported standalone @streamdown-svelte/mermaid package', () => {
 	testInNode('exposes the mermaid plugin contract and renders diagrams', async () => {
 		expect(mermaid.name).toBe('mermaid');
 		expect(mermaid.type).toBe('diagram');

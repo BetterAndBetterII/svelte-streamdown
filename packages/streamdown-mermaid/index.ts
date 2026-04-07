@@ -8,6 +8,6 @@ export {
 	type MermaidModule,
 	type MermaidModuleLoader,
 	type MermaidPluginOptions
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";
 
 export type { MermaidConfig } from "mermaid";

@@ -3,6 +3,7 @@
 	import { useStreamdown } from '$lib/context.svelte.js';
 	import type { MathToken } from '$lib/marked/index.js';
 	import { getMathPluginOptions } from '$lib/plugins.js';
+	import { isTestMode } from '$lib/utils/runtime-env.js';
 	import type { KatexOptions } from 'katex';
 	import 'katex/dist/katex.min.css';
 
@@ -50,7 +51,7 @@
 				: streamdown.katexConfig || {})
 		};
 
-		if (config.strict === undefined && import.meta.env.MODE === 'test') {
+		if (config.strict === undefined && isTestMode()) {
 			config.strict = 'ignore';
 		}
 

@@ -12,7 +12,7 @@ Supersedes:
 
 Audit target:
 
-- Repository: `BetterAndBetterII/svelte-streamdown`
+- Repository: `PacificStudio/streamdown-svelte`
 - Release candidate branch/head reviewed: `master@7ef35ae4a6f992ccd454b2233ae7ca70fb64dedf`
 - Frozen parity target: `vercel/streamdown@5f6475139a87dee8af08fcf7b01475292bc064d2`
 - Tracking issue: `#87`

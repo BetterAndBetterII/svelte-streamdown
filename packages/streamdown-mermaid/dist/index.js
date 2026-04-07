@@ -4,7 +4,7 @@
 import {
   createMermaidPlugin,
   mermaid
-} from "@streamdown/plugin-core";
+} from "@streamdown-svelte/plugin-core";
 export {
   createMermaidPlugin,
   mermaid

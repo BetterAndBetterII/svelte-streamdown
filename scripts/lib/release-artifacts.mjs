@@ -153,7 +153,7 @@ function normalizeRepositoryIdentifier(rawRepository) {
 		return null;
 	}
 
-	const normalizedValue = value.replace(/\.git$/u, '');
+	const normalizedValue = value.replace(/^git\+/u, '').replace(/\.git$/u, '');
 	const directMatch = normalizedValue.match(
 		/^(?<owner>[A-Za-z0-9_.-]+)\/(?<repo>[A-Za-z0-9_.-]+)$/u
 	);

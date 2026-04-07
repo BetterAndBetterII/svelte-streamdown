@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1467" height="1749.2" viewBox="0 0 1467 1749.2" role="img" aria-labelledby="title desc">
+	<title>Benchmark Comparison by Scenario</title>
+	<desc>linux 6.17.0-14-generic (x64) | Intel(R) Core(TM) Ultra 9 285K | 24 logical cores | Node v22.22.1 | pnpm 10.32.1</desc>
+	<rect width="1467" height="1749.2" fill="#f8fafc" />
+	<text x="24" y="52.8" text-anchor="start" fill="#020617" font-size="28" font-weight="700" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">Benchmark Comparison by Scenario</tspan></text>
+	<text x="24" y="86.6" text-anchor="start" fill="#334155" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">linux 6.17.0-14-generic (x64) | Intel(R) Core(TM) Ultra 9 285K | 24 logical cores | Node v22.22.1 |</tspan><tspan x="24" dy="18">pnpm 10.32.1</tspan></text>
+	<text x="24" y="127.39999999999999" text-anchor="start" fill="#64748b" font-size="13" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="24" dy="0">Per-scenario throughput delta, sorted from best improvement to worst regression.</tspan></text>
+	
+		<line x1="438.0158833716678" y1="131.2" x2="438.0158833716678" y2="1693.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="438.0158833716678" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">-713.5%</text>
+
+		<line x1="592.9862189026084" y1="131.2" x2="592.9862189026084" y2="1693.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="592.9862189026084" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">-356.8%</text>
+
+		<line x1="748" y1="131.2" x2="748" y2="1693.2" stroke="#0f172a" stroke-width="2" />
+		<text x="748" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+0%</text>
+
+		<line x1="903.0137810973916" y1="131.2" x2="903.0137810973916" y2="1693.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="903.0137810973916" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+356.8%</text>
+
+		<line x1="1057.9841166283322" y1="131.2" x2="1057.9841166283322" y2="1693.2" stroke="#cbd5e1" stroke-width="1" />
+		<text x="1057.9841166283322" y="121.19999999999999" text-anchor="middle" fill="#475569" font-size="12" font-family="ui-monospace, SFMono-Regular, monospace">+713.5%</text>
+	
+		<text x="422" y="164.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Stream Render - simple content</tspan></text>
+		<rect x="748" y="151.2" width="310" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="1070" y="164.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+713.5% (8.14x)</text>
+		<text x="1451" y="164.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">16.34k hz vs 2.01k hz</text>
+
+		<text x="422" y="210.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Stream Render - gfm content</tspan></text>
+		<rect x="748" y="197.2" width="226.04016262781315" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="986.0401626278132" y="210.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+520.3% (6.2x)</text>
+		<text x="1451" y="210.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">3.95k hz vs 637.47 hz</text>
+
+		<text x="422" y="256.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Stream Render - medium content</tspan></text>
+		<rect x="748" y="243.2" width="153.31516916282223" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="913.3151691628223" y="256.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+352.9% (4.53x)</text>
+		<text x="1451" y="256.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">3.66k hz vs 807.22 hz</text>
+
+		<text x="422" y="302.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Stream Render - huge content</tspan></text>
+		<rect x="748" y="289.2" width="75.29131715343685" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="835.2913171534368" y="302.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+173.3% (2.73x)</text>
+		<text x="1451" y="302.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">156.43 hz vs 57.24 hz</text>
+
+		<text x="422" y="343.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToTSV / large</tspan><tspan x="422" dy="18">table (100 rows x 8 cols)</tspan></text>
+		<rect x="748" y="339.2" width="27.55685544910055" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="787.5568554491006" y="352.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+63.4% (1.63x)</text>
+		<text x="1451" y="352.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">66.97k hz vs 40.98k hz</text>
+
+		<text x="422" y="397.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToCSV / large</tspan><tspan x="422" dy="18">table (100 rows x 8 cols)</tspan></text>
+		<rect x="748" y="393.2" width="25.68641815078488" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="785.6864181507849" y="406.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+59.1% (1.59x)</text>
+		<text x="1451" y="406.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">61.12k hz vs 38.41k hz</text>
+
+		<text x="422" y="451.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToMarkdown /</tspan><tspan x="422" dy="18">large table (100 rows x 8 cols)</tspan></text>
+		<rect x="748" y="447.2" width="24.969132318593527" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="784.9691323185936" y="460.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+57.5% (1.57x)</text>
+		<text x="1451" y="460.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">57.14k hz vs 36.28k hz</text>
+
+		<text x="422" y="505.20000000000005" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToTSV / table</tspan><tspan x="422" dy="18">with complex data</tspan></text>
+		<rect x="748" y="501.2" width="20.03212390774167" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="780.0321239077417" y="514.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+46.1% (1.46x)</text>
+		<text x="1451" y="514.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.7M hz vs 1.17M hz</text>
+
+		<text x="422" y="559.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - Table data edge cases /</tspan><tspan x="422" dy="18">table with special chars (Markdown)</tspan></text>
+		<rect x="748" y="555.2" width="17.37911792128761" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="777.3791179212876" y="568.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+40% (1.4x)</text>
+		<text x="1451" y="568.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">2.89M hz vs 2.07M hz</text>
+
+		<text x="422" y="613.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToCSV / table</tspan><tspan x="422" dy="18">with complex data</tspan></text>
+		<rect x="748" y="609.2" width="12.885893873696281" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="772.8858938736963" y="622.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+29.7% (1.3x)</text>
+		<text x="1451" y="622.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.84M hz vs 1.42M hz</text>
+
+		<text x="422" y="667.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToMarkdown /</tspan><tspan x="422" dy="18">wide table (20 columns)</tspan></text>
+		<rect x="748" y="663.2" width="8.160599675405093" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="768.1605996754051" y="676.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+18.8% (1.19x)</text>
+		<text x="1451" y="676.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.14M hz vs 955.9k hz</text>
+
+		<text x="422" y="726.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Stream Render - raw html content</tspan></text>
+		<rect x="748" y="713.2" width="6.953558892516837" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="766.9535588925169" y="726.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+16% (1.16x)</text>
+		<text x="1451" y="726.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">6.06k hz vs 5.23k hz</text>
+
+		<text x="422" y="767.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToTSV / simple</tspan><tspan x="422" dy="18">table (3x3)</tspan></text>
+		<rect x="748" y="763.2" width="5.134092303398341" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="765.1340923033983" y="776.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+11.8% (1.12x)</text>
+		<text x="1451" y="776.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">4.5M hz vs 4.03M hz</text>
+
+		<text x="422" y="826.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - plain text (no markdown)</tspan></text>
+		<rect x="748" y="813.2" width="1.3717940989405657" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="761.3717940989405" y="826.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+3.2% (1.03x)</text>
+		<text x="1451" y="826.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.14M hz vs 1.11M hz</text>
+
+		<text x="422" y="872.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - incomplete code block</tspan></text>
+		<rect x="748" y="859.2" width="1.1961117634214253" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="761.1961117634214" y="872.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+2.8% (1.03x)</text>
+		<text x="1451" y="872.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.09M hz vs 1.06M hz</text>
+
+		<text x="422" y="913.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Table Utilities - tableDataToCSV / simple</tspan><tspan x="422" dy="18">table (3x3)</tspan></text>
+		<rect x="748" y="909.2" width="1.040408532364517" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="761.0404085323645" y="922.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+2.4% (1.02x)</text>
+		<text x="1451" y="922.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">4.27M hz vs 4.17M hz</text>
+
+		<text x="422" y="972.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - many blocks (100)</tspan></text>
+		<rect x="748" y="959.2" width="1" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="760.7955932718683" y="972.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+1.8% (1.02x)</text>
+		<text x="1451" y="972.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">10.71k hz vs 10.52k hz</text>
+
+		<text x="422" y="1013.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - multiple code blocks (one</tspan><tspan x="422" dy="18">incomplete)</tspan></text>
+		<rect x="748" y="1009.2" width="1" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="760.2959685317592" y="1022.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+0.7% (1.01x)</text>
+		<text x="1451" y="1022.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">811.2k hz vs 805.71k hz</text>
+
+		<text x="422" y="1067.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - very large document (2x</tspan><tspan x="422" dy="18">realistic)</tspan></text>
+		<rect x="748" y="1063.2" width="1" height="24" rx="6" fill="#16a34a" opacity="0.9" />
+		<text x="760.0717962046597" y="1076.2" text-anchor="start" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">+0.2% (1x)</text>
+		<text x="1451" y="1076.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">127.42 hz vs 127.21 hz</text>
+
+		<text x="422" y="1121.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - medium text with mixed</tspan><tspan x="422" dy="18">formatting</tspan></text>
+		<rect x="747.9628336873351" y="1117.2" width="1" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="735.9628336873351" y="1130.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-0.1% (1x)</text>
+		<text x="1451" y="1130.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">365.01k hz vs 365.32k hz</text>
+
+		<text x="422" y="1175.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - large document (realistic</tspan><tspan x="422" dy="18">size)</tspan></text>
+		<rect x="747.6385413261468" y="1171.2" width="1" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="735.6385413261468" y="1184.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-0.8% (0.99x)</text>
+		<text x="1451" y="1184.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">396.36 hz vs 399.68 hz</text>
+
+		<text x="422" y="1234.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - multiple blocks (10)</tspan></text>
+		<rect x="747.6349225363484" y="1221.2" width="1" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="735.6349225363484" y="1234.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-0.8% (0.99x)</text>
+		<text x="1451" y="1234.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">130.78k hz vs 131.89k hz</text>
+
+		<text x="422" y="1275.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - large code block (1000</tspan><tspan x="422" dy="18">lines)</tspan></text>
+		<rect x="747.5399525401656" y="1271.2" width="1" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="735.5399525401656" y="1284.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-1.1% (0.99x)</text>
+		<text x="1451" y="1284.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">53.19k hz vs 53.76k hz</text>
+
+		<text x="422" y="1334.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - multiple HTML blocks</tspan></text>
+		<rect x="747.3850325680149" y="1321.2" width="1" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="735.3850325680149" y="1334.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-1.4% (0.99x)</text>
+		<text x="1451" y="1334.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">404.49k hz vs 410.3k hz</text>
+
+		<text x="422" y="1375.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - long text with complex</tspan><tspan x="422" dy="18">formatting</tspan></text>
+		<rect x="746.7717956212599" y="1371.2" width="1.2282043787400763" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="734.7717956212599" y="1384.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-2.8% (0.97x)</text>
+		<text x="1451" y="1384.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">240.17k hz vs 247.16k hz</text>
+
+		<text x="422" y="1434.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - nested HTML block</tspan></text>
+		<rect x="746.0121706129804" y="1421.2" width="1.9878293870196033" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="734.0121706129804" y="1434.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-4.6% (0.95x)</text>
+		<text x="1451" y="1434.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.35M hz vs 1.41M hz</text>
+
+		<text x="422" y="1480.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - multiple code blocks</tspan></text>
+		<rect x="745.9988472146915" y="1467.2" width="2.001152785308498" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="733.9988472146915" y="1480.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-4.6% (0.95x)</text>
+		<text x="1451" y="1480.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">1.04M hz vs 1.09M hz</text>
+
+		<text x="422" y="1526.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - complex math blocks</tspan></text>
+		<rect x="743.9031999245369" y="1513.2" width="4.0968000754630225" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="731.9031999245369" y="1526.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-9.4% (0.91x)</text>
+		<text x="1451" y="1526.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">240.65k hz vs 265.71k hz</text>
+
+		<text x="422" y="1567.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - short text with incomplete</tspan><tspan x="422" dy="18">bold</tspan></text>
+		<rect x="742.3238456793737" y="1563.2" width="5.676154320626319" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="730.3238456793737" y="1576.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-13.1% (0.87x)</text>
+		<text x="1451" y="1576.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">672.33k hz vs 773.37k hz</text>
+
+		<text x="422" y="1621.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Remend Parser - streaming bold text (10</tspan><tspan x="422" dy="18">steps)</tspan></text>
+		<rect x="740.5073581252585" y="1617.2" width="7.492641874741518" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="728.5073581252585" y="1630.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-17.2% (0.83x)</text>
+		<text x="1451" y="1630.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">82.06k hz vs 99.16k hz</text>
+
+		<text x="422" y="1680.2" text-anchor="end" fill="#0f172a" font-size="15" font-family="ui-sans-serif, system-ui, sans-serif"><tspan x="422" dy="0">Parse Blocks - single block</tspan></text>
+		<rect x="739.6634748934468" y="1667.2" width="8.336525106553141" height="24" rx="6" fill="#dc2626" opacity="0.9" />
+		<text x="727.6634748934468" y="1680.2" text-anchor="end" fill="#0f172a" font-size="14" font-family="ui-monospace, SFMono-Regular, monospace">-19.2% (0.81x)</text>
+		<text x="1451" y="1680.2" text-anchor="end" fill="#475569" font-size="13" font-family="ui-monospace, SFMono-Regular, monospace">747.66k hz vs 925.18k hz</text>
+	<text x="24" y="1729.2" fill="#64748b" font-size="12" font-family="ui-sans-serif, system-ui, sans-serif">Green = local faster, red = reference faster. Metric uses throughput delta: ((local hz / reference hz) - 1) * 100.</text>
+</svg>

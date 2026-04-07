@@ -1,5 +1,5 @@
 {
-  "name": "@streamdown/math",
+  "name": "@streamdown-svelte/math",
   "version": "1.0.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,12 +20,12 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@streamdown/plugin-core": "workspace:*",
+    "@streamdown-svelte/plugin-core": "workspace:*",
     "katex": "^0.16.22",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "unified": "^11.0.5"
   },
-  "description": "Standalone math plugin package used by the svelte-streamdown workspace.",
+  "description": "Standalone math plugin package used by the streamdown-svelte workspace.",
   "license": "MIT"
 }

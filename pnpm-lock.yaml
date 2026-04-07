@@ -20,7 +20,7 @@ importers:
       '@shikijs/themes':
         specifier: ^3.17.1
         version: 3.17.1
-      '@streamdown/plugin-core':
+      '@streamdown-svelte/plugin-core':
         specifier: workspace:*
         version: link:packages/streamdown-plugin-core
       clsx:
@@ -84,16 +84,16 @@ importers:
       '@playwright/test':
         specifier: ^1.55.0
         version: 1.55.0
-      '@streamdown/cjk':
+      '@streamdown-svelte/cjk':
         specifier: workspace:*
         version: link:packages/streamdown-cjk
-      '@streamdown/code':
+      '@streamdown-svelte/code':
         specifier: workspace:*
         version: link:packages/streamdown-code
-      '@streamdown/math':
+      '@streamdown-svelte/math':
         specifier: workspace:*
         version: link:packages/streamdown-math
-      '@streamdown/mermaid':
+      '@streamdown-svelte/mermaid':
         specifier: workspace:*
         version: link:packages/streamdown-mermaid
       '@sveltejs/adapter-cloudflare':
@@ -227,7 +227,7 @@ importers:
 
   packages/streamdown-cjk:
     dependencies:
-      '@streamdown/plugin-core':
+      '@streamdown-svelte/plugin-core':
         specifier: workspace:*
         version: link:../streamdown-plugin-core
       remark-cjk-friendly:
@@ -242,7 +242,7 @@ importers:
 
   packages/streamdown-code:
     dependencies:
-      '@streamdown/plugin-core':
+      '@streamdown-svelte/plugin-core':
         specifier: workspace:*
         version: link:../streamdown-plugin-core
       shiki:
@@ -251,7 +251,7 @@ importers:
 
   packages/streamdown-math:
     dependencies:
-      '@streamdown/plugin-core':
+      '@streamdown-svelte/plugin-core':
         specifier: workspace:*
         version: link:../streamdown-plugin-core
       katex:
@@ -269,7 +269,7 @@ importers:
 
   packages/streamdown-mermaid:
     dependencies:
-      '@streamdown/plugin-core':
+      '@streamdown-svelte/plugin-core':
         specifier: workspace:*
         version: link:../streamdown-plugin-core
       mermaid:

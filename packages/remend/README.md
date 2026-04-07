@@ -1,6 +1,6 @@
 # remend
 
-Streaming-friendly incomplete Markdown repair extracted from the `svelte-streamdown` workspace.
+Streaming-friendly incomplete Markdown repair extracted from the `streamdown-svelte` workspace.
 
 ## Installation
 
@@ -31,4 +31,4 @@ const handler: RemendHandler = {
 };
 ```
 
-This package exposes the standalone parser contract used by the Streamdown-style workspace split, including incomplete-markdown parser helpers, custom handlers, and utility helpers. The root `svelte-streamdown/remend` subpath delegates to this package so both import surfaces stay aligned.
+This package exposes the standalone parser contract used by the Streamdown-style workspace split, including incomplete-markdown parser helpers, custom handlers, and utility helpers. The root `streamdown-svelte/remend` subpath delegates to this package so both import surfaces stay aligned.

@@ -1,5 +1,5 @@
-import { ThemeInput, CodeHighlighterPlugin } from '@streamdown/plugin-core';
-export { CodeHighlighterPlugin, HighlightOptions, HighlightResult, HighlightToken, ThemeInput } from '@streamdown/plugin-core';
+import { ThemeInput, CodeHighlighterPlugin } from '@streamdown-svelte/plugin-core';
+export { CodeHighlighterPlugin, HighlightOptions, HighlightResult, HighlightToken, ThemeInput } from '@streamdown-svelte/plugin-core';
 
 interface CodePluginOptions {
     themes?: [ThemeInput, ThemeInput];

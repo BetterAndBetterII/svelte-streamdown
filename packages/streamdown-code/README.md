@@ -1,3 +1,3 @@
-# @streamdown/code
+# @streamdown-svelte/code
 
-Standalone code plugin package used by the `svelte-streamdown` workspace.
+Standalone code plugin package used by the `streamdown-svelte` workspace.
