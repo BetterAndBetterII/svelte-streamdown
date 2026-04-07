@@ -41,7 +41,8 @@
 		"snapshot:commonmark-spec": "node scripts/fetch-commonmark-spec.mjs",
 		"test:playwright:commonmark": "playwright test tests/playwright/commonmark --reporter=dot --quiet",
 		"bench:ported": "mkdir -p coverage/benchmarks && pnpm vitest bench tests/benchmarks/ported --run --project server --outputJson coverage/benchmarks/ported.json",
-		"bench:compare": "mkdir -p coverage/benchmarks && pnpm vitest bench tests/benchmarks/compare --run --project server --outputJson coverage/benchmarks/compare.json && node scripts/benchmark-summary.mjs coverage/benchmarks/compare.json",
+		"bench:compare": "node scripts/benchmark-report.mjs",
+		"bench:compare:raw": "mkdir -p coverage/benchmarks && pnpm vitest bench tests/benchmarks/compare --run --project server --outputJson coverage/benchmarks/compare.json && node scripts/benchmark-summary.mjs coverage/benchmarks/compare.json",
 		"bench": "pnpm bench:ported && pnpm bench:compare"
 	},
 	"files": [

@@ -295,6 +295,40 @@ function getTypeChecker() {
 	return checkerCache;
 }
 
+function findTypeDeclaration(filePath, typeName) {
+	const sourceFile = getTypeScriptProgram().getSourceFile(filePath);
+	if (!sourceFile) {
+		throw new Error(`Unable to load TypeScript source file: ${filePath}`);
+	}
+
+	for (const statement of sourceFile.statements) {
+		if (ts.isTypeAliasDeclaration(statement) && statement.name.text === typeName) {
+			return statement;
+		}
+		if (ts.isInterfaceDeclaration(statement) && statement.name.text === typeName) {
+			return statement;
+		}
+	}
+
+	return null;
+}
+
+function resolveTypeDeclaration(filePath, typeName) {
+	const declaration = findTypeDeclaration(filePath, typeName);
+	if (declaration) {
+		return { filePath, declaration };
+	}
+
+	const { imports } = analyzeSourceFile(filePath);
+
+	const imported = imports.get(typeName);
+	if (!imported?.resolvedFilePath) {
+		return null;
+	}
+
+	return resolveTypeDeclaration(imported.resolvedFilePath, imported.importedName);
+}
+
 function getTypeScriptProgram() {
 	if (programCache && checkerCache) {
 		return programCache;
@@ -371,8 +405,8 @@ function getPropertyName(nameNode) {
 	return printNode(nameNode, nameNode.getSourceFile());
 }
 
-function collectPropertiesFromTypeLiteral(typeLiteralNode) {
-	return typeLiteralNode.members
+function collectPropertiesFromMembers(members) {
+	return members
 		.filter((member) => ts.isPropertySignature(member))
 		.map((member) => ({
 			name: getPropertyName(member.name),
@@ -419,19 +453,29 @@ function dedupeAndSortProperties(properties) {
 
 function extractStreamdownProps() {
 	const checker = getTypeChecker();
-	const declaration = findTypeAliasDeclaration(streamdownContextFile, 'StreamdownProps');
-	if (!declaration || !ts.isTypeAliasDeclaration(declaration)) {
+	const resolved = resolveTypeDeclaration(streamdownContextFile, 'StreamdownProps');
+	if (!resolved) {
 		throw new Error('Unable to resolve StreamdownProps in local source');
 	}
 
-	const type = checker.getTypeFromTypeNode(declaration.type);
+	const declaration = resolved.declaration;
+	const type = ts.isTypeAliasDeclaration(declaration)
+		? checker.getTypeFromTypeNode(declaration.type)
+		: ts.isInterfaceDeclaration(declaration)
+			? checker.getTypeAtLocation(declaration)
+			: null;
+
+	if (!type) {
+		throw new Error('Resolved StreamdownProps is not a supported declaration kind');
+	}
+
 	const defaultsDeclaration = findPropsVariableDeclaration(streamdownComponentFile);
 	if (!defaultsDeclaration || !ts.isObjectBindingPattern(defaultsDeclaration.name)) {
 		throw new Error('Unable to locate $props() destructuring in Streamdown.svelte');
 	}
 
 	const defaults = collectDefaultsFromObjectBinding(defaultsDeclaration.name);
-	const fallbackSource = relativePath(streamdownContextFile);
+	const fallbackSource = relativePath(resolved.filePath);
 
 	return checker
 		.getPropertiesOfType(type)
@@ -457,12 +501,21 @@ function extractStreamdownProps() {
 }
 
 function extractPluginConfigEntries() {
-	const declaration = findTypeAliasDeclaration(streamdownPluginsFile, 'PluginConfig');
-	if (!declaration || !ts.isInterfaceDeclaration(declaration)) {
+	const resolved = resolveTypeDeclaration(streamdownPluginsFile, 'PluginConfig');
+	if (!resolved) {
 		throw new Error('Unable to resolve PluginConfig in local source');
 	}
 
-	return dedupeAndSortProperties(collectPropertiesFromTypeLiteral(declaration));
+	const declaration = resolved.declaration;
+	if (ts.isInterfaceDeclaration(declaration)) {
+		return dedupeAndSortProperties(collectPropertiesFromMembers(declaration.members));
+	}
+
+	if (ts.isTypeAliasDeclaration(declaration) && ts.isTypeLiteralNode(declaration.type)) {
+		return dedupeAndSortProperties(collectPropertiesFromMembers(declaration.type.members));
+	}
+
+	throw new Error('Resolved PluginConfig is not a supported declaration kind');
 }
 
 function inferSourceEntryFile(exportTarget) {
@@ -489,7 +542,7 @@ function extractSubpathProps(filePath) {
 		throw new Error(`Unable to resolve $props() type literal in ${relativePath(filePath)}`);
 	}
 
-	return dedupeAndSortProperties(collectPropertiesFromTypeLiteral(declaration.type));
+	return dedupeAndSortProperties(collectPropertiesFromMembers(declaration.type.members));
 }
 
 function collectSubpathExports(packageJson) {
@@ -520,7 +573,7 @@ function collectPluginEntryPoints() {
 
 		const packageExports = extractExports(entryFile);
 		const runtimeEntries = packageExports
-			.filter((entry) => entry.kind === 'value' && !entry.source)
+			.filter((entry) => entry.kind === 'value')
 			.map((entry) => entry.name)
 			.sort((left, right) => left.localeCompare(right));
 		const defaultEntry = runtimeEntries.find((entry) => !entry.startsWith('create')) ?? null;

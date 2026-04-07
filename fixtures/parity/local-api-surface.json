@@ -93,7 +93,7 @@
 			{
 				"name": "AllowedTags",
 				"kind": "type",
-				"source": "./security/types.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "AllowedTags"
 			},
 			{
@@ -105,13 +105,13 @@
 			{
 				"name": "AnimateOptions",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "AnimateOptions"
 			},
 			{
 				"name": "BlockProps",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "BlockProps"
 			},
 			{
@@ -123,7 +123,7 @@
 			{
 				"name": "CodeControlsConfig",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "CodeControlsConfig"
 			},
 			{
@@ -135,13 +135,13 @@
 			{
 				"name": "Components",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "Components"
 			},
 			{
 				"name": "ControlsConfig",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "ControlsConfig"
 			},
 			{
@@ -195,7 +195,7 @@
 			{
 				"name": "IconMap",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "IconMap"
 			},
 			{
@@ -213,13 +213,13 @@
 			{
 				"name": "LinkSafetyConfig",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "LinkSafetyConfig"
 			},
 			{
 				"name": "LinkSafetyModalProps",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "LinkSafetyModalProps"
 			},
 			{
@@ -231,13 +231,13 @@
 			{
 				"name": "MermaidControls",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "MermaidControls"
 			},
 			{
 				"name": "MermaidErrorComponentProps",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "MermaidErrorComponentProps"
 			},
 			{
@@ -249,13 +249,13 @@
 			{
 				"name": "MermaidOptions",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "MermaidOptions"
 			},
 			{
 				"name": "NormalizedMermaidControls",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "NormalizedMermaidControls"
 			},
 			{
@@ -283,27 +283,39 @@
 				"importedName": "RemendOptions"
 			},
 			{
+				"name": "ResolvedAnimationConfig",
+				"kind": "type",
+				"source": "./contracts/streamdown.js",
+				"importedName": "ResolvedAnimationConfig"
+			},
+			{
+				"name": "Snippets",
+				"kind": "type",
+				"source": "./contracts/streamdown.js",
+				"importedName": "Snippets"
+			},
+			{
 				"name": "StreamdownComponents",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "StreamdownComponents"
 			},
 			{
 				"name": "StreamdownContextType",
 				"kind": "type",
-				"source": "./context.svelte.js",
-				"importedName": "StreamdownContextType"
+				"source": "./contracts/streamdown.js",
+				"importedName": "StreamdownContext"
 			},
 			{
 				"name": "StreamdownControlsConfig",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "StreamdownControlsConfig"
 			},
 			{
 				"name": "StreamdownProps",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "StreamdownProps"
 			},
 			{
@@ -321,7 +333,7 @@
 			{
 				"name": "TableControlsConfig",
 				"kind": "type",
-				"source": "./context.svelte.js",
+				"source": "./contracts/streamdown.js",
 				"importedName": "TableControlsConfig"
 			},
 			{
@@ -693,19 +705,19 @@
 					{
 						"name": "CjkPlugin",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "CjkPlugin"
 					},
 					{
 						"name": "cjk",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "cjk"
 					},
 					{
 						"name": "createCjkPlugin",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "createCjkPlugin"
 					}
 				]
@@ -751,6 +763,12 @@
 						"importedName": "HighlightResult"
 					},
 					{
+						"name": "HighlightToken",
+						"kind": "type",
+						"source": null,
+						"importedName": "HighlightToken"
+					},
+					{
 						"name": "ThemeInput",
 						"kind": "type",
 						"source": null,
@@ -789,25 +807,25 @@
 					{
 						"name": "MathPlugin",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "MathPlugin"
 					},
 					{
 						"name": "MathPluginOptions",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "MathPluginOptions"
 					},
 					{
 						"name": "createMathPlugin",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "createMathPlugin"
 					},
 					{
 						"name": "math",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "math"
 					}
 				]
@@ -831,7 +849,7 @@
 					{
 						"name": "DiagramPlugin",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "DiagramPlugin"
 					},
 					{
@@ -843,25 +861,37 @@
 					{
 						"name": "MermaidInstance",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "MermaidInstance"
+					},
+					{
+						"name": "MermaidModule",
+						"kind": "type",
+						"source": "@streamdown/plugin-core",
+						"importedName": "MermaidModule"
+					},
+					{
+						"name": "MermaidModuleLoader",
+						"kind": "type",
+						"source": "@streamdown/plugin-core",
+						"importedName": "MermaidModuleLoader"
 					},
 					{
 						"name": "MermaidPluginOptions",
 						"kind": "type",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "MermaidPluginOptions"
 					},
 					{
 						"name": "createMermaidPlugin",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "createMermaidPlugin"
 					},
 					{
 						"name": "mermaid",
 						"kind": "value",
-						"source": null,
+						"source": "@streamdown/plugin-core",
 						"importedName": "mermaid"
 					}
 				]
@@ -873,630 +903,630 @@
 			"name": "alert",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:AlertToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "allowedElements",
 			"optional": true,
 			"type": "readonly string[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "allowedImagePrefixes",
 			"optional": true,
 			"type": "string[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "['*']"
 		},
 		{
 			"name": "allowedLinkPrefixes",
 			"optional": true,
 			"type": "string[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "['*']"
 		},
 		{
 			"name": "allowedTags",
 			"optional": true,
 			"type": "AllowedTags",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "allowElement",
 			"optional": true,
 			"type": "AllowElement",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "animated",
 			"optional": true,
 			"type": "boolean|AnimateOptions",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "animation",
 			"optional": true,
 			"type": "{animateOnMount?:boolean;enabled?:boolean;type?:\"fade\"|\"blur\"|\"slideUp\"|\"slideDown\";duration?:number;timingFunction?:\"ease\"|\"ease-in\"|\"ease-out\"|\"ease-in-out\"|\"linear\";tokenize?:\"word\"|\"char\";stagger?:number;}",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "baseTheme",
 			"optional": true,
 			"type": "\"tailwind\"|\"shadcn\"",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "BlockComponent",
 			"optional": true,
 			"type": "Component<BlockProps,any,any>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "blockquote",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Blockquote;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "br",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Br;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "caret",
 			"optional": true,
 			"type": "\"block\"|\"circle\"",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "children",
 			"optional": true,
-			"type": "Snippet<[{streamdown:StreamdownContext;token:GenericToken;children:Snippet;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"type": "Snippet<[{streamdown:StreamdownContext<Source>;token:GenericToken;children:Snippet;}]>",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "class",
 			"optional": true,
 			"type": "string",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "className",
 			"optional": true,
 			"type": "string",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "code",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Code;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "codespan",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Codespan;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "components",
 			"optional": true,
 			"type": "Components",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "content",
 			"optional": false,
 			"type": "string",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "''"
 		},
 		{
 			"name": "controls",
 			"optional": true,
 			"type": "StreamdownControlsConfig",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "true"
 		},
 		{
 			"name": "defaultOrigin",
 			"optional": true,
 			"type": "string",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "del",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Del;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "description",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:DescriptionToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "descriptionDetail",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:DescriptionDetailToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "descriptionList",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:DescriptionListToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "descriptionTerm",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:DescriptionTermToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "dir",
 			"optional": true,
 			"type": "\"auto\"|\"ltr\"|\"rtl\"",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "disallowedElements",
 			"optional": true,
 			"type": "readonly string[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "element",
 			"optional": true,
 			"type": "HTMLElement",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "$bindable()"
 		},
 		{
 			"name": "em",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Em;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "extensions",
 			"optional": true,
 			"type": "Extension[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "footnotePopover",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:FootnoteToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "footnoteRef",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:FootnoteRef;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "heading",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Heading;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "hr",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Hr;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "icons",
 			"optional": true,
 			"type": "Partial<IconMap>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "image",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Image;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "inlineCitation",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:CitationToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "inlineCitationContent",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:CitationToken;}&{source:Source;key:string;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "inlineCitationPopover",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:CitationToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "inlineCitationPreview",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:CitationToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "inlineCitationsMode",
 			"optional": true,
 			"type": "\"list\"|\"carousel\"",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "'carousel'"
 		},
 		{
 			"name": "isAnimating",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "false"
 		},
 		{
 			"name": "katexConfig",
 			"optional": true,
 			"type": "KatexOptions|((inline:boolean)=>KatexOptions)",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "li",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:ListItemToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "lineNumbers",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "true"
 		},
 		{
 			"name": "link",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Link;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "linkSafety",
 			"optional": true,
 			"type": "LinkSafetyConfig",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "defaultLinkSafetyConfig"
 		},
 		{
 			"name": "literalTagContent",
 			"optional": true,
 			"type": "string[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "math",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:MathToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "mdx",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:MdxToken;}&{props:Record<string,number|string|boolean|null>;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "mdxComponents",
 			"optional": true,
 			"type": "Record<string,Component<{token:MdxToken;children:Snippet;props:any;},any,any>>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "mergeTheme",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "true"
 		},
 		{
 			"name": "mermaid",
 			"optional": true,
 			"type": "MermaidOptions",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "mermaidConfig",
 			"optional": true,
 			"type": "MermaidConfig",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "{}"
 		},
 		{
 			"name": "mode",
 			"optional": true,
 			"type": "\"static\"|\"streaming\"",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "'streaming'"
 		},
 		{
 			"name": "normalizeHtmlIndentation",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "false"
 		},
 		{
 			"name": "ol",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:ListToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "onAnimationEnd",
 			"optional": true,
 			"type": "(()=>void)",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "onAnimationStart",
 			"optional": true,
 			"type": "(()=>void)",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "paragraph",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Paragraph;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "parseIncompleteMarkdown",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "true"
 		},
 		{
 			"name": "parseMarkdownIntoBlocksFn",
 			"optional": true,
 			"type": "((markdown:string)=>string[])",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "plugins",
 			"optional": true,
 			"type": "PluginConfig",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "prefix",
 			"optional": true,
 			"type": "string",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "remend",
 			"optional": true,
 			"type": "RemendOptions",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "renderHtml",
 			"optional": true,
 			"type": "boolean|((token:Tokens.HTML|Tokens.Tag)=>string)",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "shikiLanguages",
 			"optional": true,
 			"type": "LanguageInfo[]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "shikiTheme",
 			"optional": true,
 			"type": "ThemeInput|[ThemeInput,ThemeInput]",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "shikiThemes",
 			"optional": true,
 			"type": "Record<string,ThemeRegistration>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "skipHtml",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "sources",
 			"optional": true,
 			"type": "{[key:string]:Source;}",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "static",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "streamdown",
 			"optional": true,
-			"type": "StreamdownContext<Record<string,any>>",
-			"source": "src/lib/context.svelte.ts",
+			"type": "StreamdownContext<Source>",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": "$bindable()"
 		},
 		{
 			"name": "strong",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:Tokens.Strong;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "sub",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:SubSupToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "sup",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:SubSupToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "table",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:TableToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "tbody",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:TBody;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "td",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:TD;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "tfoot",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:TFoot;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "th",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:TH;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "thead",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:THead;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "theme",
 			"optional": true,
 			"type": "{link?:{base?:string;blocked?:string;};h1?:{base?:string;};h2?:{base?:string;};h3?:{base?:string;};h4?:{base?:string;};h5?:{base?:string;};h6?:{base?:string;};paragraph?:{base?:string;};ul?:{base?:string;};ol?:{base?:string;};li?:{base?:string;checkbox?:string;};code?:{base?:string;container?:string;header?:string;buttons?:string;language?:string;skeleton?:string;pre?:string;line?:string;};codespan?:{base?:string;};image?:{base?:string;image?:string;};blockquote?:{base?:string;};alert?:{base?:string;title?:string;icon?:string;note?:string;tip?:string;warning?:string;caution?:string;important?:string;};table?:{base?:string;table?:string;};thead?:{base?:string;};tbody?:{base?:string;};tfoot?:{base?:string;};tr?:{base?:string;};td?:{base?:string;};th?:{base?:string;};sup?:{base?:string;};sub?:{base?:string;};hr?:{base?:string;};strong?:{base?:string;};mermaid?:{base?:string;icon?:string;buttons?:string;};math?:{block?:string;inline?:string;};br?:{base?:string;};em?:{base?:string;};del?:{base?:string;};footnoteRef?:{base?:string;};descriptionList?:{base?:string;};descriptionTerm?:{base?:string;};descriptionDetail?:{base?:string;};inlineCitation?:{preview?:string;carousel?:{header?:string;stepCounter?:string;buttons?:string;title?:string;url?:string;favicon?:string;};list?:{base?:string;item?:string;title?:string;url?:string;favicon?:string;};};mdx?:{};components?:{button?:string;popover?:string;};}",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "tr",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:THeadRow|TRow;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "translations",
 			"optional": true,
 			"type": "Partial<StreamdownTranslations>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "ul",
 			"optional": true,
 			"type": "Snippet<[{children:Snippet;token:ListToken;}]>",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "unwrapDisallowed",
 			"optional": true,
 			"type": "boolean",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		},
 		{
 			"name": "urlTransform",
 			"optional": true,
 			"type": "UrlTransform",
-			"source": "src/lib/context.svelte.ts",
+			"source": "src/lib/contracts/streamdown.ts",
 			"default": null
 		}
 	],
@@ -1505,35 +1535,35 @@
 			"name": "cjk",
 			"optional": true,
 			"type": "CjkPlugin",
-			"source": "src/lib/plugins.ts",
+			"source": "src/lib/contracts/plugins.ts",
 			"default": null
 		},
 		{
 			"name": "code",
 			"optional": true,
 			"type": "CodeHighlighterPlugin",
-			"source": "src/lib/plugins.ts",
+			"source": "src/lib/contracts/plugins.ts",
 			"default": null
 		},
 		{
 			"name": "math",
 			"optional": true,
 			"type": "MathPlugin",
-			"source": "src/lib/plugins.ts",
+			"source": "src/lib/contracts/plugins.ts",
 			"default": null
 		},
 		{
 			"name": "mermaid",
 			"optional": true,
 			"type": "DiagramPlugin",
-			"source": "src/lib/plugins.ts",
+			"source": "src/lib/contracts/plugins.ts",
 			"default": null
 		},
 		{
 			"name": "renderers",
 			"optional": true,
 			"type": "CustomRenderer[]",
-			"source": "src/lib/plugins.ts",
+			"source": "src/lib/contracts/plugins.ts",
 			"default": null
 		}
 	],
