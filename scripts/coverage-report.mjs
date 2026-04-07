@@ -1,4 +1,12 @@
-import { existsSync, globSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	globSync,
+	mkdirSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	writeFileSync
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -63,13 +71,17 @@ function resolveTestFiles(testGlobs, excludedTestGlobs) {
 			globSync(pattern, {
 				cwd: repoRoot,
 				nodir: true
-			})
+			}).filter((path) => statSync(resolve(repoRoot, path)).isFile())
 		)
 	);
 	const resolved = new Set();
 
 	for (const pattern of testGlobs) {
 		for (const file of globSync(pattern, { cwd: repoRoot, nodir: true })) {
+			if (!statSync(resolve(repoRoot, file)).isFile()) {
+				continue;
+			}
+
 			if (!excluded.has(file)) {
 				resolved.add(file);
 			}

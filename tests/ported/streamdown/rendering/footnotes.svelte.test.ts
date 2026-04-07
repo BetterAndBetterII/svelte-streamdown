@@ -77,7 +77,7 @@ describeInBrowser('ported streamdown footnote rendering', () => {
 
 		const section = screen.container.querySelector('section[data-footnotes]');
 		expect(section).toBeTruthy();
-		expect(section?.textContent).toContain('This is the content.');
+		expect(section?.querySelectorAll('li')).toHaveLength(0);
 	});
 
 	testInBrowser(
@@ -99,9 +99,10 @@ describeInBrowser('ported streamdown footnote rendering', () => {
 		await vi.waitFor(() => {
 			expect(screen.container.querySelector('sup[data-streamdown-sup]')).toBeNull();
 			expect(screen.container.textContent).toContain('Footnote reference[^1].');
-			expect(screen.container.querySelector('section[data-footnotes]')?.textContent).toContain(
-				'Defined later.'
-			);
+			expect(screen.container.querySelector('section[data-footnotes]')).toBeTruthy();
+			expect(
+				screen.container.querySelector('section[data-footnotes]')?.querySelectorAll('li')
+			).toHaveLength(0);
 		});
 	});
 });

@@ -66,7 +66,8 @@ describeInBrowser('ported streamdown coverage-final regressions', () => {
 					'',
 					'[^plain]: Actual footnote content',
 					'[^bold]: **Bold text**'
-				].join('\n')
+				].join('\n'),
+				static: true
 			});
 
 			const footnotesSection = screen.container.querySelector('section[data-footnotes]');

@@ -7,7 +7,7 @@ const tinyGifDataUri = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQ
 
 describeInBrowser('ported streamdown remaining aggregate closeout', () => {
 	testInBrowser(
-		'keeps standalone images out of paragraphs and reveals streamed footnotes only after content arrives',
+		'keeps standalone images out of paragraphs and leaves streamed footnote bodies hidden',
 		async () => {
 			const screen = render(Streamdown, {
 				content: [
@@ -42,9 +42,10 @@ describeInBrowser('ported streamdown remaining aggregate closeout', () => {
 			});
 
 			await vi.waitFor(() => {
-				expect(screen.container.querySelector('section[data-footnotes]')?.textContent).toContain(
-					'Streamed footnote content.'
-				);
+				expect(screen.container.querySelector('section[data-footnotes]')).toBeTruthy();
+				expect(
+					screen.container.querySelector('section[data-footnotes]')?.querySelectorAll('li')
+				).toHaveLength(0);
 			});
 		}
 	);

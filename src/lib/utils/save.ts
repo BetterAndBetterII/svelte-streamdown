@@ -8,7 +8,7 @@ export const save = (filename: string, content: string | Blob, mimeType: string)
 	link.click();
 	document.body.removeChild(link);
 	// Revoke after the current task so browser downloads and Playwright probes can observe the blob URL.
-	window.setTimeout(() => {
+	setTimeout(() => {
 		URL.revokeObjectURL(url);
 	}, 0);
 };

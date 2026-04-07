@@ -29,10 +29,12 @@ describeInNode('ported streamdown utils surface', () => {
 		});
 
 		afterEach(() => {
+			vi.useRealTimers();
 			vi.restoreAllMocks();
 		});
 
 		test('creates and triggers a download for string content', () => {
+			vi.useFakeTimers();
 			const createObjectURLSpy = vi
 				.spyOn(URL, 'createObjectURL')
 				.mockReturnValue('blob:mock-url');
@@ -62,6 +64,8 @@ describeInNode('ported streamdown utils surface', () => {
 			expect(appendChildSpy).toHaveBeenCalled();
 			expect(clickSpy).toHaveBeenCalled();
 			expect(removeChildSpy).toHaveBeenCalled();
+
+			vi.runAllTimers();
 			expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
 		});
 	});

@@ -31,7 +31,7 @@
 		<h2 id="user-content-footnote-label" class="sr-only">Footnotes</h2>
 		<ol class={streamdown.theme.ol.base}>
 			{#each visibleEntries as entry}
-				{#if entry.content.length > 0}
+				{#if entry.content.length > 0 && streamdown.mode !== 'streaming'}
 					<li
 						id={'footnote-' + entry.label}
 						data-streamdown="list-item"

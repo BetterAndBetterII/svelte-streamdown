@@ -71,7 +71,8 @@ describeInBrowser('ported streamdown aggregate coverage final closeout', () => {
 					'[^1]: Actual footnote content',
 					'[^2]: **Bold text**',
 					'[^3]:'
-				].join('\n')
+				].join('\n'),
+				static: true
 			});
 
 			const section = screen.container.querySelector('section[data-footnotes]');
