@@ -17,6 +17,20 @@ describeInNode('ported streamdown security URL policy', () => {
 		expect(transformUrl('mailto:foo@example.com', ['*'])).toBe('mailto:foo@example.com');
 	});
 
+	testInNode('accepts protocol-only link prefixes across origins', () => {
+		expect(transformUrl('https://example.com/path', ['https://'])).toBe('https://example.com/path');
+		expect(transformUrl('https://other.example/path', ['https://'])).toBe(
+			'https://other.example/path'
+		);
+		expect(transformUrl('http://example.com/path', ['https://'])).toBeNull();
+	});
+
+	testInNode('accepts protocol-only non-http link prefixes', () => {
+		expect(transformUrl('mailto:foo@example.com', ['mailto:'])).toBe('mailto:foo@example.com');
+		expect(transformUrl('tel:+44-1392-498505', ['tel:'])).toBe('tel:+44-1392-498505');
+		expect(transformUrl('mailto:foo@example.com', ['tel:'])).toBeNull();
+	});
+
 	testInNode('allows data images under the wildcard image policy', () => {
 		expect(
 			transformUrl('data:image/png;base64,AAAA', ['*'], undefined, {
@@ -29,6 +43,19 @@ describeInNode('ported streamdown security URL policy', () => {
 		expect(transformUrl('javascript:alert(1)', ['*'])).toBeNull();
 		expect(
 			transformUrl('data:text/html;base64,PHNjcmlwdD4=', ['*'], undefined, {
+				kind: 'image'
+			})
+		).toBeNull();
+	});
+
+	testInNode('accepts protocol-only image prefixes', () => {
+		expect(
+			transformUrl('https://cdn.example.com/image.png', ['https://'], undefined, {
+				kind: 'image'
+			})
+		).toBe('https://cdn.example.com/image.png');
+		expect(
+			transformUrl('http://cdn.example.com/image.png', ['https://'], undefined, {
 				kind: 'image'
 			})
 		).toBeNull();
