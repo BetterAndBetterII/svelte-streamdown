@@ -214,7 +214,7 @@ describe('tokenization', () => {
 		expect(listToken.tokens[0].tokens[1].text).toBe('Some paragraph');
 
 		const secondItemBlockTypes = listToken.tokens[1].tokens.map((token: any) => token.type);
-		expect(secondItemBlockTypes).toEqual(['paragraph']);
+		expect(secondItemBlockTypes).toEqual(['text']);
 		expect(listToken.tokens[1].tokens[0].text).toBe('Item 2');
 	});
 

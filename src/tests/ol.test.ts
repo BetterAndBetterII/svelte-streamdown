@@ -150,6 +150,22 @@ describe('tokenization', () => {
 		expect(listToken.tokens.length).toBe(3);
 	});
 
+	test('should keep simple ordered items as text when blank lines loosen the list', () => {
+		const tokens = lex('1. Item 1\n2. Item 2\n\n1. Item A');
+		const listToken = getFirstTokenByType(tokens, 'list');
+
+		expect(listToken).toBeDefined();
+		expect(listToken.type).toBe('list');
+		expect(listToken.ordered).toBe(true);
+		expect(listToken.loose).toBe(true);
+		expect(listToken.tokens.length).toBe(3);
+		expect(listToken.tokens.map((item: any) => item.tokens.map((token: any) => token.type))).toEqual([
+			['text'],
+			['text'],
+			['text']
+		]);
+	});
+
 	test('should parse ordered list with multi-line items', () => {
 		const tokens = lex('1. First item\n   continues here\n2. Second item\n   also continues');
 		const listToken = getFirstTokenByType(tokens, 'list');

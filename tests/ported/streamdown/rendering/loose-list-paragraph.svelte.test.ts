@@ -21,6 +21,7 @@ describeInBrowser('ported streamdown loose list paragraph rendering', () => {
 		const secondItemParagraphs = [...items[1].querySelectorAll('p')].map((paragraph) =>
 			paragraph.textContent?.trim()
 		);
-		expect(secondItemParagraphs).toEqual(['Item 2']);
+		expect(secondItemParagraphs).toEqual([]);
+		expect(items[1].textContent?.trim()).toBe('Item 2');
 	});
 });

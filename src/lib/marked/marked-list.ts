@@ -123,6 +123,17 @@ function paragraphFromTextTokens(tokens: GenericToken[]): GenericToken {
 }
 
 function normalizeLooseListItemTokens(tokens: GenericToken[]): GenericToken[] {
+	const hasTextTokens = tokens.some((token) => token.type === 'text');
+	const hasParagraphSeparators = tokens.some((token) => token.type === 'space');
+	const hasMixedBlockContent =
+		hasTextTokens && tokens.some((token) => token.type !== 'text' && token.type !== 'space');
+
+	// Keep plain single-run text items stable so streaming updates do not remount
+	// already-rendered spans when a neighboring list group makes the parent list loose.
+	if (!hasParagraphSeparators && !hasMixedBlockContent) {
+		return tokens;
+	}
+
 	const normalized: GenericToken[] = [];
 	let textTokens: GenericToken[] = [];
 
