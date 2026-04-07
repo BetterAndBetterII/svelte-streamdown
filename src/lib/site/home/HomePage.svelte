@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import Streamdown from '$lib/Streamdown.svelte';
 	import { code } from '$lib/plugins.js';
+	import { PLAYGROUND_URL, REPO_URL, SITE_URL } from '$lib/site/metadata.js';
 	import HomeDemo from './HomeDemo.svelte';
 	import SiteHeader from '$lib/site/SiteHeader.svelte';
 	import {
@@ -46,6 +47,20 @@
 		name="description"
 		content="Streamdown-Svelte is a markdown renderer designed for streaming content from AI models. Highly interactive, customizable, and easy to use."
 	/>
+	<link rel="canonical" href={SITE_URL} />
+	<meta property="og:title" content="Streamdown-Svelte" />
+	<meta
+		property="og:description"
+		content="Streaming-first markdown rendering for Svelte with code, math, Mermaid, and hardened HTML support."
+	/>
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={SITE_URL} />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Streamdown-Svelte" />
+	<meta
+		name="twitter:description"
+		content="Streaming-first markdown rendering for Svelte with code, math, Mermaid, and hardened HTML support."
+	/>
 </svelte:head>
 
 <div class="min-h-dvh bg-sidebar pb-32 dark:bg-background">
@@ -89,7 +104,7 @@
 
 				<a
 					class="inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent"
-					href="/playground"
+					href={PLAYGROUND_URL}
 				>
 					Open playground
 				</a>
@@ -227,13 +242,13 @@
 				<div class="flex flex-wrap gap-3">
 					<a
 						class="inline-flex items-center justify-center rounded-md bg-[#ff3e00] px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#e43700]"
-						href="/playground"
+						href={PLAYGROUND_URL}
 					>
 						Open playground
 					</a>
 					<a
 						class="inline-flex items-center justify-center rounded-md border border-[#ff3e00]/30 bg-[#ff3e00]/8 px-4 py-3 text-sm font-medium text-[#ff3e00] transition-colors hover:bg-[#ff3e00]/14 dark:border-[#ff6b3d]/30 dark:bg-[#ff6b3d]/10 dark:text-[#ff8a66] dark:hover:bg-[#ff6b3d]/16"
-						href="https://github.com/PacificStudio/streamdown-svelte"
+						href={REPO_URL}
 						target="_blank"
 						rel="noreferrer"
 					>

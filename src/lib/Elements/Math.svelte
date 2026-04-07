@@ -8,6 +8,8 @@
 	import type { KatexOptions } from 'katex';
 	import 'katex/dist/katex.min.css';
 
+	type KatexRenderer = Pick<typeof import('katex'), 'renderToString'>;
+
 	const {
 		token,
 		id
@@ -18,14 +20,13 @@
 
 	const streamdown = useStreamdown();
 	const mathPluginOptions = $derived(getMathPluginOptions(streamdown.plugins?.math));
-	let katexInstance = $state<typeof import('katex') | null>(null);
-	const loadKatex = async (): Promise<typeof import('katex')['default'] | null> => {
+	let katexInstance = $state<KatexRenderer | null>(null);
+	const loadKatex = async (): Promise<KatexRenderer | null> => {
 		if (!BROWSER) {
 			return null;
 		}
 
-		const mod = await import('katex');
-		return mod.default;
+		return await import('katex');
 	};
 	const escapeHtml = (value: string): string =>
 		value

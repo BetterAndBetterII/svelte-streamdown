@@ -8,6 +8,8 @@ Svelte port of [Vercel Streamdown](https://streamdown.ai/) for rendering AI-gene
 
 The published package name is `streamdown-svelte`. Thanks to the earlier `svelte-streamdown` groundwork - this repository continues building on that foundation.
 
+Docs and playground live at `https://streamdown-svelte.pacificstudio.ai`.
+
 ## Installation
 
 ```bash

@@ -85,7 +85,9 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			const normalizedValue = value.replace(/\s+/g, ' ');
 			return normalizedValue.trim().length > 0 ? normalizedValue : null;
 		};
-		const canonicalBlockMath = '$$math$$';
+			const canonicalBlockMath = '$$math$$';
+			const hasRenderedMathMl = (element: Element): boolean =>
+				element.querySelector('.katex .katex-mathml > math') !== null;
 
 		const normalizeClassName = (value: string): string | null => {
 			const normalizedValue = value
@@ -113,43 +115,6 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 			}
 
 			return merged;
-		};
-
-		const collapseStreamingFootnoteReference = (
-			children: BrowserNormalizedDomNode[]
-		): BrowserNormalizedDomNode[] => {
-			if (children.length !== 3) {
-				return children;
-			}
-
-			const [leading, middle, trailing] = children;
-			if (
-				leading?.kind !== 'text' ||
-				middle?.kind !== 'element' ||
-				middle.tag !== 'sup' ||
-				trailing?.kind !== 'text' ||
-				middle.children.length !== 1
-			) {
-				return children;
-			}
-
-			const footnoteButton = middle.children[0];
-			if (
-				footnoteButton?.kind !== 'element' ||
-				footnoteButton.tag !== 'button' ||
-				footnoteButton.children.length !== 1 ||
-				footnoteButton.children[0]?.kind !== 'text'
-			) {
-				return children;
-			}
-
-			const label = footnoteButton.children[0].text;
-			return [
-				{
-					kind: 'text',
-					text: `${leading.text}[^${label}]${trailing.text}`
-				}
-			];
 		};
 
 		const normalizeAttributeValue = (
@@ -258,43 +223,15 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 
 			const element = node as Element;
 			if (element.hasAttribute('data-streamdown-inline-math')) {
-				return [{ kind: 'text', text: '$math$' }];
-			}
-
-			if (element.hasAttribute('data-streamdown-block-math')) {
-				return [{ kind: 'text', text: canonicalBlockMath }];
-			}
-
-			if (element.tagName === 'P') {
-				const paragraphText = normalizeText(element.textContent ?? '', false);
-				if (paragraphText?.startsWith('$$')) {
-					return [{ kind: 'text', text: canonicalBlockMath }];
+				if (hasRenderedMathMl(element)) {
+					return [{ kind: 'text', text: '$math$' }];
 				}
 			}
 
-			if (element.tagName.toLowerCase() === 'math') {
-				return [
-					{
-						kind: 'text',
-						text: canonicalBlockMath
-					}
-				];
-			}
-
-			if (
-				element.tagName === 'SPAN' &&
-				element.getAttribute('title')?.startsWith('ParseError: KaTeX')
-			) {
-				return [
-					{
-						kind: 'text',
-						text: canonicalBlockMath
-					}
-				];
-			}
-
-			if (element.tagName === 'SPAN' && element.getAttribute('aria-hidden') === 'true') {
-				return [];
+			if (element.hasAttribute('data-streamdown-block-math')) {
+				if (hasRenderedMathMl(element) && element.querySelector('.katex-display')) {
+					return [{ kind: 'text', text: canonicalBlockMath }];
+				}
 			}
 
 			const nextPreserveWhitespace =
@@ -436,36 +373,6 @@ export async function normalizeDom(locator: Locator): Promise<NormalizedDomFragm
 					normalizedElement.children[0].text = normalizedElement.children[0].text.trimEnd();
 				}
 
-				normalizedElement.children = collapseStreamingFootnoteReference(normalizedElement.children);
-			}
-
-			if (
-				normalizedElement.children.length === 1 &&
-				normalizedElement.children[0]?.kind === 'text' &&
-				/^(\$\$?)[\s\S]+\1$/.test(normalizedElement.children[0].text)
-			) {
-				return [normalizedElement.children[0]];
-			}
-
-			if (
-				normalizedElement.tag === 'section' &&
-				normalizedElement.children.some(
-					(childNode) =>
-						childNode.kind === 'element' &&
-						childNode.tag === 'h2' &&
-						childNode.children.some(
-							(grandChild) => grandChild.kind === 'text' && grandChild.text === 'Footnotes'
-						)
-				)
-			) {
-				normalizedElement.children = normalizedElement.children.map((childNode) =>
-					childNode.kind === 'element' && childNode.tag === 'ol'
-						? {
-								...childNode,
-								children: []
-							}
-						: childNode
-				);
 			}
 
 			return [normalizedElement];

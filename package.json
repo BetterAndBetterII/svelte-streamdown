@@ -160,6 +160,7 @@
 		"type": "git",
 		"url": "git+https://github.com/PacificStudio/streamdown-svelte.git"
 	},
+	"homepage": "https://streamdown-svelte.pacificstudio.ai",
 	"keywords": [
 		"svelte"
 	],

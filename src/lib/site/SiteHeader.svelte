@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { useTheme } from 'svelte-themes';
+	import { REPO_URL } from './metadata.js';
 	import { siteNavItems } from './navigation.js';
 
 	type Props = {
@@ -75,7 +76,7 @@
 		<div class="flex shrink-0 items-center gap-2">
 			<a
 				class="font-brand-sans hidden rounded-lg px-4 py-2 text-[0.95rem] font-medium tracking-[-0.02em] text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground sm:inline-flex"
-				href="https://github.com/PacificStudio/streamdown-svelte"
+				href={REPO_URL}
 				target="_blank"
 				rel="noreferrer"
 			>

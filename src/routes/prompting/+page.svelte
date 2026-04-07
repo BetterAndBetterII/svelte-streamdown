@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SiteHeader from '$lib/site/SiteHeader.svelte';
+	import { DOCS_URL } from '$lib/site/metadata.js';
 	import Streamdown from '$lib/Streamdown.svelte';
 	import { useTheme } from 'svelte-themes';
 
@@ -357,6 +358,28 @@ Self-closing or with children - both work!
 `;
 	const theme = useTheme();
 </script>
+
+<svelte:head>
+	<title>Streamdown-Svelte Docs</title>
+	<meta
+		name="description"
+		content="Reference docs and prompting guidance for Streamdown-Svelte, including streaming markdown syntax and renderer capabilities."
+	/>
+	<link rel="canonical" href={DOCS_URL} />
+	<meta property="og:title" content="Streamdown-Svelte Docs" />
+	<meta
+		property="og:description"
+		content="Reference docs and prompting guidance for Streamdown-Svelte, including streaming markdown syntax and renderer capabilities."
+	/>
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content={DOCS_URL} />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Streamdown-Svelte Docs" />
+	<meta
+		name="twitter:description"
+		content="Reference docs and prompting guidance for Streamdown-Svelte, including streaming markdown syntax and renderer capabilities."
+	/>
+</svelte:head>
 
 <SiteHeader />
 

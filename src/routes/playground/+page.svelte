@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { BROWSER } from 'esm-env';
 	import SiteHeader from '$lib/site/SiteHeader.svelte';
+	import { PLAYGROUND_URL } from '$lib/site/metadata.js';
 	import Streamdown from '$lib/Streamdown.svelte';
 	import type { AnimateOptions } from '$lib/context.svelte.js';
 	import { code, type CustomRenderer, type PluginConfig } from '$lib/plugins.js';
@@ -183,6 +184,21 @@
 	<meta
 		name="description"
 		content="Try Streamdown-Svelte in your browser. Edit markdown and see rendered output in real-time."
+	/>
+	<link rel="canonical" href={PLAYGROUND_URL} />
+	<meta property="og:title" content="Streamdown-Svelte Playground" />
+	<meta
+		property="og:description"
+		content="Live markdown playground for Streamdown-Svelte with streaming, code, math, Mermaid, and theme controls."
+	/>
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={PLAYGROUND_URL} />
+	<meta property="og:site_name" content="Streamdown-Svelte" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Streamdown-Svelte Playground" />
+	<meta
+		name="twitter:description"
+		content="Live markdown playground for Streamdown-Svelte with streaming, code, math, Mermaid, and theme controls."
 	/>
 </svelte:head>
 
