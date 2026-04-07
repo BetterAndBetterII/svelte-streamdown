@@ -100,6 +100,82 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 		expect(blocked.container.textContent).toContain('[Image blocked: Blocked]');
 	});
 
+	testInBrowser(
+		'protocol-only allowedLinkPrefixes can allow all https links while blocking http',
+		() => {
+			const allowed = render(Streamdown, {
+				content: '[Allowed](https://example.com/path)',
+				static: true,
+				allowedLinkPrefixes: ['https://'],
+				linkSafety: {
+					enabled: false
+				}
+			});
+			const blocked = render(Streamdown, {
+				content: '[Blocked](http://example.com/path)',
+				static: true,
+				allowedLinkPrefixes: ['https://'],
+				linkSafety: {
+					enabled: false
+				}
+			});
+
+			expect(allowed.container.querySelector('a')?.getAttribute('href')).toBe(
+				'https://example.com/path'
+			);
+			expect(blocked.container.querySelector('a')).toBeNull();
+			expect(blocked.container.textContent).toContain('Blocked [blocked]');
+		}
+	);
+
+	testInBrowser('protocol-only allowedLinkPrefixes also harden raw HTML links', () => {
+		const allowed = render(Streamdown, {
+			content: '<a href="https://example.com/path">Allowed</a>',
+			static: true,
+			allowedLinkPrefixes: ['https://']
+		});
+		const blocked = render(Streamdown, {
+			content: '<a href="http://example.com/path">Blocked</a>',
+			static: true,
+			allowedLinkPrefixes: ['https://']
+		});
+
+		expect(allowed.container.querySelector('a')?.getAttribute('href')).toBe(
+			'https://example.com/path'
+		);
+		expect(blocked.container.querySelector('a')).toBeNull();
+		expect(blocked.container.textContent).toContain('Blocked');
+		expect(blocked.container.innerHTML).not.toContain('http://example.com/path');
+	});
+
+	testInBrowser(
+		'protocol-only allowedImagePrefixes can allow all https images while blocking http',
+		() => {
+			const allowed = render(Streamdown, {
+				content: '![Allowed](https://cdn.example.com/allowed.png)',
+				static: true,
+				allowedImagePrefixes: ['https://'],
+				linkSafety: {
+					enabled: false
+				}
+			});
+			const blocked = render(Streamdown, {
+				content: '![Blocked](http://cdn.example.com/blocked.png)',
+				static: true,
+				allowedImagePrefixes: ['https://'],
+				linkSafety: {
+					enabled: false
+				}
+			});
+
+			expect(allowed.container.querySelector('img')?.getAttribute('src')).toBe(
+				'https://cdn.example.com/allowed.png'
+			);
+			expect(blocked.container.querySelector('img')).toBeNull();
+			expect(blocked.container.textContent).toContain('[Image blocked: Blocked]');
+		}
+	);
+
 	testInBrowser('allowedImagePrefixes also hardens raw HTML image tags', () => {
 		const allowed = render(Streamdown, {
 			content: '<img src="https://cdn.example.com/allowed.png" alt="Allowed">',
@@ -117,5 +193,24 @@ describeInBrowser('ported streamdown security URL rendering', () => {
 		);
 		expect(blocked.container.querySelector('img')).toBeNull();
 		expect(blocked.container.innerHTML).not.toContain('https://evil.test/blocked.png');
+	});
+
+	testInBrowser('protocol-only allowedImagePrefixes also harden raw HTML image tags', () => {
+		const allowed = render(Streamdown, {
+			content: '<img src="https://cdn.example.com/allowed.png" alt="Allowed">',
+			static: true,
+			allowedImagePrefixes: ['https://']
+		});
+		const blocked = render(Streamdown, {
+			content: '<img src="http://cdn.example.com/blocked.png" alt="Blocked">',
+			static: true,
+			allowedImagePrefixes: ['https://']
+		});
+
+		expect(allowed.container.querySelector('img')?.getAttribute('src')).toBe(
+			'https://cdn.example.com/allowed.png'
+		);
+		expect(blocked.container.querySelector('img')).toBeNull();
+		expect(blocked.container.innerHTML).not.toContain('http://cdn.example.com/blocked.png');
 	});
 });

@@ -12,6 +12,11 @@ import {
 	createMarkdownElement,
 	type UrlTransform
 } from '../markdown.js';
+import {
+	parseAllowedUrlPrefixes,
+	transformParsedUrl,
+	type AllowedUrlPrefix
+} from '../utils/url.js';
 import type { AllowedTags } from './types.js';
 
 type HtmlRenderOverride = boolean | ((token: Tokens.HTML | Tokens.Tag) => string) | undefined;
@@ -78,12 +83,7 @@ function rehypeTransformUrls({ urlTransform }: { urlTransform?: UrlTransform } =
 					continue;
 				}
 
-				const transformedValue = applyMarkdownUrlTransform(
-					String(value),
-					key,
-					element,
-					urlTransform
-				);
+				const transformedValue = urlTransform(String(value), key, element);
 
 				if (transformedValue == null) {
 					delete node.properties[key];
@@ -98,29 +98,26 @@ function rehypeTransformUrls({ urlTransform }: { urlTransform?: UrlTransform } =
 
 function resolveHardenDefaultOrigin(
 	defaultOrigin: string | undefined,
-	allowedLinkPrefixes: string[],
-	allowedImagePrefixes: string[]
+	rawAllowedLinkPrefixes: readonly string[],
+	rawAllowedImagePrefixes: readonly string[],
+	allowedLinkPrefixes: readonly AllowedUrlPrefix[],
+	allowedImagePrefixes: readonly AllowedUrlPrefix[]
 ): string {
 	if (defaultOrigin) {
 		return defaultOrigin;
 	}
 
-	const specificPrefixes = [...allowedLinkPrefixes, ...allowedImagePrefixes].filter(
-		(prefix) => prefix !== '*'
-	);
-	if (specificPrefixes.length === 0) {
-		return '';
-	}
-
-	for (const prefix of specificPrefixes) {
-		try {
-			return new URL(prefix).origin;
-		} catch {
-			continue;
+	for (const prefix of [...allowedLinkPrefixes, ...allowedImagePrefixes]) {
+		if (prefix.type === 'url') {
+			return prefix.url.origin;
 		}
 	}
 
-	return FALLBACK_HARDEN_ORIGIN;
+	if ([...rawAllowedLinkPrefixes, ...rawAllowedImagePrefixes].some((prefix) => prefix !== '*')) {
+		return FALLBACK_HARDEN_ORIGIN;
+	}
+
+	return '';
 }
 
 const escapeHtml = (value: string): string =>
@@ -148,6 +145,44 @@ function createSanitizeSchema(allowedTags?: AllowedTags) {
 	};
 }
 
+function hasProtocolOnlyPrefix(allowedPrefixes: readonly AllowedUrlPrefix[]): boolean {
+	return allowedPrefixes.some((prefix) => prefix.type === 'protocol');
+}
+
+function createSecurityUrlTransform({
+	allowedImagePrefixes,
+	allowedLinkPrefixes,
+	defaultOrigin,
+	urlTransform
+}: {
+	allowedImagePrefixes: readonly AllowedUrlPrefix[];
+	allowedLinkPrefixes: readonly AllowedUrlPrefix[];
+	defaultOrigin?: string;
+	urlTransform?: UrlTransform;
+}): UrlTransform {
+	return (url, key, node) => {
+		const transformedUrl = applyMarkdownUrlTransform(url, key, node, urlTransform);
+
+		if (typeof transformedUrl !== 'string') {
+			return transformedUrl;
+		}
+
+		if (node.tagName === 'a' && key === 'href') {
+			return transformParsedUrl(transformedUrl, allowedLinkPrefixes, defaultOrigin, {
+				kind: 'link'
+			});
+		}
+
+		if (node.tagName === 'img' && key === 'src') {
+			return transformParsedUrl(transformedUrl, allowedImagePrefixes, defaultOrigin, {
+				kind: 'image'
+			});
+		}
+
+		return transformedUrl;
+	};
+}
+
 export function normalizeHtmlIndentation(content: string): string {
 	if (typeof content !== 'string' || content.length === 0) {
 		return content;
@@ -171,11 +206,24 @@ export function renderMarkdownFragment(
 	}: SecurityRenderOptions = {}
 ): string {
 	try {
+		const parsedAllowedLinkPrefixes = parseAllowedUrlPrefixes(allowedLinkPrefixes, defaultOrigin);
+		const parsedAllowedImagePrefixes = parseAllowedUrlPrefixes(allowedImagePrefixes, defaultOrigin);
+		const shouldDelegatePrefixChecksToSecurityTransform =
+			hasProtocolOnlyPrefix(parsedAllowedLinkPrefixes) ||
+			hasProtocolOnlyPrefix(parsedAllowedImagePrefixes);
 		const hardenDefaultOrigin = resolveHardenDefaultOrigin(
 			defaultOrigin,
 			allowedLinkPrefixes,
-			allowedImagePrefixes
+			allowedImagePrefixes,
+			parsedAllowedLinkPrefixes,
+			parsedAllowedImagePrefixes
 		);
+		const securityUrlTransform = createSecurityUrlTransform({
+			allowedImagePrefixes: parsedAllowedImagePrefixes,
+			allowedLinkPrefixes: parsedAllowedLinkPrefixes,
+			defaultOrigin,
+			urlTransform
+		});
 
 		return String(
 			unified()
@@ -184,10 +232,14 @@ export function renderMarkdownFragment(
 				.use(remarkRehype, { allowDangerousHtml: true })
 				.use(rehypeRaw)
 				.use(rehypeSanitize, createSanitizeSchema(allowedTags))
-				.use(rehypeTransformUrls, { urlTransform })
+				.use(rehypeTransformUrls, { urlTransform: securityUrlTransform })
 				.use(harden, {
-					allowedImagePrefixes,
-					allowedLinkPrefixes,
+					allowedImagePrefixes: shouldDelegatePrefixChecksToSecurityTransform
+						? ['*']
+						: allowedImagePrefixes,
+					allowedLinkPrefixes: shouldDelegatePrefixChecksToSecurityTransform
+						? ['*']
+						: allowedLinkPrefixes,
 					allowedProtocols: ['*'],
 					defaultOrigin: hardenDefaultOrigin,
 					allowDataImages: true
