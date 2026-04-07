@@ -500,6 +500,7 @@ export type MermaidControls =
 			download?: boolean;
 			fullscreen?: boolean;
 			panZoom?: boolean;
+			mouseWheelZoom?: boolean;
 	  };
 
 export type NormalizedMermaidControls = {
@@ -507,6 +508,7 @@ export type NormalizedMermaidControls = {
 	download: boolean;
 	fullscreen: boolean;
 	panZoom: boolean;
+	mouseWheelZoom: boolean;
 };
 
 export type MermaidErrorComponentProps = {
@@ -524,7 +526,8 @@ export const normalizeMermaidControls = (
 			enabled: false,
 			download: false,
 			fullscreen: false,
-			panZoom: false
+			panZoom: false,
+			mouseWheelZoom: false
 		};
 	}
 
@@ -533,14 +536,18 @@ export const normalizeMermaidControls = (
 			enabled: true,
 			download: true,
 			fullscreen: true,
-			panZoom: true
+			panZoom: true,
+			mouseWheelZoom: true
 		};
 	}
+
+	const panZoom = controls.panZoom !== false;
 
 	return {
 		enabled: true,
 		download: controls.download !== false,
 		fullscreen: controls.fullscreen !== false,
-		panZoom: controls.panZoom !== false
+		panZoom,
+		mouseWheelZoom: panZoom && controls.mouseWheelZoom !== false
 	};
 };

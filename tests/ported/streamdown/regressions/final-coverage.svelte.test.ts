@@ -62,8 +62,25 @@ describeInBrowser('ported streamdown final aggregate closeout', () => {
 			expect(enabled.container.querySelector('button[title="View fullscreen"]')).toBeTruthy();
 			expect(enabled.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
 			expect(enabled.container.querySelector('button[title="Zoom out"]')).toBeTruthy();
+			expect(enabled.container.querySelector('button[title="Reset zoom and pan"]')).toBeTruthy();
+		});
+
+		const wheelDisabled = render(Streamdown, {
+			content: ['```mermaid', 'graph TD; Start-->Finish', '```'].join('\n'),
+			components: {
+				mermaid: Mermaid
+			},
+			controls: {
+				mermaid: {
+					mouseWheelZoom: false
+				}
+			}
+		});
+
+		await vi.waitFor(() => {
+			expect(wheelDisabled.container.querySelector('button[title="Zoom in"]')).toBeTruthy();
 			expect(
-				enabled.container.querySelector('button[title="Reset zoom and pan"]')
+				wheelDisabled.container.querySelector('button[title="Reset zoom and pan"]')
 			).toBeTruthy();
 		});
 	});
