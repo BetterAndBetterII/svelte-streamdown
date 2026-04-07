@@ -33,5 +33,5 @@
     "unist-util-visit": "^5.1.0"
   },
   "description": "Shared Streamdown plugin implementation core for the streamdown-svelte workspace.",
-  "license": "MIT"
+  "license": "Apache-2.0"
 }

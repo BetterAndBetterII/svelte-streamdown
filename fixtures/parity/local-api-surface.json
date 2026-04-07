@@ -687,7 +687,7 @@
 		],
 		"plugins": [
 			{
-				"packageName": "@streamdown/cjk",
+				"packageName": "@streamdown-svelte/cjk",
 				"packageVersion": "1.0.3",
 				"exports": [
 					{
@@ -705,25 +705,25 @@
 					{
 						"name": "CjkPlugin",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "CjkPlugin"
 					},
 					{
 						"name": "cjk",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "cjk"
 					},
 					{
 						"name": "createCjkPlugin",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "createCjkPlugin"
 					}
 				]
 			},
 			{
-				"packageName": "@streamdown/code",
+				"packageName": "@streamdown-svelte/code",
 				"packageVersion": "1.1.1",
 				"exports": [
 					{
@@ -789,7 +789,7 @@
 				]
 			},
 			{
-				"packageName": "@streamdown/math",
+				"packageName": "@streamdown-svelte/math",
 				"packageVersion": "1.0.2",
 				"exports": [
 					{
@@ -807,31 +807,31 @@
 					{
 						"name": "MathPlugin",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MathPlugin"
 					},
 					{
 						"name": "MathPluginOptions",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MathPluginOptions"
 					},
 					{
 						"name": "createMathPlugin",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "createMathPlugin"
 					},
 					{
 						"name": "math",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "math"
 					}
 				]
 			},
 			{
-				"packageName": "@streamdown/mermaid",
+				"packageName": "@streamdown-svelte/mermaid",
 				"packageVersion": "1.0.2",
 				"exports": [
 					{
@@ -849,7 +849,7 @@
 					{
 						"name": "DiagramPlugin",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "DiagramPlugin"
 					},
 					{
@@ -861,37 +861,37 @@
 					{
 						"name": "MermaidInstance",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MermaidInstance"
 					},
 					{
 						"name": "MermaidModule",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MermaidModule"
 					},
 					{
 						"name": "MermaidModuleLoader",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MermaidModuleLoader"
 					},
 					{
 						"name": "MermaidPluginOptions",
 						"kind": "type",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "MermaidPluginOptions"
 					},
 					{
 						"name": "createMermaidPlugin",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "createMermaidPlugin"
 					},
 					{
 						"name": "mermaid",
 						"kind": "value",
-						"source": "@streamdown/plugin-core",
+						"source": "@streamdown-svelte/plugin-core",
 						"importedName": "mermaid"
 					}
 				]

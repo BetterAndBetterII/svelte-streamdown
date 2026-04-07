@@ -83,6 +83,14 @@ function normalizeText(text) {
 		.trim();
 }
 
+function normalizeRepositoryUrl(value) {
+	if (typeof value !== 'string') {
+		return null;
+	}
+
+	return value.replace(/^git\+/, '');
+}
+
 function normalizePropTypeText(typeText, optional) {
 	let normalized = normalizeText(typeText);
 
@@ -599,7 +607,7 @@ export function generateLocalApiSurfaceSnapshot() {
 	return {
 		schemaVersion: 1,
 		local: {
-			repository: packageJson.repository?.url ?? null,
+			repository: normalizeRepositoryUrl(packageJson.repository?.url ?? null),
 			commit: null,
 			package: {
 				name: packageJson.name,

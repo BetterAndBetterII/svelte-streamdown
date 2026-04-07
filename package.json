@@ -155,7 +155,7 @@
 		"vitest-browser-svelte": "^0.1.0",
 		"wrangler": "^4.34.0"
 	},
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/PacificStudio/streamdown-svelte.git"

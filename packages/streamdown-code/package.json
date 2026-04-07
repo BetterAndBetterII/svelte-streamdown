@@ -24,5 +24,5 @@
     "shiki": "^3.13.0"
   },
   "description": "Standalone code highlighter plugin package for the streamdown-svelte workspace.",
-  "license": "MIT"
+  "license": "Apache-2.0"
 }

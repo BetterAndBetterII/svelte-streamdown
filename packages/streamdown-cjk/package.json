@@ -26,5 +26,5 @@
     "unist-util-visit": "^5.1.0"
   },
   "description": "Standalone CJK plugin package used by the streamdown-svelte workspace.",
-  "license": "MIT"
+  "license": "Apache-2.0"
 }

@@ -47,7 +47,7 @@ There are plenty of Markdown renderers out there, but most of them weren't built
 - [x] Configurable caret styles and animations
 - [ ] World domination
 
-> Streamdown is open-source and MIT licensed. Contributions are welcome.
+> Streamdown is open-source and Apache-2.0 licensed. Contributions are welcome.
 `;
 
 export const usageCode = `import { useChat } from "@ai-sdk/react";

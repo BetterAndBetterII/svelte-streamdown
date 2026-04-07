@@ -485,4 +485,4 @@ See [CONTRIBUTING.md](https://github.com/PacificStudio/streamdown-svelte/blob/ma
 
 ## License
 
-MIT
+Apache-2.0
