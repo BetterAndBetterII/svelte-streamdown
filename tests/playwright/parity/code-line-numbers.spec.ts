@@ -103,30 +103,34 @@ async function assertLineNumberMirror(
 	const actualBodyImage = PNG.sync.read(actualBodyScreenshot);
 	const bodyMetrics = await page.locator(renderedSelector).evaluate((root) => {
 		const body = root.querySelector<HTMLElement>('[data-streamdown="code-block-body"]');
-		const line = root.querySelector<HTMLElement>('.sd-code-line');
+		const lines = [...root.querySelectorAll<HTMLElement>('.sd-code-line')];
 
-		if (!body || !line) {
+		if (!body || lines.length === 0) {
 			throw new Error('Could not read the body metrics for the line-number probe.');
 		}
 
 		const bodyStyle = getComputedStyle(body);
+		const bodyRect = body.getBoundingClientRect();
 		return {
-			bodyPaddingTop: Number.parseFloat(bodyStyle.paddingTop) || 0,
-			bodyPaddingBottom: Number.parseFloat(bodyStyle.paddingBottom) || 0,
 			bodyPaddingLeft: Number.parseFloat(bodyStyle.paddingLeft) || 0,
-			gutterWidth: Number.parseFloat(getComputedStyle(line).paddingLeft) || 48
+			gutterWidth: Number.parseFloat(getComputedStyle(lines[0]).paddingLeft) || 48,
+			lineBoxes: lines.map((line) => {
+				const rect = line.getBoundingClientRect();
+				return {
+					top: rect.top - bodyRect.top,
+					height: rect.height
+				};
+			})
 		};
 	});
 	const cropWidth = Math.round(bodyMetrics.bodyPaddingLeft + bodyMetrics.gutterWidth);
 	const expectedMirror = await createExpectedGutterMirror(page, {
 		width: cropWidth,
 		height: actualBodyImage.height,
-		lineCount,
 		startLine,
-		bodyPaddingTop: bodyMetrics.bodyPaddingTop,
-		bodyPaddingBottom: bodyMetrics.bodyPaddingBottom,
 		bodyPaddingLeft: bodyMetrics.bodyPaddingLeft,
-		gutterWidth: bodyMetrics.gutterWidth
+		gutterWidth: bodyMetrics.gutterWidth,
+		lineBoxes: bodyMetrics.lineBoxes
 	});
 	const expectedScreenshot = await expectedMirror.screenshot(screenshotOptions);
 	const actualScreenshot = cropPng(actualBodyScreenshot, {
@@ -144,21 +148,20 @@ async function createExpectedGutterMirror(
 	{
 		width,
 		height,
-		lineCount,
 		startLine,
-		bodyPaddingTop,
-		bodyPaddingBottom,
 		bodyPaddingLeft,
-		gutterWidth
+		gutterWidth,
+		lineBoxes
 	}: {
 		width: number;
 		height: number;
-		lineCount: number;
 		startLine: number;
-		bodyPaddingTop: number;
-		bodyPaddingBottom: number;
 		bodyPaddingLeft: number;
 		gutterWidth: number;
+		lineBoxes: Array<{
+			top: number;
+			height: number;
+		}>;
 	}
 ): Promise<Locator> {
 	await page.locator(renderedSelector).evaluate(
@@ -189,17 +192,17 @@ async function createExpectedGutterMirror(
 			mirror.style.background = getComputedStyle(codeBody).backgroundColor;
 			mirror.style.pointerEvents = 'none';
 			mirror.style.zIndex = '2147483647';
-			mirror.style.paddingTop = `${options.bodyPaddingTop}px`;
-			mirror.style.paddingLeft = `${options.bodyPaddingLeft}px`;
 			mirror.style.boxSizing = 'border-box';
+			mirror.style.overflow = 'hidden';
 
-			const contentHeight = options.height - options.bodyPaddingTop - options.bodyPaddingBottom;
-
-			Array.from({ length: options.lineCount }).forEach((_, index) => {
+			options.lineBoxes.forEach((lineBox, index) => {
 				const row = document.createElement('div');
-				row.style.position = 'relative';
+				row.style.position = 'absolute';
+				row.style.left = `${options.bodyPaddingLeft}px`;
+				row.style.top = `${lineBox.top}px`;
 				row.style.display = 'block';
-				row.style.height = `${contentHeight / options.lineCount}px`;
+				row.style.height = `${lineBox.height}px`;
+				row.style.width = `${options.gutterWidth}px`;
 				row.style.paddingLeft = `${options.gutterWidth}px`;
 
 				const number = document.createElement('span');
@@ -224,12 +227,10 @@ async function createExpectedGutterMirror(
 		{
 			width,
 			height,
-			lineCount,
 			startLine,
-			bodyPaddingTop,
-			bodyPaddingBottom,
 			bodyPaddingLeft,
-			gutterWidth
+			gutterWidth,
+			lineBoxes
 		}
 	);
 
