@@ -272,6 +272,23 @@ describe('tokenization', () => {
 		expect(footnoteRefTokens.length).toBe(0);
 	});
 
+	test('should leave link-shaped footnote placeholders to the link tokenizer', () => {
+		const tokens = lex('Footnote reference[^1](streamdown:incomplete-link)');
+		const paragraphToken = getFirstTokenByType(tokens, 'paragraph');
+
+		expect(paragraphToken).toBeDefined();
+		const paragraphTokens = paragraphToken.tokens || [];
+		const footnoteRefTokens = paragraphTokens.filter(
+			(t: { type: string }) => t.type === 'footnoteRef'
+		);
+		const linkTokens = paragraphTokens.filter((t: { type: string }) => t.type === 'link');
+
+		expect(footnoteRefTokens.length).toBe(0);
+		expect(linkTokens.length).toBe(1);
+		expect(linkTokens[0].href).toBe('streamdown:incomplete-link');
+		expect(linkTokens[0].text).toBe('^1');
+	});
+
 	test('should handle footnote reference without definition (edge case)', () => {
 		const tokens = lex('Text with undefined footnote[^undefined].');
 		const paragraphToken = getFirstTokenByType(tokens, 'paragraph');
@@ -340,7 +357,6 @@ describe('incomplete markdown', () => {
 		const input = 'Complete footnote[^1] and **incomplete bold.\n\n[^1]: Complete footnote.';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should preserve footnote and complete bold formatting
 		expect(result).toBe(
 			'Complete footnote[^1] and **incomplete bold.**\n\n[^1]: Complete footnote.'
 		);
@@ -350,7 +366,6 @@ describe('incomplete markdown', () => {
 		const input = '# Heading with footnote[^heading\n\n> Blockquote with *incomplete';
 		const result = parseIncompleteMarkdown(input);
 
-		// Should complete footnote and italic
 		expect(result).toBe(
 			'# Heading with footnote[^streamdown:footnote]\n\n> Blockquote with *incomplete*'
 		);
@@ -359,8 +374,6 @@ describe('incomplete markdown', () => {
 	test('should handle mixed incomplete formatting with footnotes', () => {
 		const input = 'Text with **bold**, *italic, footnote[^note, and ~~strike';
 		const result = parseIncompleteMarkdown(input);
-
-		// Should complete all incomplete formatters including footnote
 
 		expect(result).toBe(
 			'Text with **bold**, *italic, footnote[^streamdown:footnote], and ~~strike~~*'

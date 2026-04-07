@@ -11,13 +11,13 @@
 		type MarkdownBlockParseResult
 	} from './markdown-parse-cache.js';
 	import Footnotes from './Elements/Footnotes.svelte';
+	import { parseBlocks } from './marked/index.js';
 	import { hasIncompleteCodeFence } from './streaming.js';
 	import { mergeTranslations } from './translations.js';
 	import {
 		buildFootnoteEntries,
 		buildParsedBlocks,
 		mergeFootnoteState,
-		parseMarkdownWithOptionalFootnotes as parseBlockWithOptionalFootnotes,
 		preprocessStreamdownContent,
 		resolveBlockDirection,
 		resolveCaretPresentation,
@@ -32,6 +32,7 @@
 		resolveThemeClassMap
 	} from './streamdown/config.js';
 	import { createStreamdownRuntimeContext } from './streamdown/context.js';
+	import { repairStreamdownRenderedMarkdown } from './streamdown/incomplete-markdown.js';
 
 	let {
 		content = '',
@@ -142,7 +143,7 @@
 			content: () => content,
 			remend: () => remendOptions,
 			parseIncompleteMarkdown: () => parseIncompleteMarkdown,
-			parseMarkdownIntoBlocksFn: () => parseMarkdownIntoBlocksFn,
+			parseMarkdownIntoBlocksFn: () => parseMarkdownIntoBlocksFn ?? parseBlocks,
 			mode: () => resolvedMode,
 			dir: () => dir,
 			sources: () => sources,
@@ -234,23 +235,29 @@
 		markdown: string,
 		cacheScope: MarkdownBlockCacheScope = 'stable'
 	): MarkdownBlockParseResult =>
-		parseBlockWithOptionalFootnotes({
+		markdownParseCache.parseBlock({
 			markdown,
-			cache: markdownParseCache,
 			extensions: streamdown.extensions,
-			mode: resolvedMode,
-			parseIncompleteMarkdown,
-			remend: remendOptions,
+			resolveFootnotes: shouldResolveFootnotes({
+				markdown,
+				mode: resolvedMode,
+				parseIncompleteMarkdown
+			}),
 			cacheScope
 		});
 	const normalizedContent = $derived.by(() => {
 		return preprocessedContent;
 	});
+	const renderContent = $derived.by(() =>
+		resolvedMode === 'streaming' && parseIncompleteMarkdown
+			? repairStreamdownRenderedMarkdown(normalizedContent, remendOptions)
+			: normalizedContent
+	);
 	const parsedMarkdownDocument = $derived.by(() => {
 		if (resolvedStatic) {
-			const staticBlock = parseMarkdownWithOptionalFootnotes(normalizedContent);
+			const staticBlock = parseMarkdownWithOptionalFootnotes(renderContent);
 			return {
-				blocks: [normalizedContent],
+				blocks: [renderContent],
 				footnotes: staticBlock.footnotes,
 				staticBlock
 			};
@@ -258,14 +265,14 @@
 
 		return {
 			...markdownParseCache.parseDocument({
-				markdown: normalizedContent,
+				markdown: renderContent,
 				extensions: streamdown.extensions,
 				resolveFootnotes: shouldResolveFootnotes({
 					markdown: normalizedContent,
 					mode: resolvedMode,
 					parseIncompleteMarkdown
 				}),
-				splitBlocksFn: parseMarkdownIntoBlocksFn,
+				splitBlocksFn: parseMarkdownIntoBlocksFn ?? parseBlocks,
 				blockCacheScope: 'transient'
 			}),
 			staticBlock: null
@@ -290,7 +297,7 @@
 	const parsedBlocks = $derived.by(() =>
 		buildParsedBlocks({
 			resolvedStatic,
-			normalizedContent,
+			normalizedContent: renderContent,
 			parsedMarkdownDocument,
 			rawBlocks,
 			blockIsIncomplete,

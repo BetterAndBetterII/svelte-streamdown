@@ -104,3 +104,18 @@ export const repairIncompleteMarkdown = (
 };
 
 export const parseStreamdownIncompleteMarkdown = repairIncompleteMarkdown;
+
+export const repairStreamdownRenderedMarkdown = (
+	text: string,
+	options?: RemendOptions
+): string => {
+	if (!text || typeof text !== 'string') {
+		return text;
+	}
+
+	if (text.trim().length === 0) {
+		return '';
+	}
+
+	return remend(text, options);
+};

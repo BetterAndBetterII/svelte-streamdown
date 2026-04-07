@@ -34,7 +34,7 @@
 			return block;
 		}
 
-		return repairIncompleteMarkdown(block.trim(), streamdown.remend);
+		return repairIncompleteMarkdown(block, streamdown.remend);
 	});
 	const markdown = $derived(applyPluginMarkdownTransforms(repairedBlock, streamdown.plugins));
 	const isIncompleteCodeFence = $derived(

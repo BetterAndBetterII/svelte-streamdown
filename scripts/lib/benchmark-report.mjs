@@ -1,5 +1,130 @@
 import { basename } from 'node:path';
 
+/**
+ * @typedef {'local' | 'reference'} BenchmarkKind
+ */
+
+/**
+ * @typedef {{
+ *   name: BenchmarkKind | string;
+ *   hz?: number | null;
+ *   rme?: number | null;
+ * }} BenchmarkEntry
+ */
+
+/**
+ * @typedef {{
+ *   fullName: string;
+ *   benchmarks?: BenchmarkEntry[] | null;
+ * }} BenchmarkGroup
+ */
+
+/**
+ * @typedef {{
+ *   filepath: string;
+ *   groups?: BenchmarkGroup[] | null;
+ * }} BenchmarkFile
+ */
+
+/**
+ * @typedef {{
+ *   files?: BenchmarkFile[] | null;
+ * }} BenchmarkReport
+ */
+
+/**
+ * @typedef {{
+ *   file: string;
+ *   filepath: string;
+ *   suite: string;
+ *   scenario: string;
+ *   id: string;
+ *   localHz: number;
+ *   referenceHz: number;
+ *   localRme: number | null;
+ *   referenceRme: number | null;
+ *   ratio: number;
+ *   deltaPercent: number;
+ *   winner: BenchmarkKind;
+ * }} BenchmarkComparison
+ */
+
+/**
+ * @typedef {{
+ *   suite: string;
+ *   pairs: number;
+ *   ratio: number;
+ *   deltaPercent: number;
+ *   localWins: number;
+ *   referenceWins: number;
+ *   bestCase: BenchmarkComparison;
+ *   worstCase: BenchmarkComparison;
+ * }} BenchmarkSuiteSummary
+ */
+
+/**
+ * @typedef {{
+ *   pairs: number;
+ *   localWins: number;
+ *   referenceWins: number;
+ *   ratio: number;
+ *   deltaPercent: number;
+ * }} BenchmarkOverallSummary
+ */
+
+/**
+ * @typedef {{
+ *   label: string;
+ *   value: number;
+ *   ratio: number;
+ *   detail: string;
+ * }} ChartRow
+ */
+
+/**
+ * @typedef {{
+ *   title: string;
+ *   subtitle: string;
+ *   caption: string;
+ *   rows: ChartRow[];
+ * }} BarChartInput
+ */
+
+/**
+ * @typedef {{
+ *   generatedAt: string;
+ *   platform: string;
+ *   cpu: string;
+ *   memory: string;
+ *   nodeVersion: string;
+ *   pnpmVersion: string;
+ *   gitBranch: string;
+ *   gitCommit: string;
+ * }} BenchmarkPlatform
+ */
+
+/**
+ * @typedef {{
+ *   sourcePath: string;
+ *   overall: BenchmarkOverallSummary;
+ *   suites: BenchmarkSuiteSummary[];
+ *   comparisons: BenchmarkComparison[];
+ *   platform: BenchmarkPlatform;
+ *   suiteChartPath: string;
+ *   scenarioChartPath: string;
+ * }} MarkdownReportInput
+ */
+
+/**
+ * @typedef {{
+ *   overall: BenchmarkOverallSummary;
+ *   suites: BenchmarkSuiteSummary[];
+ *   comparisons: BenchmarkComparison[];
+ *   platform: BenchmarkPlatform;
+ *   artifacts: Record<string, string>;
+ * }} JsonReportInput
+ */
+
 const suiteNameMap = new Map([
 	['parse-blocks-reference.bench.ts', 'Parse Blocks'],
 	['remend-reference.bench.ts', 'Remend Parser'],
@@ -13,10 +138,17 @@ const signedNumber = new Intl.NumberFormat('en-US', {
 	signDisplay: 'always'
 });
 
+/**
+ * @param {number} value
+ */
 function formatDeltaPercent(value) {
 	return `${signedNumber.format(value)}%`;
 }
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
 export function labelSuite(filePath) {
 	const file = basename(filePath);
 	const knownName = suiteNameMap.get(file);
@@ -32,6 +164,11 @@ export function labelSuite(filePath) {
 		.join(' ');
 }
 
+/**
+ * @param {string} fullName
+ * @param {string} filePath
+ * @returns {string}
+ */
 export function labelScenario(fullName, filePath) {
 	const file = basename(filePath);
 	const prefix = `${file} > `;
@@ -43,6 +180,10 @@ export function labelScenario(fullName, filePath) {
 	return parts.length > 1 ? parts.slice(1).join(' / ') : fullName;
 }
 
+/**
+ * @param {number[]} values
+ * @returns {number}
+ */
 export function geometricMean(values) {
 	if (values.length === 0) {
 		return Number.NaN;
@@ -51,12 +192,19 @@ export function geometricMean(values) {
 	return Math.exp(values.reduce((sum, value) => sum + Math.log(value), 0) / values.length);
 }
 
+/**
+ * @param {BenchmarkReport} report
+ * @returns {BenchmarkComparison[]}
+ */
 export function extractComparisons(report) {
+	/** @type {BenchmarkComparison[]} */
 	const comparisons = [];
 
 	for (const file of report.files ?? []) {
 		for (const group of file.groups ?? []) {
+			/** @type {BenchmarkEntry | undefined} */
 			const local = group.benchmarks?.find((benchmark) => benchmark.name === 'local');
+			/** @type {BenchmarkEntry | undefined} */
 			const reference = group.benchmarks?.find((benchmark) => benchmark.name === 'reference');
 			if (!local || !reference || !local.hz || !reference.hz) {
 				continue;
@@ -86,16 +234,32 @@ export function extractComparisons(report) {
 	return comparisons;
 }
 
+/**
+ * @param {BenchmarkComparison[]} comparisons
+ * @returns {BenchmarkSuiteSummary[]}
+ */
 export function aggregateBySuite(comparisons) {
 	return Array.from(
-		comparisons.reduce((groups, comparison) => {
+		comparisons.reduce(
+			/**
+			 * @param {Map<string, BenchmarkComparison[]>} groups
+			 * @param {BenchmarkComparison} comparison
+			 */
+			(groups, comparison) => {
 			const entries = groups.get(comparison.suite) ?? [];
 			entries.push(comparison);
 			groups.set(comparison.suite, entries);
 			return groups;
-		}, new Map())
+			},
+			/** @type {Map<string, BenchmarkComparison[]>} */ (new Map())
+		)
 	)
-		.map(([suite, entries]) => {
+		.map(
+			/**
+			 * @param {[string, BenchmarkComparison[]]} param0
+			 * @returns {BenchmarkSuiteSummary}
+			 */
+			([suite, entries]) => {
 			const ratio = geometricMean(entries.map((entry) => entry.ratio));
 			const localWins = entries.filter((entry) => entry.winner === 'local').length;
 
@@ -113,10 +277,15 @@ export function aggregateBySuite(comparisons) {
 					!worst || entry.deltaPercent < worst.deltaPercent ? entry : worst
 				)
 			};
-		})
+			}
+		)
 		.sort((left, right) => right.deltaPercent - left.deltaPercent);
 }
 
+/**
+ * @param {BenchmarkComparison[]} comparisons
+ * @returns {BenchmarkOverallSummary}
+ */
 export function summarizeComparisons(comparisons) {
 	const ratio = geometricMean(comparisons.map((entry) => entry.ratio));
 	const localWins = comparisons.filter((entry) => entry.winner === 'local').length;
@@ -129,6 +298,10 @@ export function summarizeComparisons(comparisons) {
 	};
 }
 
+/**
+ * @param {string | number | boolean | null | undefined} value
+ * @returns {string}
+ */
 function escapeXml(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
@@ -138,10 +311,20 @@ function escapeXml(value) {
 		.replaceAll("'", '&apos;');
 }
 
+/**
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
 function clamp(value, min, max) {
 	return Math.min(Math.max(value, min), max);
 }
 
+/**
+ * @param {BarChartInput} input
+ * @returns {string}
+ */
 export function renderBarChartSvg({ title, subtitle, caption, rows }) {
 	const leftGutter = 340;
 	const rightGutter = 220;
@@ -202,6 +385,10 @@ export function renderBarChartSvg({ title, subtitle, caption, rows }) {
 </svg>`;
 }
 
+/**
+ * @param {number} hz
+ * @returns {string}
+ */
 function formatHz(hz) {
 	if (hz >= 1_000_000) {
 		return `${number.format(hz / 1_000_000)}M hz`;
@@ -214,6 +401,10 @@ function formatHz(hz) {
 	return `${number.format(hz)} hz`;
 }
 
+/**
+ * @param {number | null | undefined} rme
+ * @returns {string}
+ */
 function formatRme(rme) {
 	if (typeof rme !== 'number') {
 		return 'n/a';
@@ -222,6 +413,10 @@ function formatRme(rme) {
 	return `${number.format(rme)}%`;
 }
 
+/**
+ * @param {BenchmarkSuiteSummary[]} suites
+ * @returns {ChartRow[]}
+ */
 export function toSuiteChartRows(suites) {
 	return suites.map((suite) => ({
 		label: suite.suite,
@@ -231,6 +426,10 @@ export function toSuiteChartRows(suites) {
 	}));
 }
 
+/**
+ * @param {BenchmarkComparison[]} comparisons
+ * @returns {ChartRow[]}
+ */
 export function toScenarioChartRows(comparisons) {
 	return comparisons
 		.toSorted((left, right) => right.deltaPercent - left.deltaPercent)
@@ -242,6 +441,10 @@ export function toScenarioChartRows(comparisons) {
 		}));
 }
 
+/**
+ * @param {MarkdownReportInput} input
+ * @returns {string}
+ */
 export function buildMarkdownReport({
 	sourcePath,
 	overall,
@@ -303,6 +506,9 @@ ${comparisons.toSorted((left, right) => right.deltaPercent - left.deltaPercent).
 `;
 }
 
+/**
+ * @param {JsonReportInput} input
+ */
 export function buildJsonReport({ overall, suites, comparisons, platform, artifacts }) {
 	return {
 		generatedAt: platform.generatedAt,
