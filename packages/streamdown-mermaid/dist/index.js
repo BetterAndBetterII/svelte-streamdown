@@ -1,29 +1,40 @@
 "use client";
 
-// index.ts
-import mermaidLib from "mermaid";
-var defaultConfig = {
+// ../../shared/plugin-core/mermaid.ts
+var defaultMermaidConfig = {
   startOnLoad: false,
   theme: "default",
   securityLevel: "strict",
   fontFamily: "monospace",
   suppressErrorRendering: true
 };
+var resolveMermaidModule = async (loadMermaid) => {
+  const loadedModule = loadMermaid ? await loadMermaid() : await import("mermaid");
+  return "default" in loadedModule ? loadedModule.default : loadedModule;
+};
 function createMermaidPlugin(options = {}) {
   let initialized = false;
-  let currentConfig = { ...defaultConfig, ...options.config };
+  let currentConfig = { ...defaultMermaidConfig, ...options.config };
+  let mermaidModulePromise = null;
+  const getMermaidModule = () => {
+    mermaidModulePromise ??= resolveMermaidModule(options.loadMermaid);
+    return mermaidModulePromise;
+  };
   const mermaidInstance = {
     initialize(config) {
-      currentConfig = { ...defaultConfig, ...options.config, ...config };
-      mermaidLib.initialize(currentConfig);
-      initialized = true;
+      currentConfig = { ...defaultMermaidConfig, ...options.config, ...config };
+      void getMermaidModule().then((mermaid2) => {
+        mermaid2.initialize(currentConfig);
+        initialized = true;
+      });
     },
     async render(id, source) {
+      const mermaid2 = await getMermaidModule();
       if (!initialized) {
-        mermaidLib.initialize(currentConfig);
+        mermaid2.initialize(currentConfig);
         initialized = true;
       }
-      return await mermaidLib.render(id, source);
+      return mermaid2.render(id, source);
     }
   };
   return {

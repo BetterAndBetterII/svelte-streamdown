@@ -1,28 +1,30 @@
 import { getContext, setContext } from 'svelte';
 import { findCustomRenderer, type PluginConfig } from './plugins.js';
+export type {
+	AllowedTags,
+	AnimateOptions,
+	BlockProps,
+	CodeControlsConfig,
+	Components,
+	ControlsConfig,
+	IconMap,
+	LinkSafetyConfig,
+	LinkSafetyModalProps,
+	MermaidControls,
+	MermaidErrorComponentProps,
+	MermaidOptions,
+	NormalizedMermaidControls,
+	ResolvedAnimationConfig,
+	Snippets,
+	StreamdownComponents,
+	StreamdownContext as StreamdownContextType,
+	StreamdownControlsConfig,
+	StreamdownProps,
+	TableControlsConfig
+} from './contracts/streamdown.js';
 
 export { STREAMDOWN_CONTEXT_KEY } from './context-key.js';
-export {
-	StreamdownContext,
-	useStreamdown,
-	type AnimateOptions,
-	type BlockProps,
-	type CodeControlsConfig,
-	type Components,
-	type ControlsConfig,
-	type IconMap,
-	type LinkSafetyConfig,
-	type LinkSafetyModalProps,
-	type MermaidControls,
-	type MermaidErrorComponentProps,
-	type MermaidOptions,
-	type NormalizedMermaidControls,
-	type StreamdownComponents,
-	type StreamdownContext as StreamdownContextType,
-	type StreamdownControlsConfig,
-	type StreamdownProps,
-	type TableControlsConfig
-} from './context.svelte.js';
+export { StreamdownContext, useStreamdown } from './context.svelte.js';
 
 const PLUGIN_CONTEXT_KEY = Symbol('streamdown.plugins');
 

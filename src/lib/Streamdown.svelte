@@ -2,158 +2,37 @@
 	import remend from 'remend';
 	import { useDarkMode } from '$lib/utils/darkMode.svelte.js';
 	import Block from './Block.svelte';
-	import {
-		normalizeMermaidControls,
-		StreamdownContext,
-		type ResolvedAnimationConfig,
-		type BlockProps,
-		type MermaidOptions,
-		type StreamdownProps
-	} from './context.svelte.js';
+	import { type MermaidOptions, type StreamdownProps } from './context.svelte.js';
 	import { IconContext } from './icon-context.js';
 	import { PluginContext } from './plugin-context.js';
-	import { getThemeName, type ThemeInput } from './plugins.js';
-	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
-	import { type FootnoteState, type StreamdownToken } from './marked/index.js';
+	import { getThemeName } from './plugins.js';
 	import {
 		createMarkdownParseCache,
 		type MarkdownBlockCacheScope,
 		type MarkdownBlockParseResult
 	} from './markdown-parse-cache.js';
-	import { filterMarkdownTokens } from './markdown.js';
-	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
 	import Footnotes from './Elements/Footnotes.svelte';
-	import { normalizeHtmlIndentation } from './security/html.js';
-	import { preprocessCustomTags } from './security/preprocess-custom-tags.js';
-	import { preprocessLiteralTagContent } from './security/preprocess-literal-tag-content.js';
-	import { carets, hasIncompleteCodeFence, hasTable } from './streaming.js';
+	import { hasIncompleteCodeFence } from './streaming.js';
 	import { mergeTranslations } from './translations.js';
-	import { detectTextDirection } from './utils/detectDirection.js';
-
-	const animationNameMap = {
-		blurIn: 'blur',
-		fadeIn: 'fade',
-		slideUp: 'slideUp'
-	} as const;
-	type LocalAnimationConfig = ResolvedAnimationConfig;
-	const defaultLinkSafetyConfig = {
-		enabled: true
-	} as const;
-	const defaultShikiTheme: [ThemeInput, ThemeInput] = ['github-light', 'github-dark'];
-	const footnoteDefinitionPattern = /\[\^[\w-]{1,200}\]:/;
-
-	const resolveShikiThemePair = (
-		theme: StreamdownProps<Source>['shikiTheme'] | undefined
-	): [ThemeInput, ThemeInput] => {
-		if (Array.isArray(theme)) {
-			return [theme[0] ?? defaultShikiTheme[0], theme[1] ?? theme[0] ?? defaultShikiTheme[1]];
-		}
-
-		if (theme) {
-			return [theme, theme];
-		}
-
-		return defaultShikiTheme;
-	};
-
-	const collectThemeRegistrations = (
-		themes: [ThemeInput, ThemeInput]
-	): Record<string, import('shiki').ThemeRegistration> =>
-		Object.fromEntries(
-			themes
-				.filter((theme): theme is Exclude<ThemeInput, string> => typeof theme !== 'string')
-				.map((theme) => [getThemeName(theme), theme])
-		);
-
-	const resolveCompatAnimation = (
-		animated: StreamdownProps<Source>['animated'],
-		isAnimating: boolean,
-		mode: 'static' | 'streaming'
-	): LocalAnimationConfig => {
-		if (!animated || !isAnimating || mode === 'static') {
-			return {
-				enabled: false
-			};
-		}
-
-		if (animated === true) {
-			return {
-				enabled: true,
-				animateOnMount: true,
-				type: 'fade' as const,
-				duration: 150,
-				timingFunction: 'ease' as const,
-				tokenize: 'word' as const,
-				stagger: 40
-			};
-		}
-
-		const animationName =
-			(typeof animated.animation === 'string' && animated.animation.length > 0
-				? (animationNameMap[animated.animation as keyof typeof animationNameMap] ??
-					animated.animation)
-				: undefined) ?? 'fade';
-		const timingFunction =
-			typeof animated.easing === 'string' && animated.easing.trim().length > 0
-				? animated.easing
-				: 'ease';
-
-		return {
-			enabled: true,
-			animateOnMount: true,
-			type: animationName,
-			duration: animated.duration ?? 150,
-			timingFunction,
-			tokenize: animated.sep ?? 'word',
-			stagger: animated.stagger ?? 40
-		} as const;
-	};
-
-	const resolveControls = (controls: StreamdownProps<Source>['controls']) => {
-		if (controls === false) {
-			return {
-				controls: {
-					code: false,
-					mermaid: normalizeMermaidControls(false),
-					table: false
-				},
-				codeControls: {
-					copy: false,
-					download: false
-				}
-			};
-		}
-
-		const codeControls =
-			controls === true || controls === undefined ? true : (controls.code ?? true);
-		const tableControls =
-			controls === true || controls === undefined ? true : (controls.table ?? true);
-		const mermaidControls =
-			controls === true || controls === undefined ? undefined : controls.mermaid;
-
-		return {
-			controls: {
-				code: codeControls !== false,
-				mermaid: normalizeMermaidControls(mermaidControls),
-				table: tableControls
-			},
-			codeControls:
-				codeControls === false
-					? {
-							copy: false,
-							download: false
-						}
-					: codeControls === true
-						? {
-								copy: true,
-								download: true
-							}
-						: {
-								copy: codeControls.copy ?? true,
-								download: codeControls.download ?? true
-							}
-		};
-	};
+	import {
+		buildFootnoteEntries,
+		buildParsedBlocks,
+		mergeFootnoteState,
+		parseMarkdownWithOptionalFootnotes as parseBlockWithOptionalFootnotes,
+		preprocessStreamdownContent,
+		resolveBlockDirection,
+		resolveCaretPresentation,
+		shouldResolveFootnotes
+	} from './streamdown/pipeline.js';
+	import {
+		collectThemeRegistrations,
+		defaultLinkSafetyConfig,
+		resolveAnimationConfig,
+		resolveControls,
+		resolveShikiThemePair,
+		resolveThemeClassMap
+	} from './streamdown/config.js';
+	import { createStreamdownRuntimeContext } from './streamdown/context.js';
 
 	let {
 		content = '',
@@ -215,10 +94,6 @@
 	const darkMode = useDarkMode();
 	const resolvedMode = $derived(isStatic === undefined ? mode : isStatic ? 'static' : 'streaming');
 	const resolvedStatic = $derived(resolvedMode === 'static');
-	const prefixedCn = $derived.by(() => createCn(prefix));
-	const resolvedClassName = $derived(
-		[className, futureClassName].filter((value): value is string => Boolean(value)).join(' ')
-	);
 	const shouldShowCaret = $derived(resolvedMode !== 'static' && Boolean(caret) && isAnimating);
 	const resolvedControls = $derived(resolveControls(controls));
 	const resolvedShikiThemePair = $derived.by(() => {
@@ -229,33 +104,21 @@
 		return resolveShikiThemePair(shikiTheme);
 	});
 	const resolvedAnimation = $derived.by(() => {
-		if (animation) {
-			if (!animation.enabled) {
-				return {
-					enabled: false
-				};
-			}
-
-			return {
-				enabled: true,
-				animateOnMount: animation.animateOnMount ?? false,
-				type: animation.type || 'blur',
-				duration: animation.duration ?? 500,
-				timingFunction: animation.timingFunction || 'ease-in',
-				tokenize: animation.tokenize || 'word',
-				stagger: animation.stagger ?? 0
-			};
-		}
-
-		return resolveCompatAnimation(animated, isAnimating, resolvedMode);
+		return resolveAnimationConfig({
+			animation,
+			animated,
+			isAnimating,
+			mode: resolvedMode
+		});
 	});
-	const resolvedTheme = $derived.by(() => {
-		const mergedTheme = shouldMergeTheme
-			? mergeTheme(theme, baseTheme)
-			: theme || (baseTheme === 'shadcn' ? shadcnTheme : theme);
-
-		return prefixThemeClasses(prefix, mergedTheme);
-	});
+	const resolvedTheme = $derived.by(() =>
+		resolveThemeClassMap({
+			theme,
+			baseTheme,
+			shouldMergeTheme,
+			prefix
+		})
+	);
 
 	const shikiThemedTheme = $derived(getThemeName(resolvedShikiThemePair[darkMode.current ? 1 : 0]));
 
@@ -266,172 +129,71 @@
 
 	const allowedTagNames = $derived(allowedTags ? Object.keys(allowedTags) : []);
 
-	const preprocessedContent = $derived.by(() => {
-		let result = shouldNormalizeHtmlIndentation ? normalizeHtmlIndentation(content) : content;
+	const preprocessedContent = $derived.by(() =>
+		preprocessStreamdownContent({
+			content,
+			shouldNormalizeHtmlIndentation,
+			literalTagContent,
+			allowedTagNames
+		})
+	);
 
-		if (literalTagContent && literalTagContent.length > 0) {
-			result = preprocessLiteralTagContent(result, literalTagContent);
-		}
-
-		if (allowedTagNames.length > 0) {
-			result = preprocessCustomTags(result, allowedTagNames);
-		}
-
-		return result;
-	});
-
-	streamdown = new StreamdownContext({
-		get element() {
-			return element;
-		},
-		get content() {
-			return content;
-		},
-		get parseIncompleteMarkdown() {
-			return parseIncompleteMarkdown;
-		},
-		get parseMarkdownIntoBlocksFn() {
-			return parseMarkdownIntoBlocksFn;
-		},
-		get mode() {
-			return resolvedMode;
-		},
-		get dir() {
-			return dir;
-		},
-		get defaultOrigin() {
-			return defaultOrigin;
-		},
-		get allowedLinkPrefixes() {
-			return allowedLinkPrefixes;
-		},
-		get allowedImagePrefixes() {
-			return allowedImagePrefixes;
-		},
-		get linkSafety() {
-			return linkSafety;
-		},
-		get allowedTags() {
-			return allowedTags;
-		},
-		get allowedElements() {
-			return allowedElements;
-		},
-		get allowElement() {
-			return allowElement;
-		},
-		get disallowedElements() {
-			return disallowedElements;
-		},
-		get literalTagContent() {
-			return literalTagContent;
-		},
-		get normalizeHtmlIndentation() {
-			return shouldNormalizeHtmlIndentation;
-		},
-		get skipHtml() {
-			return skipHtml;
-		},
-		get unwrapDisallowed() {
-			return unwrapDisallowed;
-		},
-		get urlTransform() {
-			return urlTransform;
-		},
-		get prefix() {
-			return prefix;
-		},
-		get lineNumbers() {
-			return lineNumbers;
-		},
-		get shikiTheme() {
-			return shikiThemedTheme;
-		},
-		get snippets() {
-			return snippets;
-		},
-		get theme() {
-			return resolvedTheme;
-		},
-		get baseTheme() {
-			return baseTheme;
-		},
-		get mermaidConfig() {
-			return {
-				theme: mermaidThemedTheme,
-				...(resolvedMermaid?.config ?? {}),
-				...mermaidConfig
-			};
-		},
-		get mermaid() {
-			return resolvedMermaid;
-		},
-		get katexConfig() {
-			return katexConfig;
-		},
-		get plugins() {
-			return plugins;
-		},
-		get renderHtml() {
-			return renderHtml ?? true;
-		},
-		get translations() {
-			return mergeTranslations(translations);
-		},
-		get shikiLanguages() {
-			return shikiLanguages;
-		},
-		get shikiThemes() {
-			return {
-				...(shikiThemes ?? {}),
-				...collectThemeRegistrations(resolvedShikiThemePair)
-			};
-		},
-		get sources() {
-			return sources;
-		},
-		get inlineCitationsMode() {
-			return inlineCitationsMode;
-		},
-		get animation() {
-			return resolvedAnimation;
-		},
-		get isAnimating() {
-			return isAnimating;
-		},
-		get animated() {
-			return animated;
-		},
-		get caret() {
-			return caret;
-		},
-		get onAnimationStart() {
-			return onAnimationStart;
-		},
-		get onAnimationEnd() {
-			return onAnimationEnd;
-		},
-		get controls() {
-			return resolvedControls.controls;
-		},
-		get codeControls() {
-			return resolvedControls.codeControls;
-		},
-		get children() {
-			return children;
-		},
-		get extensions() {
-			return extensions;
-		},
-		get icons() {
-			return icons;
-		},
-		get mdxComponents() {
-			return mdxComponents;
-		},
-		get components() {
-			return components;
-		}
+	streamdown = createStreamdownRuntimeContext<Source>({
+		element: () => element,
+		content: () => content,
+		parseIncompleteMarkdown: () => parseIncompleteMarkdown,
+		parseMarkdownIntoBlocksFn: () => parseMarkdownIntoBlocksFn,
+		mode: () => resolvedMode,
+		dir: () => dir,
+		defaultOrigin: () => defaultOrigin,
+		allowedLinkPrefixes: () => allowedLinkPrefixes,
+		allowedImagePrefixes: () => allowedImagePrefixes,
+		linkSafety: () => linkSafety,
+		allowedTags: () => allowedTags,
+		allowedElements: () => allowedElements,
+		allowElement: () => allowElement,
+		disallowedElements: () => disallowedElements,
+		literalTagContent: () => literalTagContent,
+		normalizeHtmlIndentation: () => shouldNormalizeHtmlIndentation,
+		skipHtml: () => skipHtml,
+		unwrapDisallowed: () => unwrapDisallowed,
+		urlTransform: () => urlTransform,
+		prefix: () => prefix,
+		lineNumbers: () => lineNumbers,
+		shikiTheme: () => shikiThemedTheme,
+		snippets: () => snippets,
+		theme: () => resolvedTheme,
+		baseTheme: () => baseTheme,
+		mermaidConfig: () => ({
+			theme: mermaidThemedTheme,
+			...(resolvedMermaid?.config ?? {}),
+			...mermaidConfig
+		}),
+		mermaid: () => resolvedMermaid,
+		katexConfig: () => katexConfig,
+		plugins: () => plugins,
+		renderHtml: () => renderHtml ?? true,
+		translations: () => mergeTranslations(translations),
+		shikiLanguages: () => shikiLanguages,
+		shikiThemes: () => ({
+			...(shikiThemes ?? {}),
+			...collectThemeRegistrations(resolvedShikiThemePair)
+		}),
+		sources: () => sources,
+		inlineCitationsMode: () => inlineCitationsMode,
+		animation: () => resolvedAnimation,
+		isAnimating: () => isAnimating,
+		animated: () => animated,
+		caret: () => caret,
+		onAnimationStart: () => onAnimationStart,
+		onAnimationEnd: () => onAnimationEnd,
+		controls: () => resolvedControls.controls,
+		codeControls: () => resolvedControls.codeControls,
+		children: () => children,
+		extensions: () => extensions,
+		icons: () => icons,
+		mdxComponents: () => mdxComponents,
+		components: () => components
 	});
 	PluginContext.provide(() => plugins ?? null);
 	IconContext.provide(() => icons);
@@ -459,53 +221,16 @@
 		previousIsAnimating = isAnimating;
 	});
 
-	type ParsedBlock = {
-		raw: string;
-		tokens: StreamdownToken[];
-		footnotes: FootnoteState;
-		isIncomplete: boolean;
-	};
-
-	const preserveStreamingFootnoteLiterals = (tokens: StreamdownToken[]): StreamdownToken[] =>
-		tokens.map((token) => {
-			if (
-				resolvedMode === 'streaming' &&
-				isAnimating &&
-				token.type === 'footnoteRef' &&
-				token.content.lines.join('\n').trim().length === 0
-			) {
-				return {
-					type: 'text',
-					raw: token.raw,
-					text: token.raw
-				} as StreamdownToken;
-			}
-
-			if ('tokens' in token && Array.isArray(token.tokens)) {
-				return {
-					...token,
-					tokens: preserveStreamingFootnoteLiterals(token.tokens as StreamdownToken[])
-				} as StreamdownToken;
-			}
-
-			return token;
-		});
-
-	const shouldResolveFootnotes = (markdown: string): boolean =>
-		!(
-			resolvedMode === 'streaming' &&
-			parseIncompleteMarkdown &&
-			!footnoteDefinitionPattern.test(markdown)
-		);
-
 	const parseMarkdownWithOptionalFootnotes = (
 		markdown: string,
 		cacheScope: MarkdownBlockCacheScope = 'stable'
 	): MarkdownBlockParseResult =>
-		markdownParseCache.parseBlock({
+		parseBlockWithOptionalFootnotes({
 			markdown,
+			cache: markdownParseCache,
 			extensions: streamdown.extensions,
-			resolveFootnotes: shouldResolveFootnotes(markdown),
+			mode: resolvedMode,
+			parseIncompleteMarkdown,
 			cacheScope
 		});
 	const normalizedContent = $derived.by(() => {
@@ -529,7 +254,11 @@
 			...markdownParseCache.parseDocument({
 				markdown: normalizedContent,
 				extensions: streamdown.extensions,
-				resolveFootnotes: shouldResolveFootnotes(normalizedContent),
+				resolveFootnotes: shouldResolveFootnotes({
+					markdown: normalizedContent,
+					mode: resolvedMode,
+					parseIncompleteMarkdown
+				}),
 				splitBlocksFn: parseMarkdownIntoBlocksFn,
 				blockCacheScope: 'transient'
 			}),
@@ -552,110 +281,57 @@
 		};
 	});
 
-	const parsedBlocks = $derived.by(() => {
-		if (resolvedStatic && parsedMarkdownDocument.staticBlock) {
-			return [
-				{
-					raw: normalizedContent,
-					tokens: preserveStreamingFootnoteLiterals(parsedMarkdownDocument.staticBlock.tokens),
-					footnotes: parsedMarkdownDocument.staticBlock.footnotes,
-					isIncomplete: blockIsIncomplete[0] ?? false
-				}
-			] satisfies ParsedBlock[];
-		}
+	const parsedBlocks = $derived.by(() =>
+		buildParsedBlocks({
+			resolvedStatic,
+			normalizedContent,
+			parsedMarkdownDocument,
+			rawBlocks,
+			blockIsIncomplete,
+			mode: resolvedMode,
+			isAnimating,
+			parseMarkdownWithFootnotes: parseMarkdownWithOptionalFootnotes
+		})
+	);
 
-		return rawBlocks.map((raw, index) => {
-			const isIncomplete = blockIsIncomplete[index] ?? false;
-			const markdown = raw;
-			const parsed = parseMarkdownWithOptionalFootnotes(
-				markdown,
-				isIncomplete ? 'transient' : 'stable'
-			);
+	const footnoteState = $derived.by(() =>
+		mergeFootnoteState({
+			documentFootnotes: parsedDocument.footnotes,
+			parsedBlocks
+		})
+	);
 
-			return {
-				raw,
-				tokens: preserveStreamingFootnoteLiterals(parsed.tokens),
-				footnotes: parsed.footnotes,
-				isIncomplete
-			};
-		}) satisfies ParsedBlock[];
-	});
-
-	const footnoteState = $derived.by(() => {
-		const refs = new Map<string, FootnoteRef>(parsedDocument.footnotes.refs);
-		const footnotes = new Map<string, Footnote>(parsedDocument.footnotes.footnotes);
-
-		for (const parsedBlock of parsedBlocks) {
-			for (const [label, ref] of parsedBlock.footnotes.refs) {
-				refs.set(label, ref);
+	const footnoteEntries = $derived.by(() =>
+		buildFootnoteEntries({
+			footnoteState,
+			parseMarkdownWithFootnotes: (markdown) => parseMarkdownWithOptionalFootnotes(markdown),
+			filtering: {
+				allowedElements: streamdown.allowedElements,
+				allowElement: streamdown.allowElement,
+				disallowedElements: streamdown.disallowedElements,
+				skipHtml: streamdown.skipHtml,
+				unwrapDisallowed: streamdown.unwrapDisallowed
 			}
-
-			for (const [label, entry] of parsedBlock.footnotes.footnotes) {
-				footnotes.set(label, entry);
-			}
-		}
-
-		return {
-			refs,
-			footnotes
-		} satisfies FootnoteState;
-	});
-
-	const footnoteEntries = $derived.by(() => {
-		return Array.from(footnoteState.footnotes.values()).map((entry) => {
-			const content = entry.lines.join('\n').trim();
-			return {
-				...entry,
-				lines: [...entry.lines],
-				tokens:
-					content.length === 0
-						? []
-						: filterMarkdownTokens(parseMarkdownWithOptionalFootnotes(content).tokens, {
-								allowedElements: streamdown.allowedElements,
-								allowElement: streamdown.allowElement,
-								disallowedElements: streamdown.disallowedElements,
-								skipHtml: streamdown.skipHtml,
-								unwrapDisallowed: streamdown.unwrapDisallowed
-							})
-			};
-		}) satisfies Footnote[];
-	});
+		})
+	);
 
 	$effect(() => {
 		streamdown.footnotes.refs = new Map(footnoteState.refs);
 		streamdown.footnotes.footnotes = new Map(footnoteState.footnotes);
 	});
-	const shouldHideCaret = $derived(
-		!shouldShowCaret || rawBlocks.length === 0
-			? false
-			: (() => {
-					const lastBlock = rawBlocks.at(-1) as string;
-					return hasIncompleteCodeFence(lastBlock) || hasTable(lastBlock);
-				})()
+	const caretPresentation = $derived.by(() =>
+		resolveCaretPresentation({
+			caret,
+			className,
+			futureClassName,
+			prefix,
+			rawBlocks,
+			shouldShowCaret
+		})
 	);
-	const rootStyle = $derived(
-		shouldShowCaret && !shouldHideCaret ? `--streamdown-caret: "${carets[caret!]}";` : undefined
-	);
-	const rootClassName = $derived(
-		prefixedCn(
-			'whitespace-normal',
-			resolvedClassName,
-			shouldShowCaret &&
-				!shouldHideCaret &&
-				'[&>*:last-child]:after:inline [&>*:last-child]:after:align-baseline [&>*:last-child]:after:content-[var(--streamdown-caret)]'
-		)
-	);
-	const resolveBlockDirection = (block: string): BlockProps['dir'] => {
-		if (!dir) {
-			return undefined;
-		}
-
-		if (dir === 'auto') {
-			return detectTextDirection(block);
-		}
-
-		return dir;
-	};
+	const shouldHideCaret = $derived(caretPresentation.shouldHideCaret);
+	const rootStyle = $derived(caretPresentation.rootStyle);
+	const rootClassName = $derived(caretPresentation.rootClassName);
 </script>
 
 <div bind:this={element} class={rootClassName} style={rootStyle}>
@@ -672,7 +348,7 @@
 				{shouldNormalizeHtmlIndentation}
 				{index}
 				isIncomplete={parsedBlock.isIncomplete}
-				dir={resolveBlockDirection(parsedBlock.raw)}
+				dir={resolveBlockDirection({ block: parsedBlock.raw, dir })}
 				children={blockChildren}
 			/>{:else}<Block
 				static={resolvedStatic}

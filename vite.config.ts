@@ -55,6 +55,20 @@ function copyReadmePlugin() {
 
 export default defineConfig({
 	logLevel: isTestMode ? 'error' : undefined,
+	optimizeDeps: {
+		// Pre-bundle dynamically imported markdown/code deps up front so browser-mode
+		// Vitest does not trigger a mid-run Vite reload.
+		include: [
+			'rehype-katex',
+			'remark-math',
+			'shiki',
+			'shiki/core',
+			'shiki/engine/javascript',
+			'@shikijs/langs/javascript',
+			'@shikijs/themes/github-dark',
+			'@shikijs/themes/github-light'
+		]
+	},
 	server: {
 		fs: {
 			allow: [resolve('.'), resolve('packages')]

@@ -1,6 +1,6 @@
 "use client";
 
-// ../../src/lib/plugins/cjk-shared.ts
+// ../../shared/plugin-core/cjk.ts
 import remarkCjkFriendly from "remark-cjk-friendly";
 import remarkCjkFriendlyGfmStrikethrough from "remark-cjk-friendly-gfm-strikethrough";
 import { visit } from "unist-util-visit";
@@ -91,11 +91,7 @@ function createCjkPlugin() {
   };
 }
 var cjk = createCjkPlugin();
-
-// index.ts
-var createCjkPlugin2 = createCjkPlugin;
-var cjk2 = cjk;
 export {
-  cjk2 as cjk,
-  createCjkPlugin2 as createCjkPlugin
+  cjk,
+  createCjkPlugin
 };
