@@ -21,6 +21,7 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const coverageRoot = resolve(repoRoot, 'coverage');
+const browserCoverageBatchSize = 10;
 
 function parseArgs(argv) {
 	const options = {
@@ -108,6 +109,20 @@ function runCommand(command, args) {
 	}
 }
 
+function isClientCoverageTestFile(path) {
+	return /\.svelte\.(test|spec)\.[jt]s$/.test(path);
+}
+
+function chunkArray(items, size) {
+	const chunks = [];
+
+	for (let index = 0; index < items.length; index += size) {
+		chunks.push(items.slice(index, index + size));
+	}
+
+	return chunks;
+}
+
 function cleanupBrowserOrphans() {
 	if (process.platform === 'win32') {
 		return;
@@ -133,6 +148,27 @@ function formatPercent(value) {
 	return `${value.toFixed(2)}%`;
 }
 
+function formatSummaryMetric(metric) {
+	const total = metric?.total ?? 0;
+	const covered = metric?.covered ?? 0;
+	const skipped = metric?.skipped ?? 0;
+
+	return {
+		total,
+		covered,
+		skipped,
+		pct: total === 0 ? 100 : (covered / total) * 100
+	};
+}
+
+function mergeSummaryMetric(left, right) {
+	return formatSummaryMetric({
+		total: Math.max(left?.total ?? 0, right?.total ?? 0),
+		covered: Math.max(left?.covered ?? 0, right?.covered ?? 0),
+		skipped: Math.max(left?.skipped ?? 0, right?.skipped ?? 0)
+	});
+}
+
 function parseCoveragePercent(value) {
 	if (typeof value === 'number') {
 		return Number.isFinite(value) ? value : 0;
@@ -156,6 +192,58 @@ function readSuiteMetrics(summaryPath) {
 		branches: parseCoveragePercent(total.branches?.pct),
 		functions: parseCoveragePercent(total.functions?.pct),
 		lines: parseCoveragePercent(total.lines?.pct)
+	};
+}
+
+function mergeCoverageSummaries(summaries) {
+	if (summaries.length === 0) {
+		throw new Error('Expected at least one coverage summary to merge');
+	}
+
+	const mergedEntries = {};
+
+	for (const summary of summaries) {
+		for (const [entryName, entryMetrics] of Object.entries(summary)) {
+			if (entryName === 'total') {
+				continue;
+			}
+
+			const current = mergedEntries[entryName] ?? {};
+			mergedEntries[entryName] = {
+				lines: mergeSummaryMetric(current.lines, entryMetrics.lines),
+				statements: mergeSummaryMetric(current.statements, entryMetrics.statements),
+				functions: mergeSummaryMetric(current.functions, entryMetrics.functions),
+				branches: mergeSummaryMetric(current.branches, entryMetrics.branches),
+				branchesTrue: mergeSummaryMetric(current.branchesTrue, entryMetrics.branchesTrue)
+			};
+		}
+	}
+
+	const totalMetric = (metricName) =>
+		formatSummaryMetric({
+			total: Object.values(mergedEntries).reduce(
+				(sum, entry) => sum + (entry[metricName]?.total ?? 0),
+				0
+			),
+			covered: Object.values(mergedEntries).reduce(
+				(sum, entry) => sum + (entry[metricName]?.covered ?? 0),
+				0
+			),
+			skipped: Object.values(mergedEntries).reduce(
+				(sum, entry) => sum + (entry[metricName]?.skipped ?? 0),
+				0
+			)
+		});
+
+	return {
+		total: {
+			lines: totalMetric('lines'),
+			statements: totalMetric('statements'),
+			functions: totalMetric('functions'),
+			branches: totalMetric('branches'),
+			branchesTrue: totalMetric('branchesTrue')
+		},
+		...mergedEntries
 	};
 }
 
@@ -210,38 +298,76 @@ function main() {
 
 		rmSync(reportsDirectory, { recursive: true, force: true });
 
-		const vitestArgs = [
-			'exec',
-			'vitest',
-			'run',
-			'--reporter=dot',
-			'--silent=passed-only',
-			'--coverage.enabled=true',
-			'--coverage.provider=v8',
-			'--coverage.reporter=text-summary',
-			'--coverage.reporter=json-summary',
-			'--coverage.reporter=html',
-			`--coverage.reportsDirectory=${relative(repoRoot, reportsDirectory)}`,
-			...(suite.sourceInclude ?? coverageSourceInclude).map(
-				(pattern) => `--coverage.include=${pattern}`
-			),
-			...coverageSourceExclude.map((pattern) => `--coverage.exclude=${pattern}`),
-			...(suite.projects.includes('client')
-				? ['--maxWorkers=1', '--sequence.concurrent=false']
-				: []),
-			...suite.projects.map((project) => `--project=${project}`),
-			...testFiles
-		];
+		const batchSummaryPaths = [];
 
-		if (suite.projects.includes('client')) {
-			cleanupBrowserOrphans();
+		const runVitestCoverage = ({ projects, files, isBrowserBatch, batchName }) => {
+			if (files.length === 0) {
+				return;
+			}
+
+			const batchReportsDirectory = resolve(reportsDirectory, batchName);
+			const vitestArgs = [
+				'exec',
+				'vitest',
+				'run',
+				'--reporter=dot',
+				'--silent=passed-only',
+				'--coverage.enabled=true',
+				'--coverage.provider=v8',
+				'--coverage.reporter=text-summary',
+				'--coverage.reporter=json-summary',
+				'--coverage.reporter=html',
+				`--coverage.reportsDirectory=${relative(repoRoot, batchReportsDirectory)}`,
+				...(suite.sourceInclude ?? coverageSourceInclude).map(
+					(pattern) => `--coverage.include=${pattern}`
+				),
+				...coverageSourceExclude.map((pattern) => `--coverage.exclude=${pattern}`),
+				...(isBrowserBatch ? ['--maxWorkers=1', '--sequence.concurrent=false'] : []),
+				...projects.map((project) => `--project=${project}`),
+				...files
+			];
+
+			if (isBrowserBatch) {
+				cleanupBrowserOrphans();
+			}
+
+			runCommand('pnpm', vitestArgs);
+			batchSummaryPaths.push(resolve(batchReportsDirectory, 'coverage-summary.json'));
+
+			if (isBrowserBatch) {
+				cleanupBrowserOrphans();
+			}
+		};
+
+		const clientTestFiles = suite.projects.includes('client')
+			? testFiles.filter((path) => isClientCoverageTestFile(path))
+			: [];
+		const serverTestFiles = suite.projects.includes('server')
+			? testFiles.filter((path) => !isClientCoverageTestFile(path))
+			: [];
+
+		if (suite.projects.includes('server')) {
+			runVitestCoverage({
+				projects: ['server'],
+				files: serverTestFiles,
+				isBrowserBatch: false,
+				batchName: 'server'
+			});
 		}
 
-		runCommand('pnpm', vitestArgs);
-
 		if (suite.projects.includes('client')) {
-			cleanupBrowserOrphans();
+			for (const [index, files] of chunkArray(clientTestFiles, browserCoverageBatchSize).entries()) {
+				runVitestCoverage({
+					projects: ['client'],
+					files,
+					isBrowserBatch: true,
+					batchName: `client-${index + 1}`
+				});
+			}
 		}
+
+		const mergedSummary = mergeCoverageSummaries(batchSummaryPaths.map((path) => readSummary(path)));
+		writeFileSync(summaryPath, `${JSON.stringify(mergedSummary, null, 2)}\n`);
 
 		const metrics = readSuiteMetrics(summaryPath);
 		assertThresholds(name, metrics, suite.thresholds);

@@ -72,7 +72,14 @@ export default defineConfig({
 	server: {
 		fs: {
 			allow: [resolve('.'), resolve('packages')]
-		}
+		},
+		// Browser-mode test runs do not rely on file watching, and ignoring generated
+		// coverage/test output prevents CI from exhausting the watcher file-descriptor limit.
+		watch: isTestMode
+			? {
+					ignored: ['**/coverage/**', '**/test-results/**', '**/playwright-report/**']
+				}
+			: undefined
 	},
 	resolve: {
 		alias: {
