@@ -22,6 +22,103 @@ Streamdown renders **markdown**, tables, alerts, footnotes, citations, and more.
 <Streamdown {content} />
 ```
 
+## Consumer Setup
+
+### Tailwind v4 / SvelteKit
+
+If your app uses Tailwind v4, add Streamdown's published files as a source so Tailwind keeps the package's utility classes in the final CSS. In a SvelteKit app that keeps its main stylesheet at `src/app.css`:
+
+```css
+@import 'tailwindcss';
+@source "../node_modules/svelte-streamdown/dist/**/*.{js,svelte,ts}";
+```
+
+If your stylesheet lives elsewhere, adjust the relative path from that file to `node_modules/svelte-streamdown/dist`. Without `@source`, built-in code blocks, tables, alerts, and theme classes can render unstyled in production builds.
+
+### Shiki themes
+
+`shikiTheme` controls the active built-in Shiki theme. `shikiThemes` is the registration map for custom theme names when you want to switch between imported themes by string.
+
+Use a single bundled theme name when one theme is enough:
+
+```svelte
+<Streamdown {content} shikiTheme="github-dark" />
+```
+
+Use a light/dark tuple when your app already toggles `.dark`, `[data-theme='dark']`, or `color-scheme: dark` on `<html>` / `<body>` and you want Streamdown to follow that mode automatically:
+
+```svelte
+<Streamdown {content} shikiTheme={['github-light', 'github-dark']} />
+```
+
+You can also pass imported Shiki theme objects directly:
+
+````svelte
+<script lang="ts">
+	import { Streamdown } from 'svelte-streamdown';
+	import vitesseDark from '@shikijs/themes/vitesse-dark';
+	import vitesseLight from '@shikijs/themes/vitesse-light';
+
+	let content = '```ts\nconsole.log(\"hi\");\n```';
+</script>
+
+<Streamdown {content} shikiTheme={[vitesseLight, vitesseDark]} />
+````
+
+When you want to switch custom themes by name at runtime, register them once with `shikiThemes` and then update `shikiTheme` reactively:
+
+````svelte
+<script lang="ts">
+	import { Streamdown } from 'svelte-streamdown';
+	import vitesseDark from '@shikijs/themes/vitesse-dark';
+	import vitesseLight from '@shikijs/themes/vitesse-light';
+
+	let content = '```ts\nconsole.log(\"hi\");\n```';
+	let isDark = false;
+
+	const shikiThemes = {
+		'vitesse-light': vitesseLight,
+		'vitesse-dark': vitesseDark
+	};
+</script>
+
+<button type="button" onclick={() => (isDark = !isDark)}> Toggle code theme </button>
+
+<Streamdown {content} shikiTheme={isDark ? 'vitesse-dark' : 'vitesse-light'} {shikiThemes} />
+````
+
+There is no `shikiPreloadThemes` prop in the current API. Theme switching is supported by updating `shikiTheme`, and custom theme registrations should be passed through `shikiThemes` or directly inside the `shikiTheme` tuple.
+
+If you pass a custom `plugins.code`, its `getThemes()` result becomes the active code-block theme source instead of `shikiTheme`.
+
+### Math and Mermaid
+
+Math and Mermaid are opt-in plugins. The minimal consumer setup is:
+
+```svelte
+<script lang="ts">
+	import { Streamdown, createMathPlugin, createMermaidPlugin } from 'svelte-streamdown';
+
+	let content = `
+$$E = mc^2$$
+
+\`\`\`mermaid
+graph TD
+  A --> B
+\`\`\`
+`;
+
+	const plugins = {
+		math: createMathPlugin(),
+		mermaid: createMermaidPlugin()
+	};
+</script>
+
+<Streamdown {content} {plugins} />
+```
+
+The built-in math renderer already imports the default KaTeX stylesheet. Without `plugins.math`, math falls back to plain text. Without `plugins.mermaid`, Mermaid fences fall back to code-style output.
+
 ## What Ships Today
 
 - Streaming and static rendering modes
@@ -245,9 +342,9 @@ The public `StreamdownProps` type is exported from the package.
 | `mergeTheme`                | `boolean`                                                                                                                                          | Merge custom theme with the selected base theme.                                |
 | `prefix`                    | `string`                                                                                                                                           | Prefixes generated utility classes.                                             |
 | `lineNumbers`               | `boolean`                                                                                                                                          | Enables line numbers for fenced code blocks when the fence allows them.         |
-| `shikiTheme`                | `string`                                                                                                                                           | Active Shiki theme name.                                                        |
+| `shikiTheme`                | `ThemeInput \| [ThemeInput, ThemeInput]`                                                                                                           | Active Shiki theme, or a `[light, dark]` tuple.                                 |
 | `shikiLanguages`            | `LanguageInfo[]`                                                                                                                                   | Extra languages for the built-in highlighter.                                   |
-| `shikiThemes`               | `Record<string, ThemeRegistration>`                                                                                                                | Extra Shiki theme registrations.                                                |
+| `shikiThemes`               | `Record<string, ThemeRegistration>`                                                                                                                | Custom Shiki theme registrations referenced by `shikiTheme`.                    |
 | `mermaidConfig`             | `MermaidConfig`                                                                                                                                    | Mermaid configuration passed to the renderer.                                   |
 | `katexConfig`               | `KatexOptions \| ((inline: boolean) => KatexOptions)`                                                                                              | KaTeX configuration.                                                            |
 | `translations`              | `Partial<StreamdownTranslations>`                                                                                                                  | UI label overrides.                                                             |
