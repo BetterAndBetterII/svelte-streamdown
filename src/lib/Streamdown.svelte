@@ -14,14 +14,12 @@
 	import { PluginContext } from './plugin-context.js';
 	import { getThemeName, type ThemeInput } from './plugins.js';
 	import { createCn, mergeTheme, prefixThemeClasses, shadcnTheme } from './theme.js';
+	import { type FootnoteState, type StreamdownToken } from './marked/index.js';
 	import {
-		lexWithoutFootnotes,
-		lexWithFootnotes,
-		parseBlocksWithoutFootnotes,
-		parseBlocksWithFootnotes,
-		type FootnoteState,
-		type StreamdownToken
-	} from './marked/index.js';
+		createMarkdownParseCache,
+		type MarkdownBlockCacheScope,
+		type MarkdownBlockParseResult
+	} from './markdown-parse-cache.js';
 	import { filterMarkdownTokens } from './markdown.js';
 	import type { Footnote, FootnoteRef } from './marked/marked-footnotes.js';
 	import Footnotes from './Elements/Footnotes.svelte';
@@ -440,6 +438,7 @@
 
 	const id = $props.id();
 	let previousIsAnimating = $state<boolean | undefined>(undefined);
+	const markdownParseCache = createMarkdownParseCache();
 
 	$effect(() => {
 		if (resolvedMode === 'static') {
@@ -499,27 +498,16 @@
 			!footnoteDefinitionPattern.test(markdown)
 		);
 
-	const parseMarkdownWithOptionalFootnotes = (markdown: string) => {
-		if (shouldResolveFootnotes(markdown)) {
-			return lexWithFootnotes(markdown, streamdown.extensions);
-		}
-
-		return {
-			tokens: lexWithoutFootnotes(markdown, streamdown.extensions),
-			footnotes: {
-				refs: new Map<string, FootnoteRef>(),
-				footnotes: new Map<string, Footnote>()
-			}
-		};
-	};
-
-	const splitBlocks = $derived(
-		parseMarkdownIntoBlocksFn ??
-			((markdown: string) =>
-				shouldResolveFootnotes(markdown)
-					? parseBlocksWithFootnotes(markdown, streamdown.extensions).blocks
-					: parseBlocksWithoutFootnotes(markdown, streamdown.extensions))
-	);
+	const parseMarkdownWithOptionalFootnotes = (
+		markdown: string,
+		cacheScope: MarkdownBlockCacheScope = 'stable'
+	): MarkdownBlockParseResult =>
+		markdownParseCache.parseBlock({
+			markdown,
+			extensions: streamdown.extensions,
+			resolveFootnotes: shouldResolveFootnotes(markdown),
+			cacheScope
+		});
 	const normalizedContent = $derived.by(() => {
 		if (!(resolvedMode === 'streaming' && parseIncompleteMarkdown)) {
 			return preprocessedContent;
@@ -527,9 +515,28 @@
 
 		return remend(preprocessedContent, remendOptions);
 	});
-	const rawBlocks = $derived(
-		resolvedStatic ? [normalizedContent] : splitBlocks(normalizedContent)
-	);
+	const parsedMarkdownDocument = $derived.by(() => {
+		if (resolvedStatic) {
+			const staticBlock = parseMarkdownWithOptionalFootnotes(normalizedContent);
+			return {
+				blocks: [normalizedContent],
+				footnotes: staticBlock.footnotes,
+				staticBlock
+			};
+		}
+
+		return {
+			...markdownParseCache.parseDocument({
+				markdown: normalizedContent,
+				extensions: streamdown.extensions,
+				resolveFootnotes: shouldResolveFootnotes(normalizedContent),
+				splitBlocksFn: parseMarkdownIntoBlocksFn,
+				blockCacheScope: 'transient'
+			}),
+			staticBlock: null
+		};
+	});
+	const rawBlocks = $derived(parsedMarkdownDocument.blocks);
 	const blockIsIncomplete = $derived(
 		rawBlocks.map(
 			(block, index) =>
@@ -541,15 +548,29 @@
 	);
 	const parsedDocument = $derived.by(() => {
 		return {
-			footnotes: parseMarkdownWithOptionalFootnotes(normalizedContent).footnotes
+			footnotes: parsedMarkdownDocument.footnotes
 		};
 	});
 
 	const parsedBlocks = $derived.by(() => {
+		if (resolvedStatic && parsedMarkdownDocument.staticBlock) {
+			return [
+				{
+					raw: normalizedContent,
+					tokens: preserveStreamingFootnoteLiterals(parsedMarkdownDocument.staticBlock.tokens),
+					footnotes: parsedMarkdownDocument.staticBlock.footnotes,
+					isIncomplete: blockIsIncomplete[0] ?? false
+				}
+			] satisfies ParsedBlock[];
+		}
+
 		return rawBlocks.map((raw, index) => {
 			const isIncomplete = blockIsIncomplete[index] ?? false;
 			const markdown = raw;
-			const parsed = parseMarkdownWithOptionalFootnotes(markdown);
+			const parsed = parseMarkdownWithOptionalFootnotes(
+				markdown,
+				isIncomplete ? 'transient' : 'stable'
+			);
 
 			return {
 				raw,
@@ -637,27 +658,30 @@
 	};
 </script>
 
-<div bind:this={element} class={rootClassName} style={rootStyle}>{#if shouldShowCaret && !shouldHideCaret && parsedBlocks.length === 0}<span></span>{/if}{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}{#if BlockComponent}{#snippet blockChildren()}<Block
-	static={resolvedStatic}
-	block={parsedBlock.raw}
-	tokens={parsedBlock.tokens}
-	parseIncompleteMarkdown={false}
-	isIncomplete={parsedBlock.isIncomplete}
-/>{/snippet}<BlockComponent
-	content={parsedBlock.raw}
-	shouldParseIncompleteMarkdown={parseIncompleteMarkdown}
-	{shouldNormalizeHtmlIndentation}
-	{index}
-	isIncomplete={parsedBlock.isIncomplete}
-	dir={resolveBlockDirection(parsedBlock.raw)}
-	children={blockChildren}
-/>{:else}<Block
-	static={resolvedStatic}
-	block={parsedBlock.raw}
-	tokens={parsedBlock.tokens}
-	parseIncompleteMarkdown={false}
-	isIncomplete={parsedBlock.isIncomplete}
-/>{/if}{/each}<Footnotes entries={footnoteEntries} /></div>
+<div bind:this={element} class={rootClassName} style={rootStyle}>
+	{#if shouldShowCaret && !shouldHideCaret && parsedBlocks.length === 0}<span
+		></span>{/if}{#each parsedBlocks as parsedBlock, index (`${id}-block-${index}`)}{#if BlockComponent}{#snippet blockChildren()}<Block
+					static={resolvedStatic}
+					block={parsedBlock.raw}
+					tokens={parsedBlock.tokens}
+					parseIncompleteMarkdown={false}
+					isIncomplete={parsedBlock.isIncomplete}
+				/>{/snippet}<BlockComponent
+				content={parsedBlock.raw}
+				shouldParseIncompleteMarkdown={parseIncompleteMarkdown}
+				{shouldNormalizeHtmlIndentation}
+				{index}
+				isIncomplete={parsedBlock.isIncomplete}
+				dir={resolveBlockDirection(parsedBlock.raw)}
+				children={blockChildren}
+			/>{:else}<Block
+				static={resolvedStatic}
+				block={parsedBlock.raw}
+				tokens={parsedBlock.tokens}
+				parseIncompleteMarkdown={false}
+				isIncomplete={parsedBlock.isIncomplete}
+			/>{/if}{/each}<Footnotes entries={footnoteEntries} />
+</div>
 
 <style global>
 	:global {

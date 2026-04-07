@@ -123,12 +123,19 @@ Streamdown's built-in math component imports the default KaTeX stylesheet for re
 
 - Streaming and static rendering modes
 - Incomplete-markdown repair for streaming content
+- Streaming parse caching for block splits and per-block lexing
 - Hardened link, image, and raw HTML handling
 - Built-in code block rendering with syntax highlighting, copy, and download controls
 - Tables, alerts, footnotes, description lists, sub/sup text, and inline citations
 - MDX-style component tags and custom marked extensions
 - Snippet- and component-based rendering overrides
 - Theme, icon, translation, and control customization
+
+## Streaming Performance
+
+`svelte-streamdown` now keeps a parser cache around the active markdown stream. During streaming updates it reuses the latest document split and memoizes lexed results for stable block content, while the actively changing tail block stays transient so the cache does not grow without bound across token-by-token updates.
+
+This closes the markdown parse-caching gap raised in `beynar/svelte-streamdown#18`. The remaining accepted performance drift versus the React reference is narrower: React-specific `memo` comparators and deferred-render internals are still framework-specific and documented separately in `docs/parity-matrix.md`.
 
 ## Rich Rendering Plugins
 
