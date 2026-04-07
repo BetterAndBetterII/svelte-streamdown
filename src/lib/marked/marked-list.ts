@@ -265,6 +265,9 @@ export const markedList: Extension = {
 				const fencesBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:\`\`\`|~~~)`);
 				const headingBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}#`);
 				const htmlBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}<[a-z].*>`, 'i');
+				const footnoteBeginRegex = new RegExp(
+					`^ {0,${Math.min(3, indent - 1)}}\\[\\^[^\\]\\n]+\\]:(?:[ \\t]+|$)`
+				);
 
 				// Check if following lines should be included in List Item
 				while (src) {
@@ -275,6 +278,7 @@ export const markedList: Extension = {
 						fencesBeginRegex.test(nextLineWithoutTabs) ||
 						headingBeginRegex.test(nextLineWithoutTabs) ||
 						htmlBeginRegex.test(nextLineWithoutTabs) ||
+						footnoteBeginRegex.test(nextLineWithoutTabs) ||
 						nextBulletRegex.test(nextLineWithoutTabs) ||
 						hrRegex.test(nextLineWithoutTabs)
 					)

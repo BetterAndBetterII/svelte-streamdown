@@ -44,47 +44,6 @@ import { markedCitations, type CitationToken } from './marked-citations.js';
 import { markedMdx, type MdxToken } from './marked-mdx.js';
 import { markedCjk } from './marked-cjk.js';
 
-const VOID_HTML_TAGS = new Set([
-	'area',
-	'base',
-	'br',
-	'col',
-	'embed',
-	'hr',
-	'img',
-	'input',
-	'link',
-	'meta',
-	'param',
-	'source',
-	'track',
-	'wbr'
-]);
-
-const getOpeningHtmlTagName = (raw: string): string | null => {
-	const match = raw.match(/^\s*<([A-Za-z][\w:-]*)(?=[\s/>])/);
-	if (!match) {
-		return null;
-	}
-
-	const tagName = match[1].toLowerCase();
-	if (VOID_HTML_TAGS.has(tagName) || /^\s*<\//.test(raw) || /\/>\s*$/.test(raw)) {
-		return null;
-	}
-
-	return tagName;
-};
-
-const getHtmlTagDepthDelta = (raw: string, tagName: string): number => {
-	const openPattern = new RegExp(`<${tagName}(?=[\\s>/])[^>]*>`, 'gi');
-	const closePattern = new RegExp(`</${tagName}\\s*>`, 'gi');
-	const selfClosingPattern = new RegExp(`<${tagName}(?=[\\s>/])[^>]*\\/\\s*>`, 'gi');
-	const opens =
-		(raw.match(openPattern) ?? []).length - (raw.match(selfClosingPattern) ?? []).length;
-	const closes = (raw.match(closePattern) ?? []).length;
-	return opens - closes;
-};
-
 export type GenericToken = {
 	type: string;
 	raw: string;
@@ -139,7 +98,6 @@ export type { TableToken, THead, TBody, TFoot, THeadRow, TRow, TH, TD } from './
 
 const footnoteReferencePattern = /\[\^[\w-]{1,200}\](?!:)/;
 const footnoteDefinitionPattern = /\[\^[\w-]{1,200}\]:/;
-const closingTagPattern = /<\/(\w+)>/;
 const openingTagPattern = /<(\w+)[\s>]/;
 
 const voidElements = new Set([
@@ -310,6 +268,76 @@ const buildBlockLexerOptions = (extensions: Extension[], includeFootnotes: boole
 		)
 	);
 
+const defaultBlockLexerOptionsWithoutFootnotes = { gfm: true };
+
+const mergeBlockTokens = (
+	rawBlocks: Array<{ raw: string; type: string; block?: boolean }>
+): string[] => {
+	const mergedBlocks: string[] = [];
+	const htmlStack: string[] = [];
+	let previousTokenWasCode = false;
+
+	for (const block of rawBlocks) {
+		const currentBlock = block.raw;
+		const mergedBlocksLen = mergedBlocks.length;
+
+		if (htmlStack.length > 0) {
+			mergedBlocks[mergedBlocksLen - 1] += currentBlock;
+
+			const trackedTag = htmlStack[htmlStack.length - 1];
+			const newOpenTags = countNonSelfClosingOpenTags(currentBlock, trackedTag);
+			const newCloseTags = countClosingTags(currentBlock, trackedTag);
+
+			for (let index = 0; index < newOpenTags; index += 1) {
+				htmlStack.push(trackedTag);
+			}
+
+			for (let index = 0; index < newCloseTags; index += 1) {
+				if (htmlStack.length > 0 && htmlStack[htmlStack.length - 1] === trackedTag) {
+					htmlStack.pop();
+				}
+			}
+
+			continue;
+		}
+
+		if (block.type === 'html' && block.block) {
+			const openingTagMatch = currentBlock.match(openingTagPattern);
+			if (openingTagMatch) {
+				const tagName = openingTagMatch[1];
+				const openTags = countNonSelfClosingOpenTags(currentBlock, tagName);
+				const closeTags = countClosingTags(currentBlock, tagName);
+				if (openTags > closeTags) {
+					htmlStack.push(tagName);
+				}
+			}
+		}
+
+		if (mergedBlocksLen > 0 && !previousTokenWasCode) {
+			const previousBlock = mergedBlocks[mergedBlocksLen - 1];
+			if (countDoubleDollars(previousBlock) % 2 === 1) {
+				mergedBlocks[mergedBlocksLen - 1] = previousBlock + currentBlock;
+				continue;
+			}
+		}
+
+		mergedBlocks.push(currentBlock);
+
+		if (block.type !== 'space') {
+			previousTokenWasCode = block.type === 'code';
+		}
+	}
+
+	return mergedBlocks;
+};
+
+const parseDefaultBlocksWithoutFootnotes = (markdown: string): string[] =>
+	mergeBlockTokens(
+		Lexer.lex(markdown, defaultBlockLexerOptionsWithoutFootnotes).filter(
+			(block) => block.type !== 'space'
+		)
+	);
+
 export const lexWithFootnotes = (
 	markdown: string,
 	extensions: Extension[] = []
@@ -354,48 +382,21 @@ export const parseBlocksWithFootnotes = (
 			footnotes: lexWithFootnotes(markdown, extensions).footnotes
 		};
 	}
-	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, true)) as LexerWithFootnotes;
 
+	if (extensions.length === 0) {
+		return {
+			blocks: parseDefaultBlocksWithoutFootnotes(markdown),
+			footnotes: cloneFootnoteState()
+		};
+	}
+
+	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, true)) as LexerWithFootnotes;
 	const rawBlocks = blockLexer
 		.blockTokens(markdown, [])
 		.filter((block) => block.type !== 'space' && block.type !== 'footnote');
 
-	const mergedBlocks: string[] = [];
-	let previousTokenWasCode = false;
-
-	for (let index = 0; index < rawBlocks.length; index += 1) {
-		const block = rawBlocks[index];
-		let currentBlock = block.raw;
-
-		if (block.type === 'html') {
-			const tagName = getOpeningHtmlTagName(block.raw);
-			if (tagName) {
-				let depth = getHtmlTagDepthDelta(block.raw, tagName);
-
-				while (depth > 0 && index + 1 < rawBlocks.length) {
-					index += 1;
-					const nextBlock = rawBlocks[index];
-					currentBlock += nextBlock.raw;
-					depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
-				}
-			}
-		}
-
-		if (mergedBlocks.length > 0 && !previousTokenWasCode) {
-			const previousBlock = mergedBlocks[mergedBlocks.length - 1];
-			if (countDoubleDollars(previousBlock) % 2 === 1) {
-				mergedBlocks[mergedBlocks.length - 1] = previousBlock + currentBlock;
-				previousTokenWasCode = block.type === 'code';
-				continue;
-			}
-		}
-
-		mergedBlocks.push(currentBlock);
-		previousTokenWasCode = block.type === 'code';
-	}
-
 	return {
-		blocks: mergedBlocks,
+		blocks: mergeBlockTokens(rawBlocks),
 		footnotes: cloneFootnoteState(blockLexer.footnotes)
 	};
 };
@@ -404,43 +405,14 @@ export const parseBlocksWithoutFootnotes = (
 	markdown: string,
 	extensions: Extension[] = []
 ): string[] => {
-	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, false));
-	const rawBlocks = blockLexer.blockTokens(markdown, []).filter((block) => block.type !== 'space');
-	const mergedBlocks: string[] = [];
-	let previousTokenWasCode = false;
-
-	for (let index = 0; index < rawBlocks.length; index += 1) {
-		const block = rawBlocks[index];
-		let currentBlock = block.raw;
-
-		if (block.type === 'html') {
-			const tagName = getOpeningHtmlTagName(block.raw);
-			if (tagName) {
-				let depth = getHtmlTagDepthDelta(block.raw, tagName);
-
-				while (depth > 0 && index + 1 < rawBlocks.length) {
-					index += 1;
-					const nextBlock = rawBlocks[index];
-					currentBlock += nextBlock.raw;
-					depth += getHtmlTagDepthDelta(nextBlock.raw, tagName);
-				}
-			}
-		}
-
-		if (mergedBlocks.length > 0 && !previousTokenWasCode) {
-			const previousBlock = mergedBlocks[mergedBlocks.length - 1];
-			if (countDoubleDollars(previousBlock) % 2 === 1) {
-				mergedBlocks[mergedBlocks.length - 1] = previousBlock + currentBlock;
-				previousTokenWasCode = block.type === 'code';
-				continue;
-			}
-		}
-
-		mergedBlocks.push(currentBlock);
-		previousTokenWasCode = block.type === 'code';
+	if (extensions.length === 0) {
+		return parseDefaultBlocksWithoutFootnotes(markdown);
 	}
 
-	return mergedBlocks;
+	const blockLexer = new Lexer(buildBlockLexerOptions(extensions, false));
+	const rawBlocks = blockLexer.blockTokens(markdown, []).filter((block) => block.type !== 'space');
+
+	return mergeBlockTokens(rawBlocks);
 };
 
 export const parseBlocks = (markdown: string, extensions: Extension[] = []): string[] => {

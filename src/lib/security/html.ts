@@ -55,6 +55,9 @@ type RehypeNode = {
 
 const URL_ATTRIBUTE_KEYS = new Set(['href', 'src']);
 const FALLBACK_HARDEN_ORIGIN = 'https://streamdown.invalid';
+const WILDCARD_PREFIX = ['*'];
+const sanitizeSchemaCache = new WeakMap<AllowedTags, typeof defaultSanitizeSchema>();
+const PARSED_WILDCARD_PREFIX: AllowedUrlPrefix[] = [{ type: 'wildcard' }];
 
 const visitRehypeTree = (node: RehypeNode, visitor: (node: RehypeNode) => void): void => {
 	visitor(node);
@@ -134,7 +137,12 @@ function createSanitizeSchema(allowedTags?: AllowedTags) {
 		return defaultSanitizeSchema;
 	}
 
-	return {
+	const cachedSchema = sanitizeSchemaCache.get(allowedTags);
+	if (cachedSchema) {
+		return cachedSchema;
+	}
+
+	const schema = {
 		...defaultSanitizeSchema,
 		tagNames: [
 			...new Set([...(defaultSanitizeSchema.tagNames ?? []), ...Object.keys(allowedTags)])
@@ -144,11 +152,87 @@ function createSanitizeSchema(allowedTags?: AllowedTags) {
 			...allowedTags
 		}
 	};
+
+	sanitizeSchemaCache.set(allowedTags, schema);
+
+	return schema;
 }
 
 function hasProtocolOnlyPrefix(allowedPrefixes: readonly AllowedUrlPrefix[]): boolean {
 	return allowedPrefixes.some((prefix) => prefix.type === 'protocol');
 }
+
+const createMarkdownSecurityProcessor = ({
+	allowedImagePrefixes,
+	allowedLinkPrefixes,
+	allowedTags,
+	defaultOrigin,
+	urlTransform
+}: {
+	allowedImagePrefixes: readonly string[];
+	allowedLinkPrefixes: readonly string[];
+	allowedTags?: AllowedTags;
+	defaultOrigin?: string;
+	urlTransform?: UrlTransform;
+}) => {
+	const parsedAllowedLinkPrefixes = parseAllowedUrlPrefixes(allowedLinkPrefixes, defaultOrigin);
+	const parsedAllowedImagePrefixes = parseAllowedUrlPrefixes(allowedImagePrefixes, defaultOrigin);
+	const shouldDelegateLinkPrefixChecks = hasProtocolOnlyPrefix(parsedAllowedLinkPrefixes);
+	const shouldDelegateImagePrefixChecks = hasProtocolOnlyPrefix(parsedAllowedImagePrefixes);
+	const hardenAllowedLinkPrefixes = shouldDelegateLinkPrefixChecks
+		? WILDCARD_PREFIX
+		: allowedLinkPrefixes;
+	const hardenAllowedImagePrefixes = shouldDelegateImagePrefixChecks
+		? WILDCARD_PREFIX
+		: allowedImagePrefixes;
+	const hardenDefaultOrigin = resolveHardenDefaultOrigin(
+		defaultOrigin,
+		hardenAllowedLinkPrefixes,
+		hardenAllowedImagePrefixes,
+		shouldDelegateLinkPrefixChecks
+			? PARSED_WILDCARD_PREFIX
+			: parseAllowedUrlPrefixes(hardenAllowedLinkPrefixes, defaultOrigin),
+		shouldDelegateImagePrefixChecks
+			? PARSED_WILDCARD_PREFIX
+			: parseAllowedUrlPrefixes(hardenAllowedImagePrefixes, defaultOrigin)
+	);
+	const securityUrlTransform = createSecurityUrlTransform({
+		allowedImagePrefixes: parsedAllowedImagePrefixes,
+		allowedLinkPrefixes: parsedAllowedLinkPrefixes,
+		shouldDelegateImagePrefixChecks,
+		shouldDelegateLinkPrefixChecks,
+		defaultOrigin,
+		urlTransform
+	});
+
+	return unified()
+		.use(remarkParse)
+		.use(remarkGfm)
+		.use(remarkRehype, { allowDangerousHtml: true })
+		.use(rehypeRaw)
+		.use(rehypeSanitize, createSanitizeSchema(allowedTags))
+		.use(rehypeTransformUrls, { urlTransform: securityUrlTransform })
+		.use(harden, {
+			allowedImagePrefixes:
+				hardenAllowedImagePrefixes === WILDCARD_PREFIX
+					? WILDCARD_PREFIX
+					: [...hardenAllowedImagePrefixes],
+			allowedLinkPrefixes:
+				hardenAllowedLinkPrefixes === WILDCARD_PREFIX ? WILDCARD_PREFIX : [...hardenAllowedLinkPrefixes],
+			allowedProtocols: WILDCARD_PREFIX,
+			defaultOrigin: hardenDefaultOrigin,
+			allowDataImages: true
+		})
+		.use(rehypeStringify);
+};
+
+const hasOnlyWildcardPrefix = (prefixes: readonly string[]): boolean =>
+	prefixes.length === 1 && prefixes[0] === '*';
+
+const defaultMarkdownSecurityProcessor = createMarkdownSecurityProcessor({
+	allowedImagePrefixes: WILDCARD_PREFIX,
+	allowedLinkPrefixes: WILDCARD_PREFIX
+});
 
 function createSecurityUrlTransform({
 	allowedImagePrefixes,
@@ -219,47 +303,24 @@ export function renderMarkdownFragment(
 	}: SecurityRenderOptions = {}
 ): string {
 	try {
-		const parsedAllowedLinkPrefixes = parseAllowedUrlPrefixes(allowedLinkPrefixes, defaultOrigin);
-		const parsedAllowedImagePrefixes = parseAllowedUrlPrefixes(allowedImagePrefixes, defaultOrigin);
-		const shouldDelegateLinkPrefixChecks = hasProtocolOnlyPrefix(parsedAllowedLinkPrefixes);
-		const shouldDelegateImagePrefixChecks = hasProtocolOnlyPrefix(parsedAllowedImagePrefixes);
-		const hardenAllowedLinkPrefixes = shouldDelegateLinkPrefixChecks ? ['*'] : allowedLinkPrefixes;
-		const hardenAllowedImagePrefixes = shouldDelegateImagePrefixChecks
-			? ['*']
-			: allowedImagePrefixes;
-		const hardenDefaultOrigin = resolveHardenDefaultOrigin(
-			defaultOrigin,
-			hardenAllowedLinkPrefixes,
-			hardenAllowedImagePrefixes,
-			parseAllowedUrlPrefixes(hardenAllowedLinkPrefixes, defaultOrigin),
-			parseAllowedUrlPrefixes(hardenAllowedImagePrefixes, defaultOrigin)
-		);
-		const securityUrlTransform = createSecurityUrlTransform({
-			allowedImagePrefixes: parsedAllowedImagePrefixes,
-			allowedLinkPrefixes: parsedAllowedLinkPrefixes,
-			shouldDelegateImagePrefixChecks,
-			shouldDelegateLinkPrefixChecks,
-			defaultOrigin,
-			urlTransform
-		});
+		if (
+			!allowedTags &&
+			!defaultOrigin &&
+			!urlTransform &&
+			hasOnlyWildcardPrefix(allowedLinkPrefixes) &&
+			hasOnlyWildcardPrefix(allowedImagePrefixes)
+		) {
+			return String(defaultMarkdownSecurityProcessor.processSync(source));
+		}
 
 		return String(
-			unified()
-				.use(remarkParse)
-				.use(remarkGfm)
-				.use(remarkRehype, { allowDangerousHtml: true })
-				.use(rehypeRaw)
-				.use(rehypeSanitize, createSanitizeSchema(allowedTags))
-				.use(rehypeTransformUrls, { urlTransform: securityUrlTransform })
-				.use(harden, {
-					allowedImagePrefixes: hardenAllowedImagePrefixes,
-					allowedLinkPrefixes: hardenAllowedLinkPrefixes,
-					allowedProtocols: ['*'],
-					defaultOrigin: hardenDefaultOrigin,
-					allowDataImages: true
-				})
-				.use(rehypeStringify)
-				.processSync(source)
+			createMarkdownSecurityProcessor({
+				allowedImagePrefixes,
+				allowedLinkPrefixes,
+				allowedTags,
+				defaultOrigin,
+				urlTransform
+			}).processSync(source)
 		);
 	} catch {
 		return escapeHtml(source);
