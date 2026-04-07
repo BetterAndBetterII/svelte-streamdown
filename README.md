@@ -396,6 +396,57 @@ pnpm check
 pnpm test
 ```
 
+### Benchmarks
+
+Run the compare benchmark to generate a shareable performance report with platform metadata and charts:
+
+```bash
+pnpm bench:compare
+```
+
+This command runs the local/reference benchmark suite and writes these artifacts under `coverage/benchmarks`:
+
+- `compare.json`: raw `vitest bench` output
+- `compare-report.md`: markdown report with overall summary, suite summary, top improvements, regressions, and full breakdown
+- `compare-report.json`: machine-readable summary with platform metadata and computed deltas
+- `compare-by-suite.svg`: bar chart grouped by benchmark area such as `Parse Blocks`, `Remend Parser`, `Stream Render`, and `Table Utilities`
+- `compare-by-scenario.svg`: bar chart for individual scenarios, sorted by improvement/regression magnitude
+
+The report automatically annotates the benchmark platform so screenshots and pasted results keep their execution context:
+
+- OS / kernel / architecture
+- CPU model and logical core count
+- total memory
+- Node and pnpm versions
+- git branch and commit
+
+If you still want the legacy plain-text summary, use:
+
+```bash
+pnpm bench:compare:raw
+```
+
+Typical `compare-report.md` output looks like this:
+
+```md
+# Benchmark Comparison Report
+
+- Generated: 2026-04-07T10:21:48.181Z
+- Source JSON: `coverage/benchmarks/compare.json`
+- Platform: linux 6.17.0-14-generic (x64)
+- CPU: Intel(R) Core(TM) Ultra 9 285K | 24 logical cores
+- Memory: 188.1 GiB
+- Runtime: Node v22.22.1 | pnpm 10.32.1
+- Git: `master` @ `07c8980`
+
+## Overall
+
+- Pairs: 31
+- Local wins: 19
+- Reference wins: 12
+- Geometric mean throughput: 1.32x (+31.8%)
+```
+
 ## Workspace Baseline
 
 The repository now keeps a pnpm workspace baseline for publishable packages:
