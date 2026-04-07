@@ -111,6 +111,7 @@
 				<Streamdown
 					content={content}
 					animated
+					baseTheme="shadcn"
 					caret="block"
 					isAnimating={isAnimating}
 					{plugins}
