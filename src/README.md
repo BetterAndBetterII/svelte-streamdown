@@ -521,6 +521,10 @@ See `docs/workspace-baseline.md` for the repo layout, local linking workflow, an
 
 See [CONTRIBUTING.md](https://github.com/PacificStudio/streamdown-svelte/blob/master/CONTRIBUTING.md) for the regression intake workflow, parity fixture naming convention, and bug-fix PR expectations.
 
+## Friendly Link
+
+[LinuxDo](linux.do)
+
 ## License
 
 Apache-2.0
