@@ -75,10 +75,10 @@ export const theme = {
 		base: 'text-foreground'
 	},
 	ul: {
-		base: 'ml-4 list-inside list-disc whitespace-normal text-foreground'
+		base: 'ml-4 list-outside list-disc whitespace-normal text-foreground'
 	},
 	ol: {
-		base: 'ml-4 list-inside whitespace-normal text-foreground'
+		base: 'ml-4 list-outside whitespace-normal text-foreground'
 	},
 	li: {
 		base: 'py-1 marker:hidden',
@@ -260,10 +260,10 @@ export const shadcnTheme = {
 		base: 'text-foreground'
 	},
 	ul: {
-		base: 'ml-4 list-inside list-disc whitespace-normal text-foreground'
+		base: 'ml-4 list-outside list-disc whitespace-normal text-foreground'
 	},
 	ol: {
-		base: 'ml-4 list-inside whitespace-normal text-foreground'
+		base: 'ml-4 list-outside whitespace-normal text-foreground'
 	},
 	li: {
 		base: 'py-1',

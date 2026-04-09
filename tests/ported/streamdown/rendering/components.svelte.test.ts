@@ -42,7 +42,7 @@ describeInBrowser('ported streamdown component overrides', () => {
 			expect(screen.container.querySelector('h2')?.className).toContain('text-2xl');
 			expect(screen.container.querySelector('h3')?.className).toContain('text-xl');
 			expect(screen.container.querySelector('ul')?.className).toContain('list-disc');
-			expect(screen.container.querySelector('ol')?.className).toContain('list-inside');
+			expect(screen.container.querySelector('ol')?.className).toContain('list-outside');
 			expect(screen.container.querySelector('li')?.className).toContain('py-1');
 			expect(screen.container.querySelector('a')?.className).toContain('wrap-anywhere');
 			expect(screen.container.querySelector('a')?.getAttribute('target')).toBe('_blank');
