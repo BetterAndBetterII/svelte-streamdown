@@ -8,15 +8,22 @@ import {
 	testInNode
 } from '../../../helpers/index.js';
 
-interface InlineToken {
+interface InlineTokenBase {
 	type: string;
 	text?: string;
 	tokens?: InlineToken[];
 }
 
-interface InlineContainerToken extends InlineToken {
+interface CodespanToken extends InlineTokenBase {
+	type: 'codespan';
+	text: string;
+}
+
+interface InlineContainerToken extends InlineTokenBase {
 	type: 'paragraph' | 'text';
 }
+
+type InlineToken = CodespanToken | InlineContainerToken | InlineTokenBase;
 
 interface ListItemToken {
 	text?: string;
@@ -64,7 +71,7 @@ describeInNode('ported streamdown CJK commentary fixture', () => {
 			expect(thirdItemText?.text).toContain('**函数注释**：为 `xxxx()` 和 `main()` 加了文档说明：');
 			expect(
 				(thirdItemText?.tokens ?? [])
-					.filter((token): token is InlineToken => token.type === 'codespan')
+					.filter((token): token is CodespanToken => token.type === 'codespan')
 					.map((token) => token.text)
 			).toEqual(['xxxx()', 'main()']);
 
