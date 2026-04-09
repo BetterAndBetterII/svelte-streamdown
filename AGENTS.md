@@ -10,3 +10,4 @@
 - Browser-mode `vitest` runs can fail in this workspace with `EMFILE ... watch 'config/coverage-suites.mjs'` even under `--run`; setting `CHOKIDAR_USEPOLLING=1` around the affected `pnpm exec vitest --run ...svelte.test.ts` invocation avoids the watcher exhaustion and lets the suite complete.
 - Running a single `pnpm exec vitest run ...` command that mixes server tests with browser `.svelte.test.ts` files can hit `EMFILE` watcher limits in this harness. Run the server and client Vitest projects in separate commands instead.
 - Browser-mode `pnpm vitest` can hit `EMFILE` from Vite file watchers in this harness even when `ulimit -n` is high. Set `CHOKIDAR_USEPOLLING=1` for browser-targeted Vitest runs to avoid the watcher exhaustion.
+- Running server and browser Vitest commands in parallel can race on `.svelte-kit/tsconfig.json` and produce `Unexpected end of file in JSON`. In this harness, run the server and client validations sequentially instead of concurrently.

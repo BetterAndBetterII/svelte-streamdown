@@ -146,6 +146,66 @@ describeInBrowser('ported streamdown CJK-friendly rendering', () => {
 	);
 
 	testInBrowser(
+		'renders the complex CJK mixed layout fixture without swallowing punctuation or list structure',
+		async () => {
+			const content = await loadFixtureText('complex-cjk-mixed-layout-06.md');
+			const screen = render(Streamdown, {
+				content,
+				static: true,
+				linkSafety: {
+					enabled: false
+				},
+				plugins: {
+					cjk: createCjkPlugin()
+				}
+			});
+
+			const orderedLists = [...screen.container.querySelectorAll('ol')];
+			const unorderedLists = [...screen.container.querySelectorAll('ul')];
+
+			expect(screen.container.querySelector('h1')?.textContent).toBe('复杂中文混排回归样例 06');
+			expect(orderedLists[0]?.querySelectorAll(':scope > li')).toHaveLength(2);
+			expect(unorderedLists[0]?.querySelectorAll(':scope > li')).toHaveLength(2);
+			expect(orderedLists[1]?.querySelectorAll(':scope > li')).toHaveLength(2);
+			expect(screen.container.querySelector('blockquote')?.textContent).toContain(
+				'确认句号。不会进链接里。'
+			);
+			expect(screen.container.querySelector('pre code')?.textContent).toContain(
+				"reviewer: 'ops-bot'"
+			);
+			expect(screen.container.querySelectorAll('table tbody tr')).toHaveLength(3);
+			expect(screen.container.textContent).toContain(
+				'（https://example.com/release-notes）后面的中文没有被吞掉。'
+			);
+			expect(screen.container.textContent).toContain('https://status.example.com/ops?lang=zh-CN。');
+
+			const renderedLinks = [...screen.container.querySelectorAll('[data-streamdown-link]')].map(
+				(link) => ({
+					text: link.textContent,
+					href: link.getAttribute('href')
+				})
+			);
+
+			expect(renderedLinks).toEqual(
+				expect.arrayContaining([
+					{
+						text: 'https://status.example.com/ops?lang=zh-CN',
+						href: 'https://status.example.com/ops?lang=zh-CN'
+					},
+					{
+						text: '新版说明',
+						href: 'https://example.com/docs/zh/release-plan'
+					},
+					{
+						text: 'https://status.example.com/ops?id=42',
+						href: 'https://status.example.com/ops?id=42'
+					}
+				])
+			);
+		}
+	);
+
+	testInBrowser(
 		'supports multiple CJK boundary characters without swallowing surrounding text',
 		() => {
 			const cases = [
