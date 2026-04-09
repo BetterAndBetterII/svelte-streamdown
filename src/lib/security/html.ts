@@ -5,7 +5,7 @@ import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
-import type { Tokens } from 'marked';
+import { Lexer, type Tokens } from 'marked';
 import { unified } from 'unified';
 import {
 	applyMarkdownUrlTransform,
@@ -329,25 +329,37 @@ export function normalizeHtmlIndentation(content: string): string {
 			continue;
 		}
 
-		for (
-			let nestedLineIndex = lineIndex + 1;
-			nestedLineIndex <= blockEndIndex;
-			nestedLineIndex += 1
-		) {
-			const line = lines[nestedLineIndex];
+		const normalizedBlockLines = normalizeHtmlBlockLines(lines.slice(lineIndex, blockEndIndex + 1));
 
-			if (!line || !HTML_INDENTED_TAG_LINE_PATTERN.test(line)) {
-				continue;
-			}
-
-			lines[nestedLineIndex] = line.replace(HTML_INDENTED_TAG_LINE_PATTERN, '');
-			changed = true;
+		if (!normalizedBlockLines) {
+			lineIndex = blockEndIndex;
+			continue;
 		}
 
+		lines.splice(lineIndex, normalizedBlockLines.length, ...normalizedBlockLines);
+		changed = true;
 		lineIndex = blockEndIndex;
 	}
 
 	return changed ? lines.join(lineBreak) : content;
+}
+
+function normalizeHtmlBlockLines(blockLines: string[]): string[] | null {
+	let changed = false;
+	const normalizedLines = blockLines.map((line, index) => {
+		if (index === 0 || !line || !HTML_INDENTED_TAG_LINE_PATTERN.test(line)) {
+			return line;
+		}
+
+		changed = true;
+		return line.replace(HTML_INDENTED_TAG_LINE_PATTERN, '');
+	});
+
+	if (!changed) {
+		return null;
+	}
+
+	return isSafeNormalizedHtmlBlock(normalizedLines.join('\n')) ? normalizedLines : null;
 }
 
 function findHtmlBlockEnd(lines: string[], startIndex: number): number | null {
@@ -412,6 +424,14 @@ function updateHtmlTagStack(tagStack: string[], line: string): void {
 
 		tagStack.push(tagName);
 	}
+}
+
+function isSafeNormalizedHtmlBlock(block: string): boolean {
+	const tokens = Lexer.lex(block, { gfm: true }).filter((token) => token.type !== 'space');
+	return (
+		tokens.length > 0 &&
+		tokens.every((token) => token.type === 'html' && 'block' in token && token.block === true)
+	);
 }
 
 export function renderMarkdownFragment(

@@ -61,6 +61,31 @@ describeInBrowser('ported streamdown security normalize HTML indentation', () =>
 	);
 
 	testInBrowser(
+		'does not normalize indented HTML-like literal content inside mixed details blocks',
+		() => {
+			expect(
+				normalizeHtmlIndentation(
+					[
+						'<details>',
+						'<summary>Summary</summary>',
+						'',
+						'    <span>Literal code</span>',
+						'</details>'
+					].join('\n')
+				)
+			).toBe(
+				[
+					'<details>',
+					'<summary>Summary</summary>',
+					'',
+					'    <span>Literal code</span>',
+					'</details>'
+				].join('\n')
+			);
+		}
+	);
+
+	testInBrowser(
 		'renders indented HTML blocks as HTML when the compatibility prop is enabled',
 		() => {
 			const screen = render(Streamdown, {
@@ -115,6 +140,27 @@ describeInBrowser('ported streamdown security normalize HTML indentation', () =>
 			expect(screen.container.textContent).toContain('After paragraph.');
 		}
 	);
+
+	testInBrowser('keeps indented HTML-like literals as code inside details blocks', () => {
+		const screen = render(Streamdown, {
+			content: [
+				'<details>',
+				'<summary>Summary</summary>',
+				'',
+				'    <span>Literal code</span>',
+				'</details>'
+			].join('\n'),
+			static: true,
+			normalizeHtmlIndentation: true
+		});
+
+		const literalCode = screen.container.querySelector('pre code')?.textContent ?? '';
+		const details = screen.container.querySelector('details');
+
+		expect(details).toBeTruthy();
+		expect(details?.querySelector('span')).toBeNull();
+		expect(literalCode).toContain('<span>Literal code</span>');
+	});
 
 	testInBrowser('preserves complex nested HTML after normalization', () => {
 		const screen = render(Streamdown, {
