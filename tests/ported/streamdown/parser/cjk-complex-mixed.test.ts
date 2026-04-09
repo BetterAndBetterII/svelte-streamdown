@@ -15,6 +15,17 @@ interface InlineToken {
 	tokens?: InlineToken[];
 }
 
+interface LinkToken extends InlineToken {
+	type: 'link';
+	text: string;
+	href: string;
+}
+
+interface ParagraphToken {
+	type: 'paragraph';
+	tokens?: InlineToken[];
+}
+
 interface ListItemToken {
 	type: 'list_item';
 	text?: string;
@@ -54,6 +65,12 @@ interface CodeToken {
 	text?: string;
 }
 
+type BlockquoteChildToken = ParagraphToken | ListToken | { type: 'space' };
+
+function asInlineTokens(tokens: unknown): InlineToken[] {
+	return Array.isArray(tokens) ? (tokens as InlineToken[]) : [];
+}
+
 function getInlineContainer(
 	tokens: Array<InlineToken | ListToken> | undefined
 ): InlineToken | undefined {
@@ -85,7 +102,8 @@ describeInNode('ported streamdown complex CJK mixed fixture', () => {
 			expect(paragraphs).toHaveLength(2);
 
 			const introParagraph = paragraphs[0];
-			expect(introParagraph?.tokens?.map((token) => token.type)).toEqual([
+			const introInlineTokens = asInlineTokens(introParagraph?.tokens);
+			expect(introInlineTokens.map((token) => token.type)).toEqual([
 				'text',
 				'codespan',
 				'text',
@@ -107,8 +125,9 @@ describeInNode('ported streamdown complex CJK mixed fixture', () => {
 				'text'
 			]);
 
-			const introLinks = (introParagraph?.tokens ?? []).filter(
-				(token): token is InlineToken => token.type === 'link'
+			const introLinks = introInlineTokens.filter(
+				(token): token is LinkToken =>
+					token.type === 'link' && typeof token.text === 'string' && typeof token.href === 'string'
 			);
 			expect(
 				introLinks.map((token) => ({
@@ -125,30 +144,27 @@ describeInNode('ported streamdown complex CJK mixed fixture', () => {
 					href: 'https://example.com/runbook'
 				}
 			]);
-			expect(introParagraph?.tokens?.[16]?.text).toBe(' 都能稳定解析；如果要人工复查，也可以打开 ');
-			expect(introParagraph?.tokens?.[18]?.text).toBe('。🙂');
+			expect(introInlineTokens[16]?.text).toBe(' 都能稳定解析；如果要人工复查，也可以打开 ');
+			expect(introInlineTokens[18]?.text).toBe('。🙂');
 
 			const blockquote = getFirstTokenByType(tokens, 'blockquote') as
-				| {
-						tokens?: Array<
-							InlineToken | ListToken | { type: string; text?: string; tokens?: any[] }
-						>;
-				  }
+				| { tokens?: BlockquoteChildToken[] }
 				| undefined;
-			const quoteParagraph = getFirstTokenByType(
-				(blockquote?.tokens ?? []) as InlineToken[],
-				'paragraph'
+			const blockquoteTokens = (blockquote?.tokens ?? []) as BlockquoteChildToken[];
+			const quoteParagraph = blockquoteTokens.find(
+				(token): token is ParagraphToken => token.type === 'paragraph'
 			);
-			expect(quoteParagraph?.tokens?.map((token) => token.type)).toEqual([
+			const quoteInlineTokens = asInlineTokens(quoteParagraph?.tokens);
+			expect(quoteInlineTokens.map((token) => token.type)).toEqual([
 				'text',
 				'codespan',
 				'text',
 				'link',
 				'text'
 			]);
-			expect(quoteParagraph?.tokens?.[4]?.text).toBe(' 后面的句号。都不应该丢失。');
+			expect(quoteInlineTokens[4]?.text).toBe(' 后面的句号。都不应该丢失。');
 
-			const quoteList = getFirstTokenByType((blockquote?.tokens ?? []) as ListToken[], 'list');
+			const quoteList = blockquoteTokens.find((token): token is ListToken => token.type === 'list');
 			expect(quoteList?.ordered).toBe(false);
 			expect(quoteList?.tokens?.map((item) => item.text)).toEqual([
 				'复查 `README.zh-CN.md`',
@@ -258,14 +274,11 @@ describeInNode('ported streamdown complex CJK mixed fixture', () => {
 			expect(emojiCell?.tokens?.[1]?.text).toBe(' / 🚀');
 
 			const finalParagraph = paragraphs[1];
-			expect(finalParagraph?.tokens?.map((token) => token.type)).toEqual([
-				'text',
-				'codespan',
-				'text'
-			]);
-			expect(finalParagraph?.tokens?.[0]?.text).toBe('最后，请把 “done” 记录到 ');
-			expect(finalParagraph?.tokens?.[1]?.text).toBe('notes/release.log');
-			expect(finalParagraph?.tokens?.[2]?.text).toBe(
+			const finalInlineTokens = asInlineTokens(finalParagraph?.tokens);
+			expect(finalInlineTokens.map((token) => token.type)).toEqual(['text', 'codespan', 'text']);
+			expect(finalInlineTokens[0]?.text).toBe('最后，请把 “done” 记录到 ');
+			expect(finalInlineTokens[1]?.text).toBe('notes/release.log');
+			expect(finalInlineTokens[2]?.text).toBe(
 				'，并确认中英混排、列表层级、表格和引用块的可读性没有回退。'
 			);
 		}
