@@ -268,11 +268,14 @@ export const markedList: Extension = {
 				const footnoteBeginRegex = new RegExp(
 					`^ {0,${Math.min(3, indent - 1)}}\\[\\^[^\\]\\n]+\\]:(?:[ \\t]+|$)`
 				);
+				let previousLineWasBlank = blankLine;
 
 				// Check if following lines should be included in List Item
 				while (src) {
 					const rawLine = src.split('\n', 1)[0];
 					const nextLineWithoutTabs = rawLine.replace(/\t/g, '    ');
+					const nextLineIndent = nextLineWithoutTabs.search(/[^ ]/);
+					const isBlankLine = nextLineIndent === -1;
 
 					if (
 						fencesBeginRegex.test(nextLineWithoutTabs) ||
@@ -284,11 +287,15 @@ export const markedList: Extension = {
 					)
 						break;
 
-					if (nextLineWithoutTabs.search(/[^ ]/) >= indent || !nextLineWithoutTabs.trim()) {
-						itemContents += '\n' + nextLineWithoutTabs.slice(indent);
+					// A blank-line break closes the list item before dedented prose resumes at top level.
+					if (previousLineWasBlank && !isBlankLine && nextLineIndent < indent) break;
+
+					if (nextLineIndent >= indent || isBlankLine) {
+						itemContents += '\n' + (isBlankLine ? '' : nextLineWithoutTabs.slice(indent));
 					} else {
 						itemContents += '\n' + nextLineWithoutTabs;
 					}
+					previousLineWasBlank = isBlankLine;
 
 					raw += rawLine + '\n';
 					src = src.substring(rawLine.length + 1);

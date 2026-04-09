@@ -218,6 +218,26 @@ describe('tokenization', () => {
 		expect(listToken.tokens[1].tokens[0].text).toBe('Item 2');
 	});
 
+	test('should stop list continuation when trailing prose dedents after a nested list', () => {
+		const tokens = lex(
+			'1. Parent item\n   - Nested item 1\n   - Nested item 2\n\nTrailing paragraph'
+		);
+
+		expect(tokens.map((token) => token.type)).toEqual(['list', 'paragraph']);
+
+		const listToken = getFirstTokenByType(tokens, 'list');
+		expect(listToken).toBeDefined();
+		expect(listToken.tokens).toHaveLength(1);
+		expect(listToken.tokens[0].tokens.map((token: any) => token.type)).toEqual([
+			'text',
+			'list'
+		]);
+
+		const topLevelParagraph = getFirstTokenByType(getTokensByType(tokens, 'paragraph'), 'paragraph');
+		expect(topLevelParagraph).toBeDefined();
+		expect(topLevelParagraph.text).toBe('Trailing paragraph');
+	});
+
 	test('should parse ordered list item and verify properties', () => {
 		const tokens = lex('1. First ordered item\n2. Second ordered item');
 		const listToken = getFirstTokenByType(tokens, 'list');

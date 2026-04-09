@@ -42,15 +42,17 @@ describeInNode('ported streamdown CJK commentary fixture', () => {
 		async () => {
 			const markdown = await loadFixtureText('cjk-commentary.md');
 			const tokens = parseMarkdownTokens(markdown);
+			expect(tokens.map((token) => token.type)).toEqual(['paragraph', 'list', 'paragraph']);
 
 			const paragraphs = getTokensByType(tokens, 'paragraph');
-			expect(paragraphs.length).toBeGreaterThanOrEqual(1);
+			expect(paragraphs).toHaveLength(2);
 
 			const introCode = getFirstTokenByType(
 				(paragraphs[0]?.tokens ?? []) as InlineToken[],
 				'codespan'
 			);
 			expect(introCode?.text).toBe('xxxxxxx.lua');
+			expect(paragraphs[1]?.text).toContain('注释采用中英文混合方式');
 
 			const orderedList = getFirstTokenByType(tokens, 'list') as ListToken | undefined;
 			expect(orderedList?.ordered).toBe(true);
@@ -92,7 +94,9 @@ describeInNode('ported streamdown CJK commentary fixture', () => {
 			expect(fourthNestedList?.ordered).toBe(false);
 			expect(fourthNestedList?.tokens).toHaveLength(7);
 			expect(fourthNestedList?.tokens?.[0]?.text).toContain('xxxxx.xxxx()');
-			expect(JSON.stringify(tokens)).toContain('中英文混合方式');
+			expect(
+				orderedList?.tokens?.[3]?.tokens?.map((token) => token.type)
+			).toEqual(['paragraph', 'list']);
 		}
 	);
 });
