@@ -273,6 +273,8 @@ export const markedList: Extension = {
 				while (src) {
 					const rawLine = src.split('\n', 1)[0];
 					const nextLineWithoutTabs = rawLine.replace(/\t/g, '    ');
+					const nextLineIndent = nextLineWithoutTabs.search(/[^ ]/);
+					const isBlankLine = nextLineIndent === -1;
 
 					if (
 						fencesBeginRegex.test(nextLineWithoutTabs) ||
@@ -284,11 +286,10 @@ export const markedList: Extension = {
 					)
 						break;
 
-					if (nextLineWithoutTabs.search(/[^ ]/) >= indent || !nextLineWithoutTabs.trim()) {
-						itemContents += '\n' + nextLineWithoutTabs.slice(indent);
-					} else {
-						itemContents += '\n' + nextLineWithoutTabs;
-					}
+					// A non-blank dedent ends the current list item and starts a new top-level block.
+					if (!isBlankLine && nextLineIndent < indent) break;
+
+					itemContents += '\n' + (isBlankLine ? '' : nextLineWithoutTabs.slice(indent));
 
 					raw += rawLine + '\n';
 					src = src.substring(rawLine.length + 1);
