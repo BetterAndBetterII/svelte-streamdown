@@ -93,6 +93,59 @@ describeInBrowser('ported streamdown CJK-friendly rendering', () => {
 	);
 
 	testInBrowser(
+		'renders the complex mixed CJK fixture with stable hierarchy and boundary-safe links',
+		async () => {
+			const content = await loadFixtureText('cjk-mixed-layout-05.md');
+			const screen = render(Streamdown, {
+				content,
+				static: true,
+				linkSafety: {
+					enabled: false
+				},
+				plugins: {
+					cjk: createCjkPlugin()
+				}
+			});
+
+			expect(screen.container.querySelector('h1')?.textContent).toBe(
+				'复杂中文混排 Markdown 样例 05'
+			);
+
+			const orderedList = screen.container.querySelector('ol');
+			expect(orderedList?.children.length).toBe(3);
+			expect(orderedList?.children[0]?.querySelector('ul')?.children.length).toBe(2);
+			expect(orderedList?.children[1]?.querySelector('ol')?.children.length).toBe(2);
+
+			const trailingList = [...screen.container.querySelectorAll('ul')].at(-1);
+			expect(trailingList?.children.length).toBe(2);
+
+			expect(screen.container.querySelector('blockquote')?.textContent).toContain(
+				'引用块里也要支持 加粗、斜体、code span 与 发布日志'
+			);
+			expect(screen.container.querySelector('pre code')?.textContent).toContain('emoji😀');
+			expect(screen.container.querySelectorAll('table tr')).toHaveLength(4);
+
+			const links = [...screen.container.querySelectorAll('[data-streamdown-link]')];
+			expect(links.map((link) => link.textContent)).toEqual(
+				expect.arrayContaining([
+					'SvelteKit 文档',
+					'https://example.com/docs/case-05?lang=zh-CN',
+					'issue board',
+					'https://example.com/case-05',
+					'发布日志',
+					'mailto:support@example.com'
+				])
+			);
+
+			const boundaryLink = links.find((link) => link.textContent === 'https://example.com/case-05');
+			expect(boundaryLink?.getAttribute('href')).toBe('https://example.com/case-05');
+			expect(screen.container.textContent).toContain(
+				'请打开 https://example.com/case-05）；继续追踪后续说明。'
+			);
+		}
+	);
+
+	testInBrowser(
 		'renders the complex CJK mixed layout fixture without swallowing punctuation or list structure',
 		async () => {
 			const content = await loadFixtureText('complex-cjk-mixed-layout-06.md');
