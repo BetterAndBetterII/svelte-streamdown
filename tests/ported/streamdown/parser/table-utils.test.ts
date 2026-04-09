@@ -112,9 +112,7 @@ describeInNode('ported streamdown table-utils', () => {
 				headers: ['Header'],
 				rows: [['Value | With | Pipes']]
 			};
-			expect(tableDataToMarkdown(data)).toBe(
-				'| Header |\n| --- |\n| Value \\| With \\| Pipes |'
-			);
+			expect(tableDataToMarkdown(data)).toBe('| Header |\n| --- |\n| Value \\| With \\| Pipes |');
 		});
 
 		testInNode('escapes backslashes in values', () => {
@@ -132,6 +130,16 @@ describeInNode('ported streamdown table-utils', () => {
 			};
 			expect(tableDataToMarkdown(data)).toBe(
 				'| Col1 | Col2 | Col3 |\n| --- | --- | --- |\n| A | B |  |'
+			);
+		});
+
+		testInNode('keeps overflow row cells instead of truncating them to the header width', () => {
+			const data: TableData = {
+				headers: ['Col1', 'Col2', 'Col3'],
+				rows: [['A', 'B', 'C', 'D']]
+			};
+			expect(tableDataToMarkdown(data)).toBe(
+				'| Col1 | Col2 | Col3 |\n| --- | --- | --- |\n| A | B | C | D |'
 			);
 		});
 

@@ -46,16 +46,38 @@ export interface TD extends BaseCell {
 	type: 'td';
 }
 
+export type RowColumnNormalizationMode =
+	| 'exact'
+	| 'underflow-preserved'
+	| 'overflow-preserved'
+	| 'partial-fit-preserved'
+	| 'complex-span-preserved';
+
+export interface RowColumnNormalization {
+	mode: RowColumnNormalizationMode;
+	expectedColumns: number | null;
+	actualColumns: number;
+}
+
+export interface TableColumnNormalization {
+	mode: 'balanced' | 'preserve-content';
+	issues: Exclude<RowColumnNormalizationMode, 'exact'>[];
+}
+
 // Table row containing header cells
 export interface THeadRow {
 	type: 'tr';
 	tokens: TH[];
+	columnNormalization?: RowColumnNormalization;
+	placeholderColumns?: number;
 }
 
 // Table row containing data cells
 export interface TRow {
 	type: 'tr';
 	tokens: TD[];
+	columnNormalization?: RowColumnNormalization;
+	placeholderColumns?: number;
 }
 
 // Table header section
@@ -89,6 +111,8 @@ export interface TableToken {
 	raw: string;
 	// Column alignment information
 	align: (string | null)[];
+	// Whether the parser had to preserve ragged/overflow rows instead of forcing a fixed grid
+	columnNormalization?: TableColumnNormalization;
 }
 
 // Internal working cell type for processing
@@ -98,6 +122,12 @@ interface WorkingCell extends BaseCell {
 
 // Internal working row type for processing
 type WorkingRow = WorkingCell[];
+
+interface WorkingRowData {
+	cells: WorkingRow;
+	columnNormalization: RowColumnNormalization;
+	placeholderColumns?: number;
+}
 
 // Default configuration options for the extended tables extension
 export const DEFAULT_OPTIONS: Required<SpanTableOptions> = {
@@ -186,9 +216,10 @@ function splitRow(src: string): string[] {
 export const splitCells = (
 	tableRow: string,
 	count: number | null,
-	prevRow: WorkingRow | null = null,
-	maxColspan: number | null = null
-): WorkingRow => {
+	prevRow: WorkingRowData | null = null,
+	maxColspan: number | null = null,
+	preserveIncompleteTail = false
+): WorkingRowData => {
 	// Split by pipe, but handle escaped pipes and empty cells
 	const cells = splitRow(tableRow);
 
@@ -196,7 +227,7 @@ export const splitCells = (
 	if (cells.length > 0 && !cells[0]) cells.shift();
 	if (cells.length > 0 && !cells[cells.length - 1]) cells.pop();
 
-	return processSpans(cells, count, prevRow || [], maxColspan);
+	return processSpans(cells, count, prevRow?.cells || [], maxColspan, preserveIncompleteTail);
 };
 
 // Process row and column spans in table cells
@@ -204,8 +235,9 @@ const processSpans = (
 	cells: string[],
 	count: number | null,
 	prevRow: WorkingRow = [],
-	maxColspan: number | null = null
-): WorkingRow => {
+	maxColspan: number | null = null,
+	preserveIncompleteTail = false
+): WorkingRowData => {
 	let numCols = 0;
 	let i: number, j: number, trimmedCell: string, prevCell: WorkingCell;
 	const processedCells: WorkingRow = [];
@@ -282,7 +314,7 @@ const processSpans = (
 						if (cell.colspan === prevCell.colspan && cell.position === prevCell.position) {
 							cell.rowSpanTarget = prevCell.rowSpanTarget ?? prevCell;
 							// Only append text if it's different from the target cell
-							const textToAppend = cell.text.slice(0, -1).trim();
+							const textToAppend = cell.text.trim();
 							const targetText = cell.rowSpanTarget.text.trim();
 
 							// Don't append if the text is the same or already contained (common case for rowspan indicators)
@@ -310,7 +342,7 @@ const processSpans = (
 						// Standard case of single column cell with rowspan
 						cell.rowSpanTarget = prevCell.rowSpanTarget ?? prevCell;
 						// Only append text if it's different from the target cell
-						const textToAppend = cell.text.slice(0, -1).trim();
+						const textToAppend = cell.text.trim();
 						const targetText = cell.rowSpanTarget.text.trim();
 
 						// Don't append if the text is the same or already contained (common case for rowspan indicators)
@@ -327,10 +359,7 @@ const processSpans = (
 
 			// If no target was found but it's a rowspan cell, clean the ^ indicator
 			if (!targetFound && cell.rowspan > 0) {
-				// Only clean if it was actually a rowspan indicator, not superscript
-				if (isRowspanIndicator) {
-					cell.text = cell.text.slice(0, -1);
-				}
+				cell.text = cellText;
 			}
 		}
 	}
@@ -347,53 +376,80 @@ const processSpans = (
 	});
 
 	// Normalize column count
-	return normalizeColumnCount(processedCells, count, numCols);
+	return normalizeColumnCount(processedCells, count, numCols, preserveIncompleteTail);
 };
 
 // Ensures the row has the correct number of columns
 const normalizeColumnCount = (
 	cells: WorkingRow,
 	count: number | null,
-	numCols: number
-): WorkingRow => {
-	// If count is null, don't normalize
-	if (count === null) return cells;
-
-	if (numCols > count) {
-		// We need to keep track of total column count
-		let currentColCount = 0;
-		const cellsToKeep: WorkingRow = [];
-
-		for (const cell of cells) {
-			if (currentColCount + cell.colspan <= count) {
-				// This cell fits completely
-				cellsToKeep.push(cell);
-				currentColCount += cell.colspan;
-			} else if (currentColCount < count) {
-				// This cell partially fits - adjust its colspan
-				const adjustedCell = { ...cell };
-				adjustedCell.colspan = count - currentColCount;
-				cellsToKeep.push(adjustedCell);
-				currentColCount = count;
-			} else {
-				// This cell doesn't fit at all
-				break;
+	numCols: number,
+	preserveIncompleteTail: boolean
+): WorkingRowData => {
+	if (count === null || numCols === count) {
+		return {
+			cells,
+			columnNormalization: {
+				mode: 'exact',
+				expectedColumns: count,
+				actualColumns: numCols
 			}
-		}
-
-		return cellsToKeep;
-	} else {
-		while (numCols < count) {
-			cells.push({
-				colspan: 1,
-				rowspan: 1,
-				text: '',
-				position: numCols
-			});
-			numCols += 1;
-		}
+		};
 	}
-	return cells;
+
+	if (numCols < count) {
+		return {
+			cells,
+			columnNormalization: {
+				mode: 'underflow-preserved',
+				expectedColumns: count,
+				actualColumns: numCols
+			},
+			placeholderColumns: preserveIncompleteTail ? count - numCols : undefined
+		};
+	}
+
+	const hasPartialFit = cells.some((cell) => {
+		const startPosition = cell.position ?? 0;
+		return startPosition < count && startPosition + cell.colspan > count;
+	});
+	const hasComplexSpan = cells.some(
+		(cell) => cell.colspan > 1 || cell.rowspan > 1 || cell.complexRowSpan === true
+	);
+
+	return {
+		cells,
+		columnNormalization: {
+			mode: hasPartialFit
+				? 'partial-fit-preserved'
+				: hasComplexSpan
+					? 'complex-span-preserved'
+					: 'overflow-preserved',
+			expectedColumns: count,
+			actualColumns: numCols
+		}
+	};
+};
+
+const summarizeTableNormalization = (
+	rows: WorkingRowData[]
+): TableColumnNormalization | undefined => {
+	const issues = Array.from(
+		new Set(
+			rows
+				.map((row) => row.columnNormalization.mode)
+				.filter((mode): mode is Exclude<RowColumnNormalizationMode, 'exact'> => mode !== 'exact')
+		)
+	);
+
+	if (issues.length === 0) {
+		return undefined;
+	}
+
+	return {
+		mode: 'preserve-content',
+		issues
+	};
 };
 
 // Process alignment indicators in table headers
@@ -454,21 +510,32 @@ function processRows(
 	lexer: any,
 	maxColspan: number | null,
 	detectFooter: boolean
-): TableSection[] {
+): { tokens: TableSection[]; columnNormalization?: TableColumnNormalization } {
 	const tokens: TableSection[] = [];
+	const normalizationRows: WorkingRowData[] = [];
 
 	// Process header rows
-	const processedHeaderRows: WorkingRow[] = [];
+	const processedHeaderRows: WorkingRowData[] = [];
 	for (let i = 0; i < headerRows.length; i++) {
 		const prevRow = i > 0 ? processedHeaderRows[i - 1] : null;
-		processedHeaderRows[i] = splitCells(headerRows[i], colCount, prevRow, maxColspan);
+		const padIncompleteTail = i === headerRows.length - 1;
+		processedHeaderRows[i] = splitCells(
+			headerRows[i],
+			colCount,
+			prevRow,
+			maxColspan,
+			padIncompleteTail
+		);
 	}
+	normalizationRows.push(...processedHeaderRows);
 
 	// Convert header rows to THead (only if we have header rows)
 	if (processedHeaderRows.length > 0) {
 		const theadRows: THeadRow[] = processedHeaderRows.map((row) => ({
 			type: 'tr',
-			tokens: row.map((cell) => {
+			columnNormalization: row.columnNormalization,
+			placeholderColumns: row.placeholderColumns,
+			tokens: row.cells.map((cell) => {
 				// Use the cell's position to get the correct alignment
 				const cellAlignment = cell.position !== undefined ? alignment[cell.position] : null;
 				const th = workingCellToTH(cell, cellAlignment);
@@ -486,16 +553,24 @@ function processRows(
 
 	// Process body rows
 	if (bodyRows.length > 0) {
-		const processedBodyRows: WorkingRow[] = [];
+		const processedBodyRows: WorkingRowData[] = [];
 		for (let i = 0; i < bodyRows.length; i++) {
 			const prevRow =
 				i > 0 ? processedBodyRows[i - 1] : processedHeaderRows[processedHeaderRows.length - 1];
-			processedBodyRows[i] = splitCells(bodyRows[i], colCount, prevRow, maxColspan);
+			const padIncompleteTail = i === bodyRows.length - 1;
+			processedBodyRows[i] = splitCells(
+				bodyRows[i],
+				colCount,
+				prevRow,
+				maxColspan,
+				padIncompleteTail
+			);
 		}
+		normalizationRows.push(...processedBodyRows);
 
 		// Handle footer detection
 		let tbodyRows = processedBodyRows;
-		let tfootRows: WorkingRow[] = [];
+		let tfootRows: WorkingRowData[] = [];
 
 		if (detectFooter && processedBodyRows.length > 0) {
 			const lastRowIndex = processedBodyRows.length - 1;
@@ -507,7 +582,9 @@ function processRows(
 		if (tbodyRows.length > 0) {
 			const tbodyRowTokens: TRow[] = tbodyRows.map((row) => ({
 				type: 'tr',
-				tokens: row.map((cell) => {
+				columnNormalization: row.columnNormalization,
+				placeholderColumns: row.placeholderColumns,
+				tokens: row.cells.map((cell) => {
 					// Use the cell's position to get the correct alignment
 					const cellAlignment = cell.position !== undefined ? alignment[cell.position] : null;
 					const td = workingCellToTD(cell, cellAlignment);
@@ -528,7 +605,9 @@ function processRows(
 		if (tfootRows.length > 0) {
 			const tfootRowTokens: TRow[] = tfootRows.map((row) => ({
 				type: 'tr',
-				tokens: row.map((cell) => {
+				columnNormalization: row.columnNormalization,
+				placeholderColumns: row.placeholderColumns,
+				tokens: row.cells.map((cell) => {
 					// Use the cell's position to get the correct alignment
 					const cellAlignment = cell.position !== undefined ? alignment[cell.position] : null;
 					const td = workingCellToTD(cell, cellAlignment);
@@ -545,7 +624,10 @@ function processRows(
 		}
 	}
 
-	return tokens;
+	return {
+		tokens,
+		columnNormalization: summarizeTableNormalization(normalizationRows)
+	};
 }
 const { detectFooter, maxColspan } = DEFAULT_OPTIONS;
 
@@ -630,7 +712,9 @@ export const markedTable: Extension = {
 				// Filter out empty rows and the alignment row itself from headers
 
 				headerRows = allRows.slice(0, headerEndIndex).filter((row) => row.trim() !== '');
-				const headerCellCount = splitRow(headerRows[0] ?? '').filter((cell) => cell.length > 0).length;
+				const headerCellCount = splitRow(headerRows[0] ?? '').filter(
+					(cell) => cell.length > 0
+				).length;
 
 				bodyRows = headerEndIndex + 1 < allRows.length ? allRows.slice(headerEndIndex + 1) : [];
 
@@ -669,7 +753,7 @@ export const markedTable: Extension = {
 		}
 
 		// Process all rows and create table sections
-		const tokens = processRows(
+		const processedTable = processRows(
 			headerRows,
 			processedBodyRows,
 			alignment,
@@ -681,9 +765,10 @@ export const markedTable: Extension = {
 
 		const item: TableToken = {
 			type: 'table',
-			tokens,
+			tokens: processedTable.tokens,
 			raw: cap[0],
-			align: alignment
+			align: alignment,
+			columnNormalization: processedTable.columnNormalization
 		};
 
 		return item;

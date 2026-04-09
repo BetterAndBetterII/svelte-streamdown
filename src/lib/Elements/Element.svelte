@@ -179,17 +179,29 @@
 		component={HeadingComponent}
 	>
 		{#if token.depth === 1}
-			<h1 data-streamdown-heading-1={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h1>
+			<h1 data-streamdown-heading-1={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h1>
 		{:else if token.depth === 2}
-			<h2 data-streamdown-heading-2={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h2>
+			<h2 data-streamdown-heading-2={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h2>
 		{:else if token.depth === 3}
-			<h3 data-streamdown-heading-3={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h3>
+			<h3 data-streamdown-heading-3={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h3>
 		{:else if token.depth === 4}
-			<h4 data-streamdown-heading-4={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h4>
+			<h4 data-streamdown-heading-4={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h4>
 		{:else if token.depth === 5}
-			<h5 data-streamdown-heading-5={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h5>
+			<h5 data-streamdown-heading-5={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h5>
 		{:else if token.depth === 6}
-			<h6 data-streamdown-heading-6={id} {style} class={streamdown.theme[`h${token.depth}`].base}>{@render children()}</h6>
+			<h6 data-streamdown-heading-6={id} {style} class={streamdown.theme[`h${token.depth}`].base}>
+				{@render children()}
+			</h6>
 		{/if}
 	</Slot>
 {:else if token.type === 'paragraph'}
@@ -202,7 +214,9 @@
 			render={streamdown.snippets.paragraph}
 			component={ParagraphComponent}
 		>
-			<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>{@render children()}</p>
+			<p data-streamdown-paragraph={id} {style} class={streamdown.theme.paragraph.base}>
+				{@render children()}
+			</p>
 		</Slot>
 	{/if}
 {:else if token.type === 'blockquote'}
@@ -211,7 +225,9 @@
 		render={streamdown.snippets.blockquote}
 		component={BlockquoteComponent}
 	>
-		<blockquote data-streamdown-blockquote={id} {style} class={streamdown.theme.blockquote.base}>{@render children()}</blockquote>
+		<blockquote data-streamdown-blockquote={id} {style} class={streamdown.theme.blockquote.base}>
+			{@render children()}
+		</blockquote>
 	</Slot>
 {:else if token.type === 'code' && customRenderer}
 	{@const Renderer = customRenderer.component}
@@ -249,7 +265,7 @@
 			<ol
 				data-streamdown-ol={id}
 				style:list-style-type={token.listType}
-				{...(token.start && token.start !== 1 ? { start: token.start } : {})}
+				{...token.start && token.start !== 1 ? { start: token.start } : {}}
 				class:contains-task-list={listHasTaskItems}
 				class={streamdown.theme.ol.base}
 			>
@@ -284,7 +300,8 @@
 			{...token.value && token.skipped && !token.task ? { value: token.value } : {}}
 			class:task-list-item={token.task}
 			class={streamdown.theme.li.base}
-		>{#if token.task}
+		>
+			{#if token.task}
 				<input
 					disabled
 					type="checkbox"
@@ -292,7 +309,8 @@
 					class={streamdown.theme.li.checkbox}
 				/>
 				{' '}
-			{/if}{@render children()}</li>
+			{/if}{@render children()}
+		</li>
 	</Slot>
 {:else if token.type === 'table'}
 	<Slot props={{ token, children }} render={streamdown.snippets.table}>
@@ -340,6 +358,21 @@
 	>
 		<tr data-streamdown-tr={id} {style} class={streamdown.theme.tr.base}>
 			{@render children?.()}
+			{#if streamdown.mode === 'streaming' && (token.placeholderColumns ?? 0) > 0}
+				{#each Array.from({ length: token.placeholderColumns ?? 0 }) as _, placeholderIndex}
+					{#if token.tokens[0]?.type === 'th'}
+						<th
+							data-streamdown-th={`${id}-placeholder-${placeholderIndex}`}
+							class={streamdown.theme.th.base}
+						></th>
+					{:else}
+						<td
+							data-streamdown-td={`${id}-placeholder-${placeholderIndex}`}
+							class={streamdown.theme.td.base}
+						></td>
+					{/if}
+				{/each}
+			{/if}
 		</tr>
 	</Slot>
 {:else if token.type === 'td'}
@@ -411,7 +444,9 @@
 		component={StrongComponent}
 	>
 		<!-- Upstream streamdown styles strong tokens with span rather than semantic strong. -->
-		<span data-streamdown-strong={id} class={streamdown.theme.strong.base}>{@render children()}</span>
+		<span data-streamdown-strong={id} class={streamdown.theme.strong.base}
+			>{@render children()}</span
+		>
 	</Slot>
 {:else if token.type === 'em'}
 	{#if isRecoveredInlineFormatting || isRecoveredDelimitedFormatting || isIncompleteTableBlock}

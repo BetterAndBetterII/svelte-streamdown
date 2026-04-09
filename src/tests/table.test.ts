@@ -323,6 +323,123 @@ describe('tokenization', () => {
 		expect(tableToken.align[2]).toBe('center');
 		expect(tableToken.align[3]).toBe('right');
 	});
+
+	test('preserves overflow rows instead of truncating extra cells', () => {
+		const tokens = lex('| A | B | C |\n|---|---|---|\n| 1 | 2 | 3 | 4 |');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+
+		expect(tableToken.columnNormalization).toEqual({
+			mode: 'preserve-content',
+			issues: ['overflow-preserved']
+		});
+		expect(firstRow.columnNormalization).toEqual({
+			mode: 'overflow-preserved',
+			expectedColumns: 3,
+			actualColumns: 4
+		});
+		expect(firstRow.tokens.map((cell: any) => cell.text)).toEqual(['1', '2', '3', '4']);
+	});
+
+	test('preserves underflow rows without padding phantom cells', () => {
+		const tokens = lex('| A | B | C |\n|---|---|---|\n| 1 | 2 |');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+
+		expect(tableToken.columnNormalization).toEqual({
+			mode: 'preserve-content',
+			issues: ['underflow-preserved']
+		});
+		expect(firstRow.columnNormalization).toEqual({
+			mode: 'underflow-preserved',
+			expectedColumns: 3,
+			actualColumns: 2
+		});
+		expect(firstRow.tokens.map((cell: any) => cell.text)).toEqual(['1', '2']);
+	});
+
+	test('keeps streaming tail rows aligned while the final row is still incomplete', () => {
+		const tokens = lex('| A | B |\n|---|---|\n| Foo');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+
+		expect(tableToken.columnNormalization).toEqual({
+			mode: 'preserve-content',
+			issues: ['underflow-preserved']
+		});
+		expect(firstRow.columnNormalization).toEqual({
+			mode: 'underflow-preserved',
+			expectedColumns: 2,
+			actualColumns: 1
+		});
+		expect(firstRow.placeholderColumns).toBe(1);
+		expect(firstRow.tokens.map((cell: any) => cell.text)).toEqual(['Foo']);
+	});
+
+	test('preserves full colspans when a cell only partially fits the header width', () => {
+		const tokens = lex('| A | B | C |\n|---|---|---|\n| left | wide |||');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+
+		expect(tableToken.columnNormalization).toEqual({
+			mode: 'preserve-content',
+			issues: ['partial-fit-preserved']
+		});
+		expect(firstRow.columnNormalization).toEqual({
+			mode: 'partial-fit-preserved',
+			expectedColumns: 3,
+			actualColumns: 4
+		});
+		expect(
+			firstRow.tokens.map((cell: any) => ({ text: cell.text, colspan: cell.colspan }))
+		).toEqual([
+			{ text: 'left', colspan: 1 },
+			{ text: 'wide', colspan: 3 }
+		]);
+	});
+
+	test('preserves overflow text for complex colspan layouts instead of dropping trailing cells', () => {
+		const tokens = lex('| A | B | C | D |\n|---|---|---|---|\n| group || detail || tail |');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+
+		expect(tableToken.columnNormalization).toEqual({
+			mode: 'preserve-content',
+			issues: ['complex-span-preserved']
+		});
+		expect(firstRow.columnNormalization).toEqual({
+			mode: 'complex-span-preserved',
+			expectedColumns: 4,
+			actualColumns: 5
+		});
+		expect(
+			firstRow.tokens.map((cell: any) => ({ text: cell.text, colspan: cell.colspan }))
+		).toEqual([
+			{ text: 'group', colspan: 2 },
+			{ text: 'detail', colspan: 2 },
+			{ text: 'tail', colspan: 1 }
+		]);
+	});
+
+	test('preserves visible text when complex rowspan cells merge into previous spans', () => {
+		const tokens = lex('| A | B | C |\n|---|---|---|\n| Group || Value |\n| Child^ || Tail |');
+		const tableToken = getFirstTokenByType(tokens, 'table');
+		const tableBody = tableToken.tokens.find((t: any) => t.type === 'tbody');
+		const firstRow = tableBody.tokens[0];
+		const secondRow = tableBody.tokens[1];
+
+		expect(tableToken.columnNormalization).toBeUndefined();
+		expect(firstRow.tokens[0].text).toBe('Group Child');
+		expect(firstRow.tokens[0].colspan).toBe(2);
+		expect(firstRow.tokens[0].rowspan).toBe(2);
+		expect(secondRow.tokens[0].rowspan).toBe(0);
+		expect(secondRow.tokens[1].text).toBe('Tail');
+	});
 });
 
 describe('incomplete markdown', () => {

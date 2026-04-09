@@ -60,6 +60,8 @@
 	};
 
 	const tableControls = $derived(resolveControls(streamdown.controls.table));
+	const tableLayout = $derived(token.columnNormalization?.mode ?? 'balanced');
+	const tableLayoutIssues = $derived(token.columnNormalization?.issues.join(' ') ?? '');
 	let isFullscreen = $state(false);
 
 	const closeFullscreen = () => {
@@ -111,6 +113,8 @@
 
 	<div
 		data-streamdown-table={id}
+		data-streamdown-table-layout={tableLayout}
+		data-streamdown-table-layout-issues={tableLayoutIssues}
 		class={`${streamdown.theme.table.base} ${streamdown.theme.table.container} group`}
 		style:overscroll-behavior-x="none"
 	>
@@ -118,7 +122,12 @@
 			props={{ children, token, class: streamdown.theme.table.table }}
 			component={TableComponent}
 		>
-			<table data-streamdown="table" class={streamdown.theme.table.table}>
+			<table
+				data-streamdown="table"
+				data-streamdown-table-layout={tableLayout}
+				data-streamdown-table-layout-issues={tableLayoutIssues}
+				class={streamdown.theme.table.table}
+			>
 				{@render children?.()}
 			</table>
 		</Slot>
@@ -164,13 +173,20 @@
 
 		<div
 			data-streamdown-table-fullscreen={id}
+			data-streamdown-table-layout={tableLayout}
+			data-streamdown-table-layout-issues={tableLayoutIssues}
 			class={`flex-1 overflow-auto ${streamdown.theme.table.base} ${streamdown.theme.table.container}`}
 		>
 			<Slot
 				props={{ children, token, class: streamdown.theme.table.table }}
 				component={TableComponent}
 			>
-				<table data-streamdown="table" class={streamdown.theme.table.table}>
+				<table
+					data-streamdown="table"
+					data-streamdown-table-layout={tableLayout}
+					data-streamdown-table-layout-issues={tableLayoutIssues}
+					class={streamdown.theme.table.table}
+				>
 					{@render children?.()}
 				</table>
 			</Slot>
