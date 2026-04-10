@@ -25,6 +25,11 @@
   },
   "description": "Standalone mermaid plugin package used by the streamdown-svelte workspace.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PacificStudio/streamdown-svelte.git",
+    "directory": "packages/streamdown-mermaid"
+  },
   "publishConfig": {
     "access": "public"
   }
