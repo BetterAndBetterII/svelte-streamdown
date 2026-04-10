@@ -146,13 +146,13 @@ jobs:
         shell: bash
         run: |
           mapfile -t tarballs < <(
-            node --input-type=module <<'EOF'
-            import { readFileSync } from 'node:fs';
-            const manifest = JSON.parse(readFileSync('artifacts/release/release-packages.json', 'utf8'));
-            for (const entry of manifest.packages ?? []) {
-              process.stdout.write(`artifacts/release/${entry.tarball.fileName}\n`);
-            }
-            EOF
+            node --input-type=module -e '
+              import { readFileSync } from "node:fs";
+              const manifest = JSON.parse(readFileSync("artifacts/release/release-packages.json", "utf8"));
+              for (const entry of manifest.packages ?? []) {
+                process.stdout.write(`artifacts/release/${entry.tarball.fileName}\n`);
+              }
+            '
           )
 
           if [ "${#tarballs[@]}" -eq 0 ]; then
